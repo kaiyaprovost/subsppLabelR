@@ -895,6 +895,8 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ##TODO: get the closestPolygonFunction working
   densityPolygons_trim = densityPolygons_trim1
   
+  ## this isn't working!!!!!!
+  
   ##TODO: figure out how to remove small polygons that are closer to other subspp than their own
   
   ## remove points that are in wrong polygon
