@@ -952,6 +952,8 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   }
   if(!(is.null(colsToDelete))){
     print("is null cols")
+    print(colsToDelete)
+    print(names(polyLocations))
     polyLocations = polyLocations[,-colsToDelete]
     
   }
