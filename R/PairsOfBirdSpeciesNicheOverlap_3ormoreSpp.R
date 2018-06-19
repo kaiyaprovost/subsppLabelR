@@ -956,6 +956,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     #print(names(polyLocations))
     print(head(polyLocations))
     polyLocations = polyLocations[,-colsToDelete]
+    print("success")
     
   }
   
@@ -972,9 +973,13 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## or subspecies assignment a priori does not match final
   ## TODO: consider putting this in the other script file
   
+  print("checking")
   checked = subspeciesMatchChecker(locfile = polyLocations)
+  print("1")
   checked_suspect = checked$suspect
+  print("2")
   checked_good = checked$good
+  print("3 done")
   
   ## return nice clean data
   print("Warning: no valid definition for subspecies given!")
