@@ -936,6 +936,9 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   }
 
   colsToDelete = c()
+  
+  print(polyLocations)
+  
   for(colNumA in 5:length(colnames(polyLocations))){
     for(colNumB in 6:length(colnames(polyLocations))){
       if(colNumA<colNumB) {
