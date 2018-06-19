@@ -684,31 +684,47 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
 #' checked_suspect = checked$suspect
 #' checked_good = checked$good
 subspeciesMatchChecker = function(locfile=nitens_loc){
+  print("a")
   locWithSubspecies=locfile
+  print("b")
   subsppNames = names(locWithSubspecies[5:length(names(locWithSubspecies))])
+  print("c")
   numSub = length(subsppNames)
+  print("d")
   numPoints = length(rownames(locWithSubspecies))
+  print("e")
   lastSubsppCol = length(colnames(locWithSubspecies)) 
+  print("f")
   subsppAssignCol = locWithSubspecies[,5:length(colnames(locWithSubspecies))]
+  print("g")
   subsppPriorCol = locWithSubspecies$subspecies
+  print("h")
   locWithSubspecies$numSubsppGroups <- rowSums(subsppAssignCol, na.rm = TRUE)
+  print("i")
   locWithSubspecies$assigned=NA
+  print("j")
   
   notassigned = locWithSubspecies[which(locWithSubspecies$numSubsppGroups==0),]
+  print("k")
   if(nrow(notassigned)!=0){
     notassigned$assigned="none"
   }
+  print("l")
   
   multigroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroups>1),]
+  print("m")
   if(nrow(multigroup)!=0){
     multigroup$assigned="multiple"
   }
+  print("n")
   
   singlegroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroup==1),]
+  print("o")
   
   ## check whether mismatch between apriori and not 
   suspectpoints = rbind(multigroup,notassigned)
   goodpoints = data.frame()
+  print("p")
   
   for(column in 5:lastSubsppCol){
     name = colnames(singlegroup)[column]
@@ -728,9 +744,10 @@ subspeciesMatchChecker = function(locfile=nitens_loc){
     suspectpoints = rbind(suspectpoints,wrong1)
     goodpoints = rbind(goodpoints,right1)
   }
+  print("q")
   suspectpoints=unique(suspectpoints)
   goodpoints=unique(goodpoints)
-  
+  print("r")
   
   
   return(list(suspect=suspectpoints,
