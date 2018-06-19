@@ -29,7 +29,6 @@ NULL
 subspeciesOccQuery = function(spp="Phainopepla nitens",subsppList=c("nitens","lepida"),
                              pointLimit=500,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet")) {
   ## this function uses spocc to query for one species and multiple subspecies
-  ## TODO: turn this into a function to give multiple subspecies and return it
   #library(spocc)
   
   print(paste("Getting Species: ",spp))
@@ -235,16 +234,14 @@ densityMapToPolygons = function(densityMap) {
 flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
   ##function(subsppPoly1,subsppPoly2)
   ## this function checks for overlaps between polygons
-  ## it only returns a list of polygons that are completely within other polygons
-  ## TODO: what about things that are in neither polygon?
-  ## TODO: what about things that are in both?
-  
-  ## TODO: if overlapping, remove from larger polygon size! 
-  
   ## TODO: remove polygon if not touching another of same spp
   ## but also closer to polygon of other species
   #library(rgeos)
   #library(raster)
+  
+  ## there is a bug -- if one subspp range is entirely subsumed within another polygon, 
+  ## will delete that subspecies. no bueno 
+  
   badList_subsppA_features = c()
   badList_subsppB_features = c()
   overlapsToRemove_subsppA = c()
@@ -292,18 +289,29 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
               
               if (areaInt >= area1) {
                 ## if the overlap entirely subsumes an area 
-                ## remove the area 
-                ## TODO: change to check for density?
                 
-                #print("SUBSPP1 SUBSUMED")
-                badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+                
+                ## check if the area is the entire subspecies range
+                if (area1percent != 1){
+                  ## remove the area 
+                  #print("SUBSPP1 SUBSUMED")
+                  badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+                }
+                
+                ## TODO: change to check for density?
+
               } 
               if (areaInt >= area2) {
                 ## if the overlap entirely subsumes an area 
-                ## remove the area 
-                ## TODO: change to check for density?
-                #print("SUBSPP2 SUBSUMED")
-                badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+                
+                ## check if the area is the entire subspecies range
+                if (area2percent != 1){
+                  ## remove the area 
+                  ## TODO: change to check for density?
+                  #print("SUBSPP2 SUBSUMED")
+                  badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+                }
+                
               }
             }
             else {
@@ -864,6 +872,9 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## remove polygons that are completely within other polygon
   ## TODO: what about things that are in neither polgon?
   ## TODO: what about things that are in both?
+  
+  ## there is a bug -- if one subspp range is entirely subsumed within another polygon, 
+  ## will delete that subspecies. no bueno 
   
   densityPolygons_trim1 = polygonTrimmer(polygonList=densityPolygons,namesList=subsppNames)
   
