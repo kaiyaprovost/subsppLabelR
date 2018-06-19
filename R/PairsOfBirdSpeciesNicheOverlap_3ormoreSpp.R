@@ -941,12 +941,14 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
       if(colNumA<colNumB) {
         print(paste("compare",colNumA,colNumB,sep=" "))
       if(identical(polyLocations[[colNumA]],polyLocations[[colNumB]])){
+        print("identical, deleting")
         colsToDelete = c(colsToDelete,colNumB)
       }
       }
     }
   }
   if(!(is.null(colsToDelete))){
+    print("is null cols")
     polyLocations = polyLocations[,-colsToDelete]
     
   }
