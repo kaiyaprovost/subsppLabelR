@@ -528,6 +528,7 @@ polygonTrimmer = function(polygonList,namesList) {
         plot(bg,col="grey",colNA="darkgrey")
         plot(polA,add=T,border="cyan",lwd=7)
         plot(polB,add=T,border="red",lwd=4)
+        invisible(readline(prompt="Press [enter] to continue"))
         if(!is.null(raster::intersect(polA,polB))){
           plot(raster::intersect(polA,polB),add=T,lwd=1,border="black")
         }
