@@ -99,11 +99,70 @@ subspecies = c("sinuatus","fulvescens","peninsulae")
 ## there is a bug -- if one subspp range is entirely subsumed within another polygon, 
 ## will delete that subspecies. no bueno 
 
+alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/big_sinuatus_testrun_NOTWORKING/AllLoci_Cardinalis sinuatus_sinuatus fulvescens peninsulae.txt"
+
+
 processedSpecies = databaseToAssignedSubspecies(spp=species,
                                      subsppList=subspecies,
                                      pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
                                      quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
-                                     outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/")
+                                     outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
+                                     datafile=alllocs)
+
+## have already downloaded full species, so going to do bits and pieces here to see if can get the polygon function working
+
+
+uploadedlocs = read.csv(alllocs,sep="\t")
+labeledLoc = uploadedlocs
+
+##### ALL OF THIS IS COPIED FROM THE PACKAGE ##### 
+## NOTE: found some instances where hybrids or even birds outside family were being included
+
+subsppNames = unique(labeledLoc$subspecies)
+
+print("Building species kernel density maps")
+
+xmin=-125
+xmax=-60
+ymin=10
+ymax=50
+quantile=0.975
+plotIt=T
+spp=species
+subsppList=subspecies
+bgLayer=bg
+
+densityRasters = lapply(subsppNames,function(subspp){
+  locs = labeledLoc[labeledLoc$subspecies==subspp,]
+  print(head(locs))
+  dens = subspeciesDensityMap(localities=locs,quantile=quantile,xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)
+  names(dens) = subspp
+  return(dens)
+})
+names(densityRasters) = subsppNames
+
+if (plotIt==T) {
+  for(i in 1:length(densityRasters)){
+    name = names(densityRasters)[[i]]
+    png(paste("DensityRaster_",spp," ",name,".png",sep=""))
+    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Density, subspp:",name))
+    plot(densityRasters[[i]],add=T,col=viridis::viridis(99))
+    dev.off()
+  }
+}
+
+
+
+
+
+
+
+##### END #####
+
+
+
+
+
 
 #processedSpecies_rest = databaseToAssignedSubspecies(spp=species,
 #                                                 subsppList=subspecies_rest,

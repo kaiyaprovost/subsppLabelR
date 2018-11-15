@@ -776,6 +776,7 @@ subspeciesMatchChecker = function(locfile=nitens_loc){
 #' @param plotIt Whether to generate plots
 #' @param bgLayer A background layer for generating plots
 #' @param outputDir What directory to output to
+#' @param datafile if already ran and saved output from spocc:occ, put file here -- default NULL
 #'
 #' @export
 #' @examples
@@ -793,7 +794,9 @@ subspeciesMatchChecker = function(locfile=nitens_loc){
 #' good_occurrences = phainopeplaNitens$loc_good,
 #' subspecies_polygons = phainopeplaNitens$pol
 databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quantile=0.95,xmin=-125,
-                               xmax=-60,ymin=10,ymax=50,plotIt=F,bgLayer,outputDir,...) {
+                               xmax=-60,ymin=10,ymax=50,plotIt=F,bgLayer,outputDir,datafile=NULL,...) {
+
+  ## TODO: allow to begin from any step?
 
   setwd(outputDir)
 
@@ -807,6 +810,10 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   #library(sp)
   ## get the species and subspecies
 
+  if is.null(datafile) {
+
+
+
   print("Downloading species occurrences")
   ## TODO: add progress bar
   listFromSubspeciesOcc = subspeciesOccQuery(spp=spp,subsppList=subsppList,
@@ -816,12 +823,24 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   print("Labeling data by subspecies")
   labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
 
+  ## TODO: add a check where you make sure that the species is correct
+
+
   ## EXPORT THE OCCURRENCE DATA!
   ## NOTE: you don't need to do this. it is identical to merging goodLoci and suspectLoci and only taking first four cols
   ## (name	longitude	latitude	subspecies)
   #print("Exporting Occurrence Data")
   #write.table(labeledLoc,paste(paste("OccurrenceDatabase",spp,paste(subspecies,collapse=" "),sep="_"),".occ",sep=""),
   #            quote=FALSE,sep="\t",row.names=FALSE)
+
+
+
+  } else if !is.null(datafile) {
+
+    print("Uploading datafile")
+    labeledLoc = read.csv(datafile,sep="\t")
+
+  }
 
   subsppNames = unique(labeledLoc$subspecies)
 
@@ -1005,11 +1024,11 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   print("checking")
   checked = subspeciesMatchChecker(locfile = polyLocations)
-  print("1")
+  #print("1")
   checked_suspect = checked$suspect
-  print("2")
+  #print("2")
   checked_good = checked$good
-  print("3 done")
+  print("done")
 
   ## return nice clean data
   print("Warning: no valid definition for subspecies given!")
