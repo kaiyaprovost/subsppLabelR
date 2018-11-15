@@ -866,7 +866,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   densityRasters = lapply(subsppNames,function(subspp){
     locs = labeledLoc[labeledLoc$subspecies==subspp,]
-    print(head(locs))
+    #print(head(locs))
     dens = subspeciesDensityMap(localities=locs,quantile=quantile,xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)
     names(dens) = subspp
     return(dens)
