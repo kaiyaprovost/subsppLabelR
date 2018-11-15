@@ -838,6 +838,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
     print("Uploading datafile")
     labeledLoc = read.csv(datafile,sep="\t")
+    labeledLoc = labeledLoc[,1:4]
 
   }
 
