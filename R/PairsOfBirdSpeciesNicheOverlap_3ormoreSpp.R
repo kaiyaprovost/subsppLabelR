@@ -46,7 +46,6 @@ subspeciesOccQuery = function(spp="Phainopepla nitens",subsppList=c("nitens","le
 
   toReturn = list(sppOcc,subSppListOcc)
   names(toReturn) = c("unknown","labeled")
-
   return(toReturn)
 
 }
