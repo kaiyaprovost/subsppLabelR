@@ -101,7 +101,7 @@ subspecies = c("sinuatus","fulvescens","peninsulae")
 
 processedSpecies = databaseToAssignedSubspecies(spp=species,
                                      subsppList=subspecies,
-                                     pointLimit=1000000,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
+                                     pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
                                      quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
                                      outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/")
 

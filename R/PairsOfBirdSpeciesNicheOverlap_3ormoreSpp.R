@@ -817,8 +817,11 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
 
   ## EXPORT THE OCCURRENCE DATA!
-  print("Exporting Occurrence Data")
-  write.table(labeledLoc,paste(paste("OccurrenceDatabase",spp,paste(subspecies,collapse=" "),sep="_"),".occ",sep=""))
+  ## NOTE: you don't need to do this. it is identical to merging goodLoci and suspectLoci and only taking first four cols
+  ## (name	longitude	latitude	subspecies)
+  #print("Exporting Occurrence Data")
+  #write.table(labeledLoc,paste(paste("OccurrenceDatabase",spp,paste(subspecies,collapse=" "),sep="_"),".occ",sep=""),
+  #            quote=FALSE,sep="\t",row.names=FALSE)
 
   subsppNames = unique(labeledLoc$subspecies)
 
@@ -964,7 +967,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   colsToDelete = c()
 
-  print(polyLocations)
+  #print(polyLocations)
 
   for(colNumA in 5:length(colnames(polyLocations))){
     for(colNumB in 6:length(colnames(polyLocations))){
