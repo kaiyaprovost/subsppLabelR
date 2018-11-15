@@ -810,6 +810,8 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   #library(sp)
   ## get the species and subspecies
 
+  print(is.null(datafile))
+
   if (is.null(datafile)) {
 
 
