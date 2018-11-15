@@ -870,10 +870,13 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     names(dens) = subspp
     return(dens)
   })
+  print("done density")
   names(densityRasters) = subsppNames
 
+  print("start plot1")
   if (plotIt==T) {
     for(i in 1:length(densityRasters)){
+      print("plotforloop")
       name = names(densityRasters)[[i]]
       png(paste("DensityRaster_",spp," ",name,".png",sep=""))
       plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Density, subspp:",name))
@@ -881,6 +884,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
       dev.off()
     }
   }
+  print("endplot1")
 
   ## convert to polygons
   print("Converting density maps to polygons")
