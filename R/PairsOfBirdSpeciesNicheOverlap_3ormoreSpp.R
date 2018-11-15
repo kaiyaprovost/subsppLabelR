@@ -525,12 +525,12 @@ polygonTrimmer = function(polygonList,namesList) {
         polA = newPolygonList[[slotA]]
         polB = newPolygonList[[slotB]]
 
-        #plot(bg,col="grey",colNA="darkgrey")
-        #plot(polA,add=T,border="cyan",lwd=7)
-        #plot(polB,add=T,border="red",lwd=4)
-        #if(!is.null(raster::intersect(polA,polB))){
-        #  plot(raster::intersect(polA,polB),add=T,lwd=1,border="black")
-        #}
+        plot(bg,col="grey",colNA="darkgrey")
+        plot(polA,add=T,border="cyan",lwd=7)
+        plot(polB,add=T,border="red",lwd=4)
+        if(!is.null(raster::intersect(polA,polB))){
+          plot(raster::intersect(polA,polB),add=T,lwd=1,border="black")
+        }
 
 
         polygonsToRemove = (flagPolygonOverlap(polA,polB))
@@ -871,13 +871,13 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     names(dens) = subspp
     return(dens)
   })
-  print("done density")
+  #print("done density")
   names(densityRasters) = subsppNames
 
-  print("start plot1")
+  #print("start plot1")
   if (plotIt==T) {
     for(i in 1:length(densityRasters)){
-      print("plotforloop")
+      #print("plotforloop")
       name = names(densityRasters)[[i]]
       png(paste("DensityRaster_",spp," ",name,".png",sep=""))
       plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Density, subspp:",name))
@@ -885,7 +885,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
       dev.off()
     }
   }
-  print("endplot1")
+  #print("endplot1")
 
   ## convert to polygons
   print("Converting density maps to polygons")

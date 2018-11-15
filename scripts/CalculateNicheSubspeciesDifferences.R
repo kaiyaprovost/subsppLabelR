@@ -106,7 +106,7 @@ library(subsppLabelR)
 processedSpecies = databaseToAssignedSubspecies(spp=species,
                                      subsppList=subspecies,
                                      pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
-                                     quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
+                                     quantile=0.975,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
                                      outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
                                      datafile=alllocs)
 
@@ -153,9 +153,72 @@ if (plotIt==T) {
 }
 
 
+## convert to polygons
+print("Converting density maps to polygons")
+## TODO: not working properly!
 
+densityPolygons = lapply(densityRasters,function(dens){
+  densPol = densityMapToPolygons(densityMap=dens)
+  return(densPol)
+})
 
+if (plotIt==T) {
+  for(i in 1:length(densityPolygons)){
+    name = names(densityPolygons)[[i]]
+    png(paste("RawDensityPolygon_",spp," ",name,".png",sep=""))
+    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
+    plot(densityPolygons[[i]],add=T,col=viridis::viridis(99))
+    dev.off()
+  }
 
+  png(paste("RawDensityPolygon_",spp," ALL.png",sep=""))
+  plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
+  cols = c("black","red","blue","green","cyan","magenta",
+           "pink","white","purple","orange","yellow","sienna",
+           "thistle","palegreen","powderblue","aquamarine","violet","mediumslateblue",
+           "lightsalmon","lightblue")
+  for(i in 1:length(densityPolygons)){
+    name = names(densityPolygons)[[i]]
+    plot(densityPolygons[[i]],add=T,border=cols[i],lwd=((3*i)/3))
+  }
+  legend("top", legend=names(densityPolygons),bty="n",fill=rgb(0,0,0,0),
+         border=cols)
+  dev.off()
+}
+
+print("Checking Overlaps of Polygons and Removing Overlaps")
+## remove polygons that are completely within other polygon
+## TODO: what about things that are in neither polgon?
+## TODO: what about things that are in both?
+
+## there is a bug -- if one subspp range is entirely subsumed within another polygon,
+## will delete that subspecies. no bueno
+
+densityPolygons_trim1 = polygonTrimmer(polygonList=densityPolygons,namesList=subsppNames)
+
+if (plotIt==T) {
+  for(i in 1:length(densityPolygons_trim1)){
+    name = names(densityPolygons_trim1)[[i]]
+    png(paste("TrimDensityPolygon_",spp," ",name,".png",sep=""))
+    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
+    plot(densityPolygons_trim1[[i]],add=T,col=viridis::viridis(99))
+    dev.off()
+  }
+
+  png(paste("TrimDensityPolygon_",spp," ALL.png",sep=""))
+  plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
+  cols = c("black","red","blue","green","cyan","magenta",
+           "pink","white","purple","orange","yellow","sienna",
+           "thistle","palegreen","powderblue","aquamarine","violet","mediumslateblue",
+           "lightsalmon","lightblue")
+  for(i in 1:length(densityPolygons_trim1)){
+    name = names(densityPolygons_trim1)[[i]]
+    plot(densityPolygons_trim1[[i]],add=T,border=cols[i],lwd=((3*i)/3))
+  }
+  legend("top", legend=names(densityPolygons_trim1),bty="n",fill=rgb(0,0,0,0),
+         border=cols)
+  dev.off()
+}
 
 
 ##### END #####
