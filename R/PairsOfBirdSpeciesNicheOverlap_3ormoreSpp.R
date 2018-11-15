@@ -157,7 +157,7 @@ subspeciesDensityMap = function(localities,quantile=0.95,xmin=-125,
   quan = quantile(densRas[densRas],quantile)
   densRas_trim = densRas
   densRas_trim[densRas_trim <= quan] = NA
-  plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
+  #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
 
   return(densRas_trim)
 
@@ -872,7 +872,6 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   names(densityRasters) = subsppNames
 
   if (plotIt==T) {
-    print("plot1")
     for(i in 1:length(densityRasters)){
       name = names(densityRasters)[[i]]
       png(paste("DensityRaster_",spp," ",name,".png",sep=""))
