@@ -810,7 +810,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   #library(sp)
   ## get the species and subspecies
 
-  if is.null(datafile) {
+  if (is.null(datafile)) {
 
 
 
@@ -835,7 +835,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
 
 
-  } else if !is.null(datafile) {
+  } else if (!(is.null(datafile))) {
 
     print("Uploading datafile")
     labeledLoc = read.csv(datafile,sep="\t")
