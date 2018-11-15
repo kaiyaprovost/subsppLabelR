@@ -18,10 +18,10 @@ and flags for removal intersections between the polygons. Called within polygonT
 \details{
 Checks for intersections in two ways:
 
-1) Any polygon features that are completely subsumed within the other 
-subspecies range are flagged for removal, e.g., if Subspecies-A feature is completely subsumed by 
+1) Any polygon features that are completely subsumed within the other
+subspecies range are flagged for removal, e.g., if Subspecies-A feature is completely subsumed by
 Subspecies-B, then the Subspecies-A feature is flagged for removal in its entirety.
-2) Any intersections between polygons that do not comprise entire polygon features are flagged 
+2) Any intersections between polygons that do not comprise entire polygon features are flagged
 for removal such that the intersection is flagged for removal from the larger polygon, but
 not the smaller polygon. If polygons are the same size, intersection is removed from both.
 E.g., Subspecies-A has a larger range than Subspecies-B. An intersection between them is removed

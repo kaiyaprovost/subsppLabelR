@@ -5,7 +5,6 @@
 #' @import dplyr
 #' @import sp
 #' @import viridis
-#' @import rgdal
 NULL
 
 #' Pull Subspecies Occurrences
@@ -873,6 +872,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   names(densityRasters) = subsppNames
 
   if (plotIt==T) {
+    print("plot1")
     for(i in 1:length(densityRasters)){
       name = names(densityRasters)[[i]]
       png(paste("DensityRaster_",spp," ",name,".png",sep=""))

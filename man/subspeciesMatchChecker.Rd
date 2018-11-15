@@ -11,9 +11,9 @@ subspeciesMatchChecker(locfile = nitens_loc)
 }
 \description{
 This function takes the locations of points relative to polygons from locatePolygonPoints() or similar
-and checks where points are assigned. Points that are in 1) no polygons, 2) multiple polygons, or 
+and checks where points are assigned. Points that are in 1) no polygons, 2) multiple polygons, or
 3) have a subspecies label that does not match their assignment are flagged as "suspect".
-Any points that are in single polygons and either 1) were originally unlabeled or 2) have a subspecies 
+Any points that are in single polygons and either 1) were originally unlabeled or 2) have a subspecies
 label that matches their assignment are flagged as "good".
 }
 \examples{

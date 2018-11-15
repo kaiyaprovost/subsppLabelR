@@ -4,8 +4,8 @@
 \alias{subspeciesDensityMap}
 \title{Generate Subspecies Density Maps}
 \usage{
-subspeciesDensityMap(localities, quantile = 0.95, xmin = -125, xmax = -60,
-  ymin = 10, ymax = 50)
+subspeciesDensityMap(localities, quantile = 0.95, xmin = -125,
+  xmax = -60, ymin = 10, ymax = 50)
 }
 \arguments{
 \item{localities}{Labeled localities as generated from labelSubspecies() or subspeciesOccQuery()}

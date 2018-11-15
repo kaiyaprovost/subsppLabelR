@@ -10,7 +10,7 @@ closestPolygonFunction(listOfPolygons)
 \item{listOfPolygons}{List of subspecies range polygons.}
 }
 \description{
-This function takes multiple subspecies ranges as polygons and checks whether 
+This function takes multiple subspecies ranges as polygons and checks whether
 1) polygon features are adjacent to their own subspecies, and if not, 2)
 whether polygon features are closer to their own subspecies than to another.
 If a subspecies feature does not meet either criteria, it is eliminated.

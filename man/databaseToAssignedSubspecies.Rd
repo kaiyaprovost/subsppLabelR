@@ -6,7 +6,7 @@
 \usage{
 databaseToAssignedSubspecies(spp, subsppList, pointLimit, dbToQuery,
   quantile = 0.95, xmin = -125, xmax = -60, ymin = 10, ymax = 50,
-  plotIt = F, bgLayer, outputDir, ...)
+  plotIt = F, bgLayer, outputDir, datafile = NULL, ...)
 }
 \arguments{
 \item{spp}{Genus and species to query, as string}
@@ -32,10 +32,12 @@ databaseToAssignedSubspecies(spp, subsppList, pointLimit, dbToQuery,
 \item{bgLayer}{A background layer for generating plots}
 
 \item{outputDir}{What directory to output to}
+
+\item{datafile}{if already ran and saved output from spocc:occ, put file here -- default NULL}
 }
 \description{
 This function is a wrapper for the package and takes a species with a list of subspecies, and then
-assigns points to subspecies. Points that have problems with assignment are listed as "suspect" 
+assigns points to subspecies. Points that have problems with assignment are listed as "suspect"
 and points without problems are listed as "good." Also returns polygons used to make subspecies
 assignments.
 }

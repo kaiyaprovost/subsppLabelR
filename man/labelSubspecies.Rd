@@ -10,7 +10,7 @@ labelSubspecies(subsppOccList)
 \item{subsppOccList}{A list of subspecies occurences from subspeciesOccQuery() or similar}
 }
 \description{
-This function converts a labeled list of subspecies occurences 
+This function converts a labeled list of subspecies occurences
 into a dataframe of occurences, with a column for subspecies, using occ2df_subspeciesLabels().
 The latter function works only on a single subspecies whereas this function
 performs the task for all subspecies in the list.

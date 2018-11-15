@@ -18,10 +18,10 @@ subspeciesOccQuery(spp = "Phainopepla nitens", subsppList = c("nitens",
 \item{dbToQuery}{List of databases to search through -- see spocc::occ}
 }
 \description{
-This function uses spocc::occ to query GBIF and other 
-repositories for one species and N number of 
-subspecies, specified by the user. Returns a list of 
-occurrence record objects. 
+This function uses spocc::occ to query GBIF and other
+repositories for one species and N number of
+subspecies, specified by the user. Returns a list of
+occurrence record objects.
 Note: currently only tested for N=2 and N=3 subspecies.
 }
 \examples{
