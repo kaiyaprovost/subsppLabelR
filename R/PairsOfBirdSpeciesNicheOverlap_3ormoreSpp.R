@@ -78,6 +78,8 @@ occ2df_subspeciesLabels = function(subsppOccList_object,subsppOccList_name){
   sppLocLab = sppLoc
   sppLocLab$subspecies = subsppOccList_name
 
+  ## TODO: add a way to make this output the dataframe
+
   return(sppLocLab)
 }
 
@@ -813,6 +815,11 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## label the data by subspeces
   print("Labeling data by subspecies")
   labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
+
+  ## EXPORT THE OCCURRENCE DATA!
+  print("Exporting Occurrence Data")
+  write.table(labeledLoc,paste(paste("OccurrenceDatabase",spp,paste(subspecies,collapse=" "),sep="_"),".occ",sep=""))
+
   subsppNames = unique(labeledLoc$subspecies)
 
   if(plotIt==T){
