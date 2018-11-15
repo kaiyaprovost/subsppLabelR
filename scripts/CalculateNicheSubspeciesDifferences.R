@@ -194,34 +194,196 @@ print("Checking Overlaps of Polygons and Removing Overlaps")
 ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
 ## will delete that subspecies. no bueno
 
-densityPolygons_trim1 = polygonTrimmer(polygonList=densityPolygons,namesList=subsppNames)
+densityPolygons_trim1 = polygonTrimmer2(polygonList=densityPolygons,namesList=subsppNames)
 
-if (plotIt==T) {
-  for(i in 1:length(densityPolygons_trim1)){
-    name = names(densityPolygons_trim1)[[i]]
-    png(paste("TrimDensityPolygon_",spp," ",name,".png",sep=""))
-    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
-    plot(densityPolygons_trim1[[i]],add=T,col=viridis::viridis(99))
-    dev.off()
-  }
+## overlap sin ful, 2 polygons -- but says no overlaps to remove on second round?
+## overlap sin pen, 1 polygon -- but says none to remove
+## overlap ful sin, 1 polygon -- but says none to remove again
+## overlap pen sin, 1 polygon -- first one says none to remove -- check code here
+## overlap pen ful gone
 
-  png(paste("TrimDensityPolygon_",spp," ALL.png",sep=""))
-  plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
-  cols = c("black","red","blue","green","cyan","magenta",
-           "pink","white","purple","orange","yellow","sienna",
-           "thistle","palegreen","powderblue","aquamarine","violet","mediumslateblue",
-           "lightsalmon","lightblue")
-  for(i in 1:length(densityPolygons_trim1)){
-    name = names(densityPolygons_trim1)[[i]]
-    plot(densityPolygons_trim1[[i]],add=T,border=cols[i],lwd=((3*i)/3))
+polygonTrimmer2 = function(polygonList,namesList) {
+  newPolygonList = polygonList
+  for(slotA in 1:length(namesList)){
+    for(slotB in 1:length(namesList)){
+      if(namesList[[slotA]]!="unknown" && namesList[[slotB]]!="unknown" && slotA!=slotB){
+        #print(paste(slotA,slotB,sep=" "))
+        print(paste(namesList[[slotA]],"with",namesList[[slotB]],sep=" "))
+        polA = newPolygonList[[slotA]]
+        polB = newPolygonList[[slotB]]
+
+        plot(bg,col="grey",colNA="darkgrey")
+        plot(polA,add=T,border="cyan",lwd=7)
+        plot(polB,add=T,border="red",lwd=4)
+
+        if(!is.null(raster::intersect(polA,polB))){
+          plot(raster::intersect(polA,polB),add=T,lwd=1,border="black")
+          print("THERE IS OVERLAP")
+        }
+
+
+        polygonsToRemove = (flagPolygonOverlap2(polA,polB))
+        print(polygonsToRemove)
+        ## this is flagging species A to remove, but not species B
+        ## in this case needs sto remove species B
+
+        print("end flag")
+        #invisible(readline(prompt="Press [enter] to continue"))
+        subsppA_polygonsToRemove = polygonsToRemove$subsppApoly_toremove
+        subsppB_polygonsToRemove = polygonsToRemove$subsppBpoly_toremove
+        overlapToRemove_subsppA = polygonsToRemove$subsppA_intToRemove
+        overlapToRemove_subsppB = polygonsToRemove$subsppB_intToRemove
+
+        subsppA_densityPolygon_trim = trimPolygonsByOverlap(polygon=polA,
+                                                            idList = subsppA_polygonsToRemove,
+                                                            intList=overlapToRemove_subsppA)
+        subsppB_densityPolygon_trim = trimPolygonsByOverlap(polygon=polB,
+                                                            idList = subsppB_polygonsToRemove,
+                                                            intList=overlapToRemove_subsppB)
+
+
+        subsppA = namesList[[slotA]]
+        subsppB = namesList[[slotB]]
+        newPolygonList[[slotA]] = subsppA_densityPolygon_trim
+        newPolygonList[[slotB]] = subsppB_densityPolygon_trim
+        names(newPolygonList) = names(polygonList)
+
+        #plot(bg,col="grey",colNA="darkgrey")
+        #plot(subsppA_densityPolygon_trim,add=T,border="cyan",lwd=7)
+        #plot(subsppB_densityPolygon_trim,add=T,border="red",lwd=4)
+        #plot(intersect(polA,polB),add=T,lwd=1,border="black")
+
+      }
+    }
   }
-  legend("top", legend=names(densityPolygons_trim1),bty="n",fill=rgb(0,0,0,0),
-         border=cols)
-  dev.off()
+  return(newPolygonList)
+}
+
+flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB){
+  ##function(subsppPoly1,subsppPoly2)
+  ## this function checks for overlaps between polygons
+  ## TODO: remove polygon if not touching another of same spp
+  ## but also closer to polygon of other species
+  #library(rgeos)
+  #library(raster)
+
+  ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
+  ## will delete that subspecies. no bueno
+
+  badList_subsppA_features = c()
+  badList_subsppB_features = c()
+  overlapsToRemove_subsppA = c()
+  overlapsToRemove_subsppB = c()
+
+  for (feature_subsppA in (1:length(subsppPoly1))){
+    print(paste("FEATURE A: ",feature_subsppA))
+    for(feature_subsppB in (1:length(subsppPoly2))) {
+      print(paste("FEATURE B: ",feature_subsppB))
+      ## check areas
+      totArea1 = rgeos::gArea(subsppPoly1)
+      totArea2 = rgeos::gArea(subsppPoly2)
+      area1 = rgeos::gArea(subsppPoly1[feature_subsppA,])
+      area2 = rgeos::gArea(subsppPoly2[feature_subsppB,])
+
+      # subsppPoly1$totalArea = totArea1
+      # subsppPoly2$totalArea = totArea2
+      # subsppPoly1[feature_subsppA,]$featureArea = area1
+      # subsppPoly2[feature_subsppB]$featureArea = area2
+
+      if(rgeos::gIntersects(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])){
+        print("INTERSECTS")
+        testInt = rgeos::gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])
+        #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
+        #print(length(intersect))
+
+
+        ## if they overlap
+
+        #plot(subsppPoly1[feature_subsppA,],border="red",add=T)
+        #plot(subsppPoly2[feature_subsppB,],border="cyan",add=T)
+        testArea = rgeos::gArea(testInt)
+
+        if(testArea > 0) {
+          print("OVERLAP AREA NOT ZERO")
+          intersect = raster::intersect(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])
+          #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
+          areaInt=rgeos::gArea(intersect)
+
+          ## if they overlap
+
+          area1percent = areaInt/totArea1
+          area2percent = areaInt/totArea2
+
+          if (areaInt >= area1 || areaInt >= area2) {
+            print("SUBSUMED")
+
+            if (areaInt >= area1) {
+              ## if the overlap entirely subsumes an area
+
+
+              ## check if the area is the entire subspecies range
+              if (area1percent != 1){
+                ## remove the area
+                #print("SUBSPP1 SUBSUMED")
+                badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+              }
+
+              ## TODO: change to check for density?
+
+            }
+            if (areaInt >= area2) {
+              ## if the overlap entirely subsumes an area
+
+              ## check if the area is the entire subspecies range
+              if (area2percent != 1){
+                ## remove the area
+                ## TODO: change to check for density?
+                #print("SUBSPP2 SUBSUMED")
+                badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+              }
+
+            }
+          }
+          else {
+            print("NOT SUBSUMED")
+            if (area1percent <= area2percent) {
+              print("AREA1 IS LARGER")
+              print("remove area1")
+              overlapsToRemove_subsppA = c(overlapsToRemove_subsppA,intersect)
+            }
+            else if (area1percent >= area2percent) {
+              print("AREA2 IS LARGER")
+              print("remove area1")
+              overlapsToRemove_subsppB = c(overlapsToRemove_subsppB,intersect)
+            }
+          }
+        }
+      }
+    }
+  }
+  toReturn = list(subsppApoly_toremove = badList_subsppA_features,
+                  subsppBpoly_toremove = badList_subsppB_features,
+                  subsppA_intToRemove = overlapsToRemove_subsppA,
+                  subsppB_intToRemove = overlapsToRemove_subsppB)
+  return(toReturn)
 }
 
 
 ##### END #####
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

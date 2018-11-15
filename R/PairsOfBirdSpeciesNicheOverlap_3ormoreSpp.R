@@ -249,8 +249,8 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
   overlapsToRemove_subsppA = c()
   overlapsToRemove_subsppB = c()
 
-  for (feature_subsppA in range(1,length(subsppPoly1))){
-    for(feature_subsppB in range(1,length(subsppPoly2))) {
+  for (feature_subsppA in (1:length(subsppPoly1))){
+    for(feature_subsppB in (1:length(subsppPoly2))) {
       ## check areas
       totArea1 = rgeos::gArea(subsppPoly1)
       totArea2 = rgeos::gArea(subsppPoly2)
