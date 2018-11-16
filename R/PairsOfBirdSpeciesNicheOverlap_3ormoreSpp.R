@@ -813,10 +813,10 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   print("testpoint colnames")
   print(colnames(test_points))
   print("colnames: inboth, inneither, onlyA, onlyB")
-  colnames(inBothPolygons) = c(colnames(test_points),nameA,nameB)
-  colnames(inNeitherPolygon) = c(colnames(test_points),nameA,nameB)
-  colnames(onlypolygonA) = c(colnames(test_points),nameA,nameB)
-  colnames(onlypolygonB) = c(colnames(test_points),nameA,nameB)
+  colnames(inBothPolygons) = colnames(test_points)
+  colnames(inNeitherPolygon) = colnames(test_points)
+  colnames(onlypolygonA) = colnames(test_points)
+  colnames(onlypolygonB) = colnames(test_points)
   print(colnames(inBothPolygons))
   print(colnames(inNeitherPolygon))
   print(colnames(onlypolygonA))
@@ -846,6 +846,12 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   )
   colnames(onlypolygonB_1) = c(colnames(onlypolygonB),nameA,nameB#,"assigned_subspecies"
   )
+
+  print("colnames post adding")
+  print(colnames(inBothPolygons_1))
+  print(colnames(inNeitherPolygon_1))
+  print(colnames(onlypolygonA_1))
+  print(colnames(onlypolygonB_1))
 
   toReturn = rbind(inBothPolygons_1,inNeitherPolygon_1,
                    onlypolygonA_1,onlypolygonB_1)
