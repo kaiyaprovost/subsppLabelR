@@ -886,10 +886,15 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
   lastSubsppCol = length(colnames(locWithSubspecies))
   #print("f")
   subsppAssignCol = locWithSubspecies[,5:length(colnames(locWithSubspecies))]
+  print(head(locWithSubspecies)
   for (colnum in 5:length(colnames(locWithSubspecies))){
+    print(colnum)
     num_for_name = names(locWithSubspecies)[colnum]
+    print(num_for_name)
     name_to_replace = subsppNames[num_for_name]
+    print(name_to_replace)
     names(locWithSubspecies)[colnum] = name_to_replace
+    print(names(locWithSubspecies))
   }
 
   #print("g")
