@@ -824,11 +824,11 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   print("names to add")
   print(paste(nameA,nameB))
 
-  inBothPolygons = cbind(inBothPolygons,
+  inBothPolygons_1 = cbind(inBothPolygons,
                            testcol1=rep(1,length(inBothPolygons[,1])),
                            testcol2=rep(1,length(inBothPolygons[,1])))#,rep("both",length(inBothPolygons[,1]))
   #)
-  print(head(inBothPolygons))
+  print(head(inBothPolygons_1))
 
   inNeitherPolygon = cbind(inNeitherPolygon,
                              rep(0,length(inNeitherPolygon[,1])),
@@ -847,7 +847,7 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   to_replace_A = length_colnames-1
   to_replace_B = length_colnames
 
-  inBothPolygons <- setNames(inBothPolygons, c(colnames(inBothPolygons[,1:(length_colnames-2)]),nameA,nameB))
+  inBothPolygons_1 <- setNames(inBothPolygons_1, c(colnames(inBothPolygons[,1:(length_colnames-2)]),nameA,nameB))
 
   #colnames(inBothPolygons_1)[to_replace_A] = nameA
   #colnames(inBothPolygons_1)[to_replace_B] = nameB
@@ -868,12 +868,12 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   # #)
 
   print("colnames post adding")
-  print(colnames(inBothPolygons))
+  print(colnames(inBothPolygons_1))
   print(colnames(inNeitherPolygon))
   print(colnames(onlypolygonA))
   print(colnames(onlypolygonB))
 
-  toReturn = rbind(inBothPolygons,inNeitherPolygon,
+  toReturn = rbind(inBothPolygons_1,inNeitherPolygon,
                    onlypolygonA,onlypolygonB)
 
   return(toReturn)
