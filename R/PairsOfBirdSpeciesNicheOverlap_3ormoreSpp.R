@@ -889,7 +889,8 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
   print(head(locWithSubspecies))
   for (colnum in 5:length(colnames(locWithSubspecies))){
     print(paste("colnum",colnum))
-    num_for_name = names(locWithSubspecies)[colnum]
+    num_for_name = as.integer(names(locWithSubspecies)[colnum])
+    print(class(num_for_name))
     print(paste("numforname",num_for_name))
     print(subsppNames)
     name_to_replace = subsppNames[num_for_name]

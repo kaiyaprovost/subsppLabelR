@@ -1,4 +1,5 @@
 ##### NOTES FROM LAB MEETING #####
+{
 # ideas for subsppR
 # -- mccormack 2010 jniche paper -- niche tests are not very robust
 # -- scale issue -- why not just do by longitude or whatever?
@@ -48,11 +49,14 @@
 ##TODO: update plotting here (and in other file) so that everything plots iteratively, esp if pairwise
 ##TODO: add in species name not just subspp name
 
+}
 detach("package:subsppLabelR", unload=TRUE)
 devtools::install_github('kaiyaprovost/subsppLabelR')
 library(subsppLabelR,verbose=T)
 ## need to add a check in here -- remove unknown points with exact same lat/long as a labeled point
 
+## SETUP
+{
 setwd("~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/")
 
 THIN_BEYOND = FALSE
@@ -107,6 +111,7 @@ library(subsppLabelR,verbose=T)
 
 par(ask=F)
 
+}
 processedSpecies = databaseToAssignedSubspecies(spp=species,
                                                 subsppList=subspecies,
                                                 pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
