@@ -6,7 +6,8 @@
 \usage{
 databaseToAssignedSubspecies(spp, subsppList, pointLimit, dbToQuery,
   quantile = 0.95, xmin = -125, xmax = -60, ymin = 10, ymax = 50,
-  plotIt = F, bgLayer, outputDir, datafile = NULL, ...)
+  plotIt = F, bgLayer, outputDir, datafile = NULL, epsilon = 1e-04,
+  ...)
 }
 \arguments{
 \item{spp}{Genus and species to query, as string}
@@ -34,6 +35,8 @@ databaseToAssignedSubspecies(spp, subsppList, pointLimit, dbToQuery,
 \item{outputDir}{What directory to output to}
 
 \item{datafile}{if already ran and saved output from spocc:occ, put file here -- default NULL}
+
+\item{epsilon}{Parameter for anomaly detection}
 }
 \description{
 This function is a wrapper for the package and takes a species with a list of subspecies, and then

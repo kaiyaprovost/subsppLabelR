@@ -1010,9 +1010,9 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
 #'
 detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
   ## use MASS to do linear algebra
-  m = length(locs[,1])
-  lat = locs$latitude
-  lon = locs$longitude
+  m = length(localities[,1])
+  lat = localities$latitude
+  lon = localities$longitude
   space = cbind(lat,lon)
   n = length(space[1,])
   mu = colMeans(space)
@@ -1038,12 +1038,13 @@ detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
 
   p_x = cbind(p_x); colnames(p_x) = "anomaly"
 
-  locs_2 = cbind(locs,p_x)
+  locs_2 = cbind(localities,p_x)
 
   anomalies = which(locs_2$anomaly<epsilon)
-  names(anomalies) = locs_2$subspecies[anomalies]
+  purged = localities[anomalies,]
+  kept = localities[-(anomalies),]
 
-  return(list(locs_2,anomalies))
+  return(list(purged,anomalies,kept))
 
 }
 
@@ -1088,7 +1089,7 @@ detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
 #' subspecies_polygons = phainopeplaNitens$pol
 databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quantile=0.95,xmin=-125,
                                         xmax=-60,ymin=10,ymax=50,plotIt=F,bgLayer,outputDir,datafile=NULL,
-                                        epsilon=0.0001...) {
+                                        epsilon=0.0001,...) {
 
   ## TODO: allow to begin from any step?
 
@@ -1152,31 +1153,49 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   print("Starting anomaly detection for whole species")
 
+  purged_list = c()
+  kept_list = c()
   list_of_anomalies = c()
 
-  for (name in c("full",subsppNames)) {
-    if (name == "full") {
+  for (i in 0:length(c(subsppNames))) {
+    if (i == 0) {
+      print("full")
+      #print(nrow(labeledLoc))
       detectedLocs = detectSpatialOutliers(localities=labeledLoc,epsilon = epsilon)
     }
     else {
-      detectedLocs = detectSpatialOutliers(localities=labeledLoc[labeledLoc$subspecies==name,],epsilon = epsilon)
+      name = subsppNames[[i]]
+      if (name != "unknown") {
+        print(name)
+        subset = labeledLoc[labeledLoc$subspecies==name,]
+        #print(nrow(subset))
+        detectedLocs = detectSpatialOutliers(localities=subset,epsilon = epsilon)
+      }
     }
+    purged = detectedLocs[[1]]
     anomalies = detectedLocs[[2]]
-    list_of_anomalies = unique((rbind(list_of_anomalies,anomalies)))
-  }
+    kept = detectedLocs[[3]] ## DO NOT KEEP THIS
+    print(length(anomalies))
 
-  list_of_anomalies = cbind(t(list_of_anomalies))
-  print(paste("Removing",length(list_of_anomalies),"of",length(labeledLoc[,1]),"detected anomalies"))
-  removed = labeledLoc[(list_of_anomalies),]
-  labeledLoc = labeledLoc[-(list_of_anomalies),]
+    purged_list = rbind(purged_list,purged)
+    list_of_anomalies = c(list_of_anomalies,anomalies)
+    kept_list = rbind(kept_list,kept)
+  }
+  rows_purged = sort(unique(as.integer(rownames(purged_list))))
+
+  print(paste("Removing",length(rows_purged),"of",length(labeledLoc[,1]),"detected anomalies"))
+  removed = labeledLoc[(rows_purged),]
+  labeledLoc = labeledLoc[-(rows_purged),]
 
   if (plotIt==T) {
     png(paste("AnomaliesRemoved_",spp,".png",sep=""))
-    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Density, subspp:",name))
-    plot(removed$longitude,removed$latitude,add=T,col=viridis::viridis(99))
+    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Anomalies"))
+    points(labeledLoc$longitude,labeledLoc$latitude,col="lightgrey",pch=0)
+    points(removed$longitude,removed$latitude,col=as.factor(removed$subspecies))
+    legend("top", legend=as.factor(unique(removed$subspecies)),pch=1,bty="n", col=as.factor(unique(removed$subspecies)))
     dev.off()
-    }
   }
+
 
   ## to reduce error take only subspecies within main density
   ## clean up the polygons so that if grouping way out in middle of nowhere, get rid of it

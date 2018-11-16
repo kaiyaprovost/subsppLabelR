@@ -118,7 +118,8 @@ processedSpecies = databaseToAssignedSubspecies(spp=species,
                                                 pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
                                                 quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
                                                 outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
-                                                datafile=alllocs,epsilon=0.0001)
+                                                datafile=alllocs,
+                                                epsilon=0.0001)
 
 ## TRIMS PROPERLY NOW, BUT NOT KEEPING THE CORRECT STUFF?
 ## LIKE NOT THROWING OUT VERY SMALL THINGS
