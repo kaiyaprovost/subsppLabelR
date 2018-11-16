@@ -841,15 +841,27 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
                          rep(1,length(onlypolygonB[,1])))#,rep(nameB,length(onlypolygonB[,1]))
   #)
   print("AHHHHHHH")
-  print(c(colnames(inBothPolygons),nameA,nameB))
-  colnames(inBothPolygons_1) = c(colnames(inBothPolygons),nameA,nameB)#,"assigned_subspecies"
-  #)
-  colnames(inNeitherPolygon_1) = c(colnames(inNeitherPolygon),nameA,nameB)#,"assigned_subspecies"
-  #)
-  colnames(onlypolygonA_1) = c(colnames(onlypolygonA),nameA,nameB)#,"assigned_subspecies"
-  #)
-  colnames(onlypolygonB_1) = c(colnames(onlypolygonB),nameA,nameB)#,"assigned_subspecies"
-  #)
+  length_colnames = length(colnames(inBothPolygons_1))
+  to_replace_A = length_colnames-1
+  to_replace_B = length_colnames
+
+  colnames(inBothPolygons_1)[to_replace_A] = nameA
+  colnames(inBothPolygons_1)[to_replace_B] = nameB
+  colnames(inNeitherPolygon_1)[to_replace_A] = nameA
+  colnames(inNeitherPolygon_1)[to_replace_B] = nameB
+  colnames(onlypolygonA_1)[to_replace_A] = nameA
+  colnames(onlypolygonA_1)[to_replace_B] = nameB
+  colnames(onlypolygonB_1)[to_replace_A] = nameA
+  colnames(onlypolygonB_1)[to_replace_B] = nameB
+
+  # colnames(inBothPolygons_1) = c(colnames(inBothPolygons),nameA,nameB)#,"assigned_subspecies"
+  # #)
+  # colnames(inNeitherPolygon_1) = c(colnames(inNeitherPolygon),nameA,nameB)#,"assigned_subspecies"
+  # #)
+  # colnames(onlypolygonA_1) = c(colnames(onlypolygonA),nameA,nameB)#,"assigned_subspecies"
+  # #)
+  # colnames(onlypolygonB_1) = c(colnames(onlypolygonB),nameA,nameB)#,"assigned_subspecies"
+  # #)
 
   print("colnames post adding")
   print(colnames(inBothPolygons_1))
