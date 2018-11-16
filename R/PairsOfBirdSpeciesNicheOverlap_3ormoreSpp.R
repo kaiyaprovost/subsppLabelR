@@ -1185,7 +1185,8 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     for(slotB in 1:length(subsppNames)){
       if(subsppNames[[slotA]]!="unknown" && subsppNames[[slotB]]!="unknown" && slotA!=slotB){
         #if(slotA<slotB)
-
+        print(paste("Name A in slot",slotA,":",subsppNames[[slotA]]))
+        print(paste("Name B in slot",slotB,":",subsppNames[[slotB]]))
         polyLocations = locatePolygonPoints(test_points=polyLocations,
                                             polygonA=densityPolygons_trim[[slotA]],
                                             polygonB=densityPolygons_trim[[slotB]],
