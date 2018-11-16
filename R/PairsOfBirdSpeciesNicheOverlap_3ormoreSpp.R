@@ -849,14 +849,14 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   #
   # inBothPolygons_1 <- setNames(inBothPolygons_1, c(colnames(inBothPolygons[,1:(length_colnames-2)]),nameA,nameB))
 
-  colnames(inBothPolygons_1)[which(colnames(inBothPolygons_1)=="testcol1")] = nameA
-  colnames(inBothPolygons_1)[which(colnames(inBothPolygons_1)=="testcol2")] = nameB
-  colnames(inNeitherPolygon_1)[which(colnames(inNeitherPolygon_1)=="testcol1")] = nameA
-  colnames(inNeitherPolygon_1)[which(colnames(inNeitherPolygon_1)=="testcol2")] = nameB
-  colnames(onlypolygonA_1)[which(colnames(onlypolygonA_1)=="testcol1")] = nameA
-  colnames(onlypolygonA_1)[which(colnames(onlypolygonA_1)=="testcol2")] = nameB
-  colnames(onlypolygonB_1)[which(colnames(onlypolygonB_1)=="testcol1")] = nameA
-  colnames(onlypolygonB_1)[which(colnames(onlypolygonB_1)=="testcol2")] = nameB
+  colnames(inBothPolygons_1)[which(colnames(inBothPolygons_1)=="testcol1")] = paste(nameA) ## WHY IS THIS SETTING TO 2 AND 3 INSTEAD OF 2 AND 1 ETCCCCCC
+  colnames(inBothPolygons_1)[which(colnames(inBothPolygons_1)=="testcol2")] = paste(nameB)
+  colnames(inNeitherPolygon_1)[which(colnames(inNeitherPolygon_1)=="testcol1")] = paste(nameA)
+  colnames(inNeitherPolygon_1)[which(colnames(inNeitherPolygon_1)=="testcol2")] = paste(nameB)
+  colnames(onlypolygonA_1)[which(colnames(onlypolygonA_1)=="testcol1")] = paste(nameA)
+  colnames(onlypolygonA_1)[which(colnames(onlypolygonA_1)=="testcol2")] = paste(nameB)
+  colnames(onlypolygonB_1)[which(colnames(onlypolygonB_1)=="testcol1")] = paste(nameA)
+  colnames(onlypolygonB_1)[which(colnames(onlypolygonB_1)=="testcol2")] = paste(nameB)
 
   #colnames(inBothPolygons_1)[to_replace_A] = nameA
   #colnames(inBothPolygons_1)[to_replace_B] = nameB
@@ -910,17 +910,17 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
 #' checked_suspect = checked$suspect
 #' checked_good = checked$good
 subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
-  print("a")
+  #print("a")
   locWithSubspecies=locfile
-  print("b")
+  #print("b")
   #subsppNames = names(locWithSubspecies[5:length(names(locWithSubspecies))])
-  print("c")
+  #print("c")
   numSub = length(subsppNames)
-  print("d")
+  #print("d")
   numPoints = length(rownames(locWithSubspecies))
-  print("e")
+  #print("e")
   lastSubsppCol = length(colnames(locWithSubspecies))
-  print("f")
+  #print("f")
   subsppAssignCol = locWithSubspecies[,5:length(colnames(locWithSubspecies))]
   print(head(locWithSubspecies))
   for (colnum in 5:length(colnames(locWithSubspecies))){
@@ -936,35 +936,35 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
     print(names(locWithSubspecies))
   }
 
-  print("g")
+  #print("g")
   subsppPriorCol = locWithSubspecies$subspecies
-  print("h")
+  #print("h")
   locWithSubspecies$numSubsppGroups <- rowSums(subsppAssignCol, na.rm = TRUE)
-  print("i")
+  #print("i")
   locWithSubspecies$assigned=NA
-  print("j")
+  #print("j")
 
   notassigned = locWithSubspecies[which(locWithSubspecies$numSubsppGroups==0),]
-  print("k")
+  #print("k")
   if(nrow(notassigned)!=0){
     notassigned$assigned="none"
   }
-  print("l")
+  #print("l")
 
   multigroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroups>1),]
-  print("m")
+  #print("m")
   if(nrow(multigroup)!=0){
     multigroup$assigned="multiple"
   }
-  print("n")
+  #print("n")
 
   singlegroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroup==1),]
-  print("o")
+  #print("o")
 
   ## check whether mismatch between apriori and not
   suspectpoints = rbind(multigroup,notassigned)
   goodpoints = data.frame()
-  print("p")
+  #print("p")
 
   for(column in 5:lastSubsppCol){
     name = colnames(singlegroup)[column]
@@ -984,10 +984,10 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
     suspectpoints = rbind(suspectpoints,wrong1)
     goodpoints = rbind(goodpoints,right1)
   }
-  print("q")
+  #print("q")
   suspectpoints=unique(suspectpoints)
   goodpoints=unique(goodpoints)
-  print("r")
+  #print("r")
 
 
   return(list(suspect=suspectpoints,
