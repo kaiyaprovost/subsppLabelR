@@ -651,7 +651,7 @@ trimPolygonsByOverlap = function(polygon,idList=NULL,intList=NULL) {
       for(int in 1:length(intList)){
         polytrim = rgeos::gDifference(polytrim,intList[[int]])
       }
-      print("removing differences from larger shapefile")
+      #print("removing differences from larger shapefile")
     }
   }
   else {
@@ -663,7 +663,7 @@ trimPolygonsByOverlap = function(polygon,idList=NULL,intList=NULL) {
       for(int in 1:length(intList)){
         polytrim = rgeos::gDifference(polytrim,intList[[int]])
       }
-      print("removing subsumed polygons and differences from larger shape")
+      #print("removing subsumed polygons and differences from larger shape")
     }
 
   }
@@ -828,6 +828,8 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
                            rep(1,length(inBothPolygons[,1])),
                            rep(1,length(inBothPolygons[,1])))#,rep("both",length(inBothPolygons[,1]))
   #)
+  print(head(inBothPolygons))
+
   inNeitherPolygon = cbind(inNeitherPolygon,
                              rep(0,length(inNeitherPolygon[,1])),
                              rep(0,length(inNeitherPolygon[,1])))#,rep("neither",length(inNeitherPolygon[,1]))
