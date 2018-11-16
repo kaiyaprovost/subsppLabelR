@@ -1228,9 +1228,9 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   print("checking")
   checked = subspeciesMatchChecker(locfile = polyLocations,subsppNames=subsppNames)
-  print("1")
+  print("c1")
   checked_suspect = checked$suspect
-  print("2")
+  print("c2")
   checked_good = checked$good
   print("done")
 
