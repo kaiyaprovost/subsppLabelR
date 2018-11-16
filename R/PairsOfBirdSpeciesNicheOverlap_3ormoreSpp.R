@@ -205,7 +205,7 @@ densityMapToPolygons = function(densityMap) {
 #' for removal such that the intersection is flagged for removal from the larger polygon, but
 #' not the smaller polygon. If polygons are the same size, intersection is removed from both.
 #' E.g., Subspecies-A has a larger range than Subspecies-B. An intersection between them is removed
-#' only frm Subspecies-A.
+#' only from Subspecies-A.
 #'
 #' @param subsppPoly1 Polygon for first subspecies to compare
 #' @param subsppPoly2 Polygon for second subspecies to compare
@@ -248,13 +248,13 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
   overlapsToRemove_subsppA = c()
   overlapsToRemove_subsppB = c()
 
-  for (feature_subsppA in (1:length(subsppPoly1))){
-    for(feature_subsppB in (1:length(subsppPoly2))) {
+  for (feature_subsppA in (1:length(subsppPoly1))){ ## get the features within the subspecies polygon
+    for(feature_subsppB in (1:length(subsppPoly2))) { ## get the features within the subspecies polygon
       ## check areas
-      totArea1 = rgeos::gArea(subsppPoly1)
-      totArea2 = rgeos::gArea(subsppPoly2)
-      area1 = rgeos::gArea(subsppPoly1[feature_subsppA,])
-      area2 = rgeos::gArea(subsppPoly2[feature_subsppB,])
+      totArea1 = rgeos::gArea(subsppPoly1) ## the whole area of the subspecies
+      totArea2 = rgeos::gArea(subsppPoly2) ## the whole area of the subspecies
+      area1 = rgeos::gArea(subsppPoly1[feature_subsppA,]) ## the area of the single feature
+      area2 = rgeos::gArea(subsppPoly2[feature_subsppB,]) ## the area of the single feature
 
       # subsppPoly1$totalArea = totArea1
       # subsppPoly2$totalArea = totArea2
@@ -282,7 +282,7 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
 
           ## if they overlap
 
-          area1percent = areaInt/totArea1
+          area1percent = areaInt/totArea1 ## the area of the feature as a percent of the area of the subspecies
           area2percent = areaInt/totArea2
 
           if (areaInt >= area1 || areaInt >= area2) {
@@ -338,6 +338,135 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
                   subsppB_intToRemove = overlapsToRemove_subsppB)
   return(toReturn)
 }
+
+## BELOW: WRITE TO FIX FUNCTION DECISION TREE
+
+flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB){
+  ##function(subsppPoly1,subsppPoly2)
+  ## this function checks for overlaps between polygons
+  ## TODO: remove polygon if not touching another of same spp
+  ## but also closer to polygon of other species
+  #library(rgeos)
+  #library(raster)
+
+  ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
+  ## will delete that subspecies. no bueno
+
+  badList_subsppA_features = c()
+  badList_subsppB_features = c()
+  overlapsToRemove_subsppA = c()
+  overlapsToRemove_subsppB = c()
+
+  for (feature_subsppA in (1:length(subsppPoly1))){ ## get the features within the subspecies polygon
+    for(feature_subsppB in (1:length(subsppPoly2))) { ## get the features within the subspecies polygon
+      ## check areas
+      totArea1 = rgeos::gArea(subsppPoly1) ## the whole area of the subspecies
+      totArea2 = rgeos::gArea(subsppPoly2) ## the whole area of the subspecies
+      area1 = rgeos::gArea(subsppPoly1[feature_subsppA,]) ## the area of the single feature
+      area2 = rgeos::gArea(subsppPoly2[feature_subsppB,]) ## the area of the single feature
+
+      # subsppPoly1$totalArea = totArea1
+      # subsppPoly2$totalArea = totArea2
+      # subsppPoly1[feature_subsppA,]$featureArea = area1
+      # subsppPoly2[feature_subsppB]$featureArea = area2
+
+      if(rgeos::gIntersects(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])){
+        #print("INTERSECTS")
+        testInt = rgeos::gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])
+        #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
+        #print(length(intersect))
+
+
+        ## if they overlap
+
+        #plot(subsppPoly1[feature_subsppA,],border="red",add=T)
+        #plot(subsppPoly2[feature_subsppB,],border="cyan",add=T)
+        testArea = rgeos::gArea(testInt)
+
+        if(testArea > 0) {
+          #print("OVERLAP AREA NOT ZERO")
+          intersect = raster::intersect(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])
+          #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
+          areaInt=rgeos::gArea(intersect)
+
+          ## if they overlap
+
+          area1percent = areaInt/totArea1 ## the area of the feature as a percent of the area of the subspecies
+          area2percent = areaInt/totArea2
+
+          ## NEW IF STATEMENTS
+          if (area1 > area2) { ## if A big B small -- area1 vs area2
+            if (testArea < area2) { ## if B not subsumed, remove from A -- testArea
+              badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+            }
+            else if (testArea >= area2) { ## else if B subsumed
+              if (area2percent == 1) { ## if B = 100% of subspecies, remove from A -- area2percent
+                badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+              }
+              else if (area2percent != 1) { ## else if B not 100% of subspecies, remove from B
+                badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+              }
+            }
+          }
+          else if (area1 < area2) { ## else if A small B big
+            if (testArea < area1) {## if A not subsumed, remove from B -- area1percent
+              badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+            }
+            else if (testArea >= area1) { ## else if A subsumed
+              if (area1percent == 1) { ## if A = 100% of subspecies, remove from B
+                badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+              }
+              else if (area1percent != 1) { ## else if A not 100% of subspecies, remove from A
+                badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+              }
+            }
+          }
+          else if (area1 == area2) { ## else if A = B
+            ## check total areas and remove larger
+            if (totArea1 > totArea2) {
+              ## if total A is greater than total B, remove A
+              badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+            }
+            else if (totArea1 < totArea2) { ## if total B is greater than total A, remove B
+              badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+            }
+            else if (totArea1 == totArea2) { ## if they are the exact same size
+              if (testArea < area1 && testArea < area2) { ## if neither subsumed, remove arbitrary
+                flip = sample(1:2,1)
+                if (flip == 1) { ## flip coin remove A
+                  badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+                }
+                else if (flip == 2) { ## flip coin remove B
+                  badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+                }
+              }
+              else if (testArea == area1 && testArea == area2) { ## if both are subsumed, keep both
+                print("EXACT MATCH, KEEPING BOTH ")
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
+
+    toReturn = list(subsppApoly_toremove = badList_subsppA_features,
+                    subsppBpoly_toremove = badList_subsppB_features,
+                    subsppA_intToRemove = overlapsToRemove_subsppA,
+                    subsppB_intToRemove = overlapsToRemove_subsppB)
+    return(toReturn)
+  }
+}
+
+## END
+
+
+
+
+
+
 
 #' Check for Subspecies Contiguity
 #'
@@ -533,7 +662,7 @@ polygonTrimmer = function(polygonList,namesList) {
         }
 
 
-        polygonsToRemove = (flagPolygonOverlap(polA,polB))
+        polygonsToRemove = (flagPolygonOverlap2(polA,polB)) ######### CHANGED
         subsppA_polygonsToRemove = polygonsToRemove$subsppApoly_toremove
         subsppB_polygonsToRemove = polygonsToRemove$subsppBpoly_toremove
         overlapToRemove_subsppA = polygonsToRemove$subsppA_intToRemove

@@ -25,7 +25,7 @@ Subspecies-B, then the Subspecies-A feature is flagged for removal in its entire
 for removal such that the intersection is flagged for removal from the larger polygon, but
 not the smaller polygon. If polygons are the same size, intersection is removed from both.
 E.g., Subspecies-A has a larger range than Subspecies-B. An intersection between them is removed
-only frm Subspecies-A.
+only from Subspecies-A.
 }
 \examples{
 
