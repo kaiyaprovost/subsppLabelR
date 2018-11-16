@@ -1185,18 +1185,18 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   if (length(rows_purged) > 0) {
 
-  print(paste("Removing",length(rows_purged),"of",length(labeledLoc[,1]),"detected anomalies"))
-  removed = labeledLoc[(rows_purged),]
-  labeledLoc = labeledLoc[-(rows_purged),]
+    print(paste("Removing",length(rows_purged),"of",length(labeledLoc[,1]),"detected anomalies"))
+    removed = labeledLoc[(rows_purged),]
+    labeledLoc = labeledLoc[-(rows_purged),]
 
-  if (plotIt==T) {
-    png(paste("AnomaliesRemoved_",spp,".png",sep=""))
-    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Anomalies"))
-    points(labeledLoc$longitude,labeledLoc$latitude,col="lightgrey",pch=0)
-    points(removed$longitude,removed$latitude,col=as.factor(removed$subspecies))
-    legend("top", legend=as.factor(unique(removed$subspecies)),pch=1,bty="n", col=as.factor(unique(removed$subspecies)))
-    dev.off()
-  }
+    if (plotIt==T) {
+      png(paste("AnomaliesRemoved_",spp,".png",sep=""))
+      plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Anomalies"))
+      points(labeledLoc$longitude,labeledLoc$latitude,col="lightgrey",pch=0)
+      points(removed$longitude,removed$latitude,col=as.factor(removed$subspecies))
+      legend("top", legend=as.factor(unique(removed$subspecies)),pch=1,bty="n", col=as.factor(unique(removed$subspecies)))
+      dev.off()
+    }
   }
   else {
     print("No anomalies found")
