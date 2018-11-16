@@ -846,8 +846,17 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   # length_colnames = length(colnames(inBothPolygons))
   # to_replace_A = length_colnames-1
   # to_replace_B = length_colnames
+  #
+  # inBothPolygons_1 <- setNames(inBothPolygons_1, c(colnames(inBothPolygons[,1:(length_colnames-2)]),nameA,nameB))
 
-  #inBothPolygons_1 <- setNames(inBothPolygons_1, c(colnames(inBothPolygons[,1:(length_colnames-2)]),nameA,nameB))
+  colnames(inBothPolygons_1)[which(colnames(x)=="testcol1")] = nameA
+  colnames(inBothPolygons_1)[which(colnames(x)=="testcol2")] = nameB
+  colnames(inNeitherPolygon_1)[which(colnames(x)=="testcol1")] = nameA
+  colnames(inNeitherPolygon_1)[which(colnames(x)=="testcol2")] = nameB
+  colnames(onlypolygonA_1)[which(colnames(x)=="testcol1")] = nameA
+  colnames(onlypolygonA_1)[which(colnames(x)=="testcol2")] = nameB
+  colnames(onlypolygonB_1)[which(colnames(x)=="testcol1")] = nameA
+  colnames(onlypolygonB_1)[which(colnames(x)=="testcol2")] = nameB
 
   #colnames(inBothPolygons_1)[to_replace_A] = nameA
   #colnames(inBothPolygons_1)[to_replace_B] = nameB

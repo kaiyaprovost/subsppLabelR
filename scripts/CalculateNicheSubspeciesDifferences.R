@@ -51,7 +51,7 @@
 
 }
 detach("package:subsppLabelR", unload=TRUE)
-devtools::install_github('kaiyaprovost/subsppLabelR')
+#devtools::install_github('kaiyaprovost/subsppLabelR')
 library(subsppLabelR,verbose=T)
 ## need to add a check in here -- remove unknown points with exact same lat/long as a labeled point
 
