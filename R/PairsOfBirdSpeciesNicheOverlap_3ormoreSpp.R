@@ -810,10 +810,17 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   onlypolygonA = dplyr::intersect(inpolygonA,notInpolygonB)
   onlypolygonB = dplyr::intersect(inpolygonB,notInpolygonA)
 
+  print("testpoint colnames")
+  print(colnames(test_points))
+  print("colnames: inboth, inneither, onlyA, onlyB")
   colnames(inBothPolygons) = colnames(test_points)
   colnames(inNeitherPolygon) = colnames(test_points)
   colnames(onlypolygonA) = colnames(test_points)
   colnames(onlypolygonB) = colnames(test_points)
+  print(colnames(inBothPolygons))
+  print(colnames(inNeitherPolygon))
+  print(colnames(onlypolygonA))
+  print(colnames(onlypolygonB))
 
   inBothPolygons_1 = cbind(inBothPolygons,
                            rep(1,length(inBothPolygons[,1])),
