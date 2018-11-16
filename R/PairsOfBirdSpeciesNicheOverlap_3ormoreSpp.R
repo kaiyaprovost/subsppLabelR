@@ -740,7 +740,7 @@ polygonTrimmer = function(polygonList,namesList) {
         newPolygonList[[slotA]] = subsppA_densityPolygon_trim
         newPolygonList[[slotB]] = subsppB_densityPolygon_trim
         names(newPolygonList) = names(polygonList)
-        print(names(newPolygonList))
+        #print(names(newPolygonList))
 
         #plot(bg,col="grey",colNA="darkgrey")
         #plot(subsppA_densityPolygon_trim,add=T,border="cyan",lwd=7)
@@ -811,19 +811,19 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   onlypolygonA = dplyr::intersect(inpolygonA,notInpolygonB)
   onlypolygonB = dplyr::intersect(inpolygonB,notInpolygonA)
 
-  print("testpoint colnames")
-  print(colnames(test_points))
-  print("colnames: inboth, inneither, onlyA, onlyB")
+  #print("testpoint colnames")
+  #print(colnames(test_points))
+  #print("colnames: inboth, inneither, onlyA, onlyB")
   colnames(inBothPolygons) = colnames(test_points)
   colnames(inNeitherPolygon) = colnames(test_points)
   colnames(onlypolygonA) = colnames(test_points)
   colnames(onlypolygonB) = colnames(test_points)
-  print(colnames(inBothPolygons))
-  print(colnames(inNeitherPolygon))
-  print(colnames(onlypolygonA))
-  print(colnames(onlypolygonB))
-  print("names to add")
-  print(paste(nameA,nameB))
+  #print(colnames(inBothPolygons))
+  #print(colnames(inNeitherPolygon))
+  #print(colnames(onlypolygonA))
+  #print(colnames(onlypolygonB))
+  #print("names to add")
+  #print(paste(nameA,nameB))
 
   inBothPolygons_1 = cbind(inBothPolygons,
                            testcol1=rep(1,length(inBothPolygons[,1])),
@@ -843,7 +843,7 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
                          testcol1=rep(0,length(onlypolygonB[,1])),
                          testcol2=rep(1,length(onlypolygonB[,1])))#,rep(nameB,length(onlypolygonB[,1]))
   #)
-  print("AHHHHHHH")
+  #print("AHHHHHHH")
   # length_colnames = length(colnames(inBothPolygons))
   # to_replace_A = length_colnames-1
   # to_replace_B = length_colnames
@@ -871,11 +871,11 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   # colnames(onlypolygonB_1) = c(colnames(onlypolygonB),nameA,nameB)#,"assigned_subspecies"
   # #)
 
-  print("colnames post adding")
-  print(colnames(inBothPolygons_1))
-  print(colnames(inNeitherPolygon_1))
-  print(colnames(onlypolygonA_1))
-  print(colnames(onlypolygonB_1))
+  #print("colnames post adding")
+  #print(colnames(inBothPolygons_1))
+  #print(colnames(inNeitherPolygon_1))
+  #print(colnames(onlypolygonA_1))
+  #print(colnames(onlypolygonB_1))
 
   toReturn = rbind(inBothPolygons_1,inNeitherPolygon_1,
                    onlypolygonA_1,onlypolygonB_1)
@@ -923,7 +923,7 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
   lastSubsppCol = length(colnames(locWithSubspecies))
   #print("f")
   subsppAssignCol = locWithSubspecies[,5:length(colnames(locWithSubspecies))]
-  print(head(locWithSubspecies))
+  #print(head(locWithSubspecies))
   # for (colnum in 5:length(colnames(locWithSubspecies))){
   #   print(paste("colnum",colnum))
   #   print(head(locWithSubspecies[,colnum]))
@@ -1183,6 +1183,8 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   }
   rows_purged = sort(unique(as.integer(rownames(purged_list))))
 
+  if (length(rows_purged) > 0) {
+
   print(paste("Removing",length(rows_purged),"of",length(labeledLoc[,1]),"detected anomalies"))
   removed = labeledLoc[(rows_purged),]
   labeledLoc = labeledLoc[-(rows_purged),]
@@ -1195,7 +1197,10 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     legend("top", legend=as.factor(unique(removed$subspecies)),pch=1,bty="n", col=as.factor(unique(removed$subspecies)))
     dev.off()
   }
-
+  }
+  else {
+    print("No anomalies found")
+  }
 
   ## to reduce error take only subspecies within main density
   ## clean up the polygons so that if grouping way out in middle of nowhere, get rid of it
@@ -1318,8 +1323,8 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     for(slotB in 1:length(subsppNames)){
       if(subsppNames[[slotA]]!="unknown" && subsppNames[[slotB]]!="unknown" && slotA!=slotB){
         #if(slotA<slotB)
-        print(paste("Name A in slot",slotA,":",subsppNames[[slotA]]))
-        print(paste("Name B in slot",slotB,":",subsppNames[[slotB]]))
+        #print(paste("Name A in slot",slotA,":",subsppNames[[slotA]]))
+        #print(paste("Name B in slot",slotB,":",subsppNames[[slotB]]))
         polyLocations = locatePolygonPoints(test_points=polyLocations,
                                             polygonA=densityPolygons_trim[[slotA]],
                                             polygonB=densityPolygons_trim[[slotB]],
@@ -1332,6 +1337,8 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     }
   }
 
+
+  print ("Cleaning up duplicate columns")
   colsToDelete = c()
 
   #print(polyLocations)
@@ -1339,21 +1346,21 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   for(colNumA in 5:length(colnames(polyLocations))){
     for(colNumB in 6:length(colnames(polyLocations))){
       if(colNumA<colNumB) {
-        print(paste("compare",colNumA,colNumB,sep=" "))
+        #print(paste("compare",colNumA,colNumB,sep=" "))
         if(identical(polyLocations[[colNumA]],polyLocations[[colNumB]])){
-          print("identical, deleting")
+          #print("identical, deleting")
           colsToDelete = c(colsToDelete,colNumB)
         }
       }
     }
   }
   if(!(is.null(colsToDelete))){
-    print("is null cols")
-    print(colsToDelete)
+    #print("is null cols")
+    #print(colsToDelete)
     #print(names(polyLocations))
-    print(head(polyLocations))
+    #print(head(polyLocations))
     polyLocations = polyLocations[,-colsToDelete]
-    print("success")
+    #print("success")
 
   }
 
@@ -1370,13 +1377,13 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## or subspecies assignment a priori does not match final
   ## TODO: consider putting this in the other script file
 
-  print("checking")
+  print("Matching subspecies")
   checked = subspeciesMatchChecker(locfile = polyLocations,subsppNames=subsppNames)
-  print("c1")
+  #print("c1")
   checked_suspect = checked$suspect
-  print("c2")
+  #print("c2")
   checked_good = checked$good
-  print("done")
+  #print("done")
 
   ## return nice clean data
   print("Warning: no valid definition for subspecies given!")
