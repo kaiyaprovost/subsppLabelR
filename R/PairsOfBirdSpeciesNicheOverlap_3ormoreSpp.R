@@ -825,8 +825,8 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   print(paste(nameA,nameB))
 
   inBothPolygons = cbind(inBothPolygons,
-                           rep(1,length(inBothPolygons[,1])),
-                           rep(1,length(inBothPolygons[,1])))#,rep("both",length(inBothPolygons[,1]))
+                           testcol1=rep(1,length(inBothPolygons[,1])),
+                           testcol2=rep(1,length(inBothPolygons[,1])))#,rep("both",length(inBothPolygons[,1]))
   #)
   print(head(inBothPolygons))
 
@@ -1082,7 +1082,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   if(plotIt==T){
     png(paste("Labeled occurences",spp,".png"))
-    print("Plotting")
+    #print("Plotting")
     plot(bgLayer, col="grey",colNA="darkgrey",main=spp)
     points(labeledLoc$longitude,labeledLoc$latitude,
            col=as.factor(labeledLoc$subspecies))
