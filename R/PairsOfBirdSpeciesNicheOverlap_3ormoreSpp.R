@@ -873,11 +873,11 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
 #' checked = subspeciesMatchChecker(locfile = polyLocations)
 #' checked_suspect = checked$suspect
 #' checked_good = checked$good
-subspeciesMatchChecker = function(locfile=nitens_loc){
+subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
   #print("a")
   locWithSubspecies=locfile
   #print("b")
-  subsppNames = names(locWithSubspecies[5:length(names(locWithSubspecies))])
+  #subsppNames = names(locWithSubspecies[5:length(names(locWithSubspecies))])
   #print("c")
   numSub = length(subsppNames)
   #print("d")
@@ -886,6 +886,12 @@ subspeciesMatchChecker = function(locfile=nitens_loc){
   lastSubsppCol = length(colnames(locWithSubspecies))
   #print("f")
   subsppAssignCol = locWithSubspecies[,5:length(colnames(locWithSubspecies))]
+  for (colnum in 5:length(colnames(locWithSubspecies))){
+    num_for_name = names(locWithSubspecies)[colnum]
+    name_to_replace = subsppNames[num_for_name]
+    names(locWithSubspecies)[colnum] = name_to_replace
+  }
+
   #print("g")
   subsppPriorCol = locWithSubspecies$subspecies
   #print("h")

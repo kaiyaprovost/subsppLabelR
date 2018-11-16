@@ -99,7 +99,7 @@ subspecies = c("sinuatus","fulvescens","peninsulae")
 ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
 ## will delete that subspecies. no bueno
 
-alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/big_sinuatus_testrun_NOTWORKING/AllLoci_Cardinalis sinuatus_sinuatus fulvescens peninsulae.txt"
+alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/big_sinuatus_testrun_NOTWORKING/AllLoci_Cardinalis sinuatus_sinuatus fulvescens peninsulae_clean.txt"
 
 library(subsppLabelR)
 
@@ -115,6 +115,7 @@ processedSpecies = databaseToAssignedSubspecies(spp=species,
 ## TRIMS PROPERLY NOW, BUT NOT KEEPING THE CORRECT STUFF?
 ## LIKE NOT THROWING OUT VERY SMALL THINGS
 ## ALSO NOT RETAINING NAMES AFTER THE FIX WHICH IS ANNOYING
+## HOWEVER 1,2,3 are in alphabetical order still so its easy to fix
 
 loc_suspect = processedSpecies$loc_suspect
 loc_good = processedSpecies$loc_good
