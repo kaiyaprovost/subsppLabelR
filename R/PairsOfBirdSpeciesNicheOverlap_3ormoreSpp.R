@@ -5,6 +5,7 @@
 #' @import dplyr
 #' @import sp
 #' @import viridis
+#' @import caret
 NULL
 
 #' Pull Subspecies Occurrences
@@ -994,6 +995,60 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
               good=goodpoints))
 }
 
+
+
+#' Outlier Detection
+#'
+#' This does outlier detection on points.
+#'
+#' @param localities A list of localities to check for anomalies
+#' @param epsilon An value with which to flag anomalies with probability less than epsilon
+#'
+#' @export
+#' @examples
+#'
+#'
+detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
+  ## use MASS to do linear algebra
+  m = length(locs[,1])
+  lat = locs$latitude
+  lon = locs$longitude
+  space = cbind(lat,lon)
+  n = length(space[1,])
+  mu = colMeans(space)
+  Sigma = cov(space) ## this does the above but faster
+
+  ## SOURCE: https://datascience-enthusiast.com/R/anomaly_detection_R.html
+  ## And also the Corusera course Machine Learning by A. Ng
+  ## this uses a somewhat different probability density function
+  centered <- caret::preProcess(space,method="center")
+  space_mu <- as.matrix(predict(centered,space))
+
+  #sigma2=diag(var(X2))
+  #sigma2
+  #sigma2=diag(sigma2)
+  #sigma2 ## this is the same as Sigma on the diagonals, but different on the off-diags
+  ## it doesn't matter which you use here you get the same answer
+
+  A=(2*pi)^(-n/2)*det(Sigma)^(-0.5)
+  B = exp(-0.5 *rowSums((space_mu %*% ginv(Sigma))*space_mu))
+  p_x=A*B
+
+  #P_x = (1 /( ((2*pi)^(n/2) * (norm(Sigma) ^ (1/2))))) * exp (-1/2*(space-mu) %*% MASS::ginv(Sigma) %*% t(space-mu))
+
+  p_x = cbind(p_x); colnames(p_x) = "anomaly"
+
+  locs_2 = cbind(locs,p_x)
+
+  anomalies = which(locs_2$anomaly<epsilon)
+  names(anomalies) = locs_2$subspecies[anomalies]
+
+  return(list(locs_2,anomalies))
+
+}
+
+
+
 #' Species Occurrences to Subspecies Occurrences
 #'
 #' This function is a wrapper for the package and takes a species with a list of subspecies, and then
@@ -1014,6 +1069,7 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
 #' @param bgLayer A background layer for generating plots
 #' @param outputDir What directory to output to
 #' @param datafile if already ran and saved output from spocc:occ, put file here -- default NULL
+#' @param epsilon Parameter for anomaly detection
 #'
 #' @export
 #' @examples
@@ -1031,7 +1087,8 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
 #' good_occurrences = phainopeplaNitens$loc_good,
 #' subspecies_polygons = phainopeplaNitens$pol
 databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quantile=0.95,xmin=-125,
-                                        xmax=-60,ymin=10,ymax=50,plotIt=F,bgLayer,outputDir,datafile=NULL,...) {
+                                        xmax=-60,ymin=10,ymax=50,plotIt=F,bgLayer,outputDir,datafile=NULL,
+                                        epsilon=0.0001...) {
 
   ## TODO: allow to begin from any step?
 
@@ -1091,6 +1148,34 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
            col=as.factor(labeledLoc$subspecies))
     legend("top", legend=as.factor(unique(labeledLoc$subspecies)),pch=1,bty="n", col=as.factor(unique(labeledLoc$subspecies)))
     dev.off()
+  }
+
+  print("Starting anomaly detection for whole species")
+
+  list_of_anomalies = c()
+
+  for (name in c("full",subsppNames)) {
+    if (name == "full") {
+      detectedLocs = detectSpatialOutliers(localities=labeledLoc,epsilon = epsilon)
+    }
+    else {
+      detectedLocs = detectSpatialOutliers(localities=labeledLoc[labeledLoc$subspecies==name,],epsilon = epsilon)
+    }
+    anomalies = detectedLocs[[2]]
+    list_of_anomalies = unique((rbind(list_of_anomalies,anomalies)))
+  }
+
+  list_of_anomalies = cbind(t(list_of_anomalies))
+  print(paste("Removing",length(list_of_anomalies),"of",length(labeledLoc[,1]),"detected anomalies"))
+  removed = labeledLoc[(list_of_anomalies),]
+  labeledLoc = labeledLoc[-(list_of_anomalies),]
+
+  if (plotIt==T) {
+    png(paste("AnomaliesRemoved_",spp,".png",sep=""))
+    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Density, subspp:",name))
+    plot(removed$longitude,removed$latitude,add=T,col=viridis::viridis(99))
+    dev.off()
+    }
   }
 
   ## to reduce error take only subspecies within main density
