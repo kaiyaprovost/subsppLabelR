@@ -187,7 +187,7 @@ densityMapToPolygons = function(densityMap) {
   polygon = densityMap
   polygon[!is.na(polygon)] = 1
   polygon <- sp::disaggregate(raster::rasterToPolygons(polygon, fun=NULL, na.rm=T,dissolve=T))
-  plot(polygon)
+  #plot(polygon)
   return(polygon)
 }
 
@@ -710,17 +710,17 @@ polygonTrimmer = function(polygonList,namesList) {
         polA = newPolygonList[[slotA]]
         polB = newPolygonList[[slotB]]
 
-        plot(bg,col="grey",colNA="darkgrey")
-        plot(polA,add=T,border="cyan",lwd=7)
-        plot(polB,add=T,border="red",lwd=4)
-        #invisible(readline(prompt="Press [enter] to continue"))
-        if(!is.null(raster::intersect(polA,polB))){
-          plot(raster::intersect(polA,polB),add=T,lwd=1,border="black")
-        }
+        # plot(bg,col="grey",colNA="darkgrey")
+        # plot(polA,add=T,border="cyan",lwd=7)
+        # plot(polB,add=T,border="red",lwd=4)
+        # #invisible(readline(prompt="Press [enter] to continue"))
+        # if(!is.null(raster::intersect(polA,polB))){
+        #   plot(raster::intersect(polA,polB),add=T,lwd=1,border="black")
+        # }
 
 
         polygonsToRemove = (flagPolygonOverlap2(polA,polB)) ######### CHANGED
-        print("CALLING NEW FUNCTION")
+        #print("CALLING NEW FUNCTION")
         subsppA_polygonsToRemove = polygonsToRemove$subsppApoly_toremove
         subsppB_polygonsToRemove = polygonsToRemove$subsppBpoly_toremove
         overlapToRemove_subsppA = polygonsToRemove$subsppA_intToRemove
