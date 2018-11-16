@@ -663,6 +663,7 @@ polygonTrimmer = function(polygonList,namesList) {
 
 
         polygonsToRemove = (flagPolygonOverlap2(polA,polB)) ######### CHANGED
+        print("CALLING NEW FUNCTION")
         subsppA_polygonsToRemove = polygonsToRemove$subsppApoly_toremove
         subsppB_polygonsToRemove = polygonsToRemove$subsppBpoly_toremove
         overlapToRemove_subsppA = polygonsToRemove$subsppA_intToRemove
