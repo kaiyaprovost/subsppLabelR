@@ -103,6 +103,8 @@ alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinforma
 
 library(subsppLabelR)
 
+par(ask=T)
+
 processedSpecies = databaseToAssignedSubspecies(spp=species,
                                                 subsppList=subspecies,
                                                 pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
