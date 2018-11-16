@@ -50,7 +50,7 @@
 
 detach("package:subsppLabelR", unload=TRUE)
 devtools::install_github('kaiyaprovost/subsppLabelR')
-library(subsppLabelR)
+library(subsppLabelR,verbose=T)
 ## need to add a check in here -- remove unknown points with exact same lat/long as a labeled point
 
 setwd("~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/")
@@ -102,7 +102,8 @@ subspecies = c("sinuatus","fulvescens","peninsulae")
 
 alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/big_sinuatus_testrun_NOTWORKING/AllLoci_Cardinalis sinuatus_sinuatus fulvescens peninsulae_clean.txt"
 
-library(subsppLabelR)
+detach("package:subsppLabelR", unload=TRUE)
+library(subsppLabelR,verbose=T)
 
 par(ask=F)
 
@@ -271,7 +272,7 @@ printPointsPdfSuspect(species=species,subspecies=subspecies,bg=bg,loc_suspect=lo
 
 ## step 2 -- remove any locations with no Env data
 
-if THIN_BEYOND == TRUE {
+if (THIN_BEYOND == TRUE) {
 
   cleanByEnvironment = function(Env,loc){
     loc[,2] = as.numeric(loc[,2])

@@ -874,17 +874,17 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
 #' checked_suspect = checked$suspect
 #' checked_good = checked$good
 subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
-  #print("a")
+  print("a")
   locWithSubspecies=locfile
-  #print("b")
+  print("b")
   #subsppNames = names(locWithSubspecies[5:length(names(locWithSubspecies))])
-  #print("c")
+  print("c")
   numSub = length(subsppNames)
-  #print("d")
+  print("d")
   numPoints = length(rownames(locWithSubspecies))
-  #print("e")
+  print("e")
   lastSubsppCol = length(colnames(locWithSubspecies))
-  #print("f")
+  print("f")
   subsppAssignCol = locWithSubspecies[,5:length(colnames(locWithSubspecies))]
   print(head(locWithSubspecies))
   for (colnum in 5:length(colnames(locWithSubspecies))){
@@ -897,35 +897,35 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
     print(names(locWithSubspecies))
   }
 
-  #print("g")
+  print("g")
   subsppPriorCol = locWithSubspecies$subspecies
-  #print("h")
+  print("h")
   locWithSubspecies$numSubsppGroups <- rowSums(subsppAssignCol, na.rm = TRUE)
-  #print("i")
+  print("i")
   locWithSubspecies$assigned=NA
-  #print("j")
+  print("j")
 
   notassigned = locWithSubspecies[which(locWithSubspecies$numSubsppGroups==0),]
-  #print("k")
+  print("k")
   if(nrow(notassigned)!=0){
     notassigned$assigned="none"
   }
-  #print("l")
+  print("l")
 
   multigroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroups>1),]
-  #print("m")
+  print("m")
   if(nrow(multigroup)!=0){
     multigroup$assigned="multiple"
   }
-  #print("n")
+  print("n")
 
   singlegroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroup==1),]
-  #print("o")
+  print("o")
 
   ## check whether mismatch between apriori and not
   suspectpoints = rbind(multigroup,notassigned)
   goodpoints = data.frame()
-  #print("p")
+  print("p")
 
   for(column in 5:lastSubsppCol){
     name = colnames(singlegroup)[column]
@@ -945,10 +945,10 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
     suspectpoints = rbind(suspectpoints,wrong1)
     goodpoints = rbind(goodpoints,right1)
   }
-  #print("q")
+  print("q")
   suspectpoints=unique(suspectpoints)
   goodpoints=unique(goodpoints)
-  #print("r")
+  print("r")
 
 
   return(list(suspect=suspectpoints,
@@ -1228,9 +1228,9 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   print("checking")
   checked = subspeciesMatchChecker(locfile = polyLocations,subsppNames=subsppNames)
-  #print("1")
+  print("1")
   checked_suspect = checked$suspect
-  #print("2")
+  print("2")
   checked_good = checked$good
   print("done")
 
