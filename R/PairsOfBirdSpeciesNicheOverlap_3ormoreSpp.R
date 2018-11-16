@@ -713,7 +713,7 @@ polygonTrimmer = function(polygonList,namesList) {
         plot(bg,col="grey",colNA="darkgrey")
         plot(polA,add=T,border="cyan",lwd=7)
         plot(polB,add=T,border="red",lwd=4)
-        invisible(readline(prompt="Press [enter] to continue"))
+        #invisible(readline(prompt="Press [enter] to continue"))
         if(!is.null(raster::intersect(polA,polB))){
           plot(raster::intersect(polA,polB),add=T,lwd=1,border="black")
         }
@@ -1222,7 +1222,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## TODO: consider putting this in the other script file
 
   print("checking")
-  checked = subspeciesMatchChecker(locfile = polyLocations)
+  checked = subspeciesMatchChecker(locfile = polyLocations,subsppNames=subsppNames)
   #print("1")
   checked_suspect = checked$suspect
   #print("2")

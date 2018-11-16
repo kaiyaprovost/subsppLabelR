@@ -103,7 +103,7 @@ alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinforma
 
 library(subsppLabelR)
 
-par(ask=T)
+par(ask=F)
 
 processedSpecies = databaseToAssignedSubspecies(spp=species,
                                                 subsppList=subspecies,
