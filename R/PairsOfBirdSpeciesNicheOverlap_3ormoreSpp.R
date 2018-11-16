@@ -840,6 +840,8 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
                          rep(0,length(onlypolygonB[,1])),
                          rep(1,length(onlypolygonB[,1])))#,rep(nameB,length(onlypolygonB[,1]))
   #)
+  print("AHHHHHHH")
+  print(c(colnames(inBothPolygons),nameA,nameB))
   colnames(inBothPolygons_1) = c(colnames(inBothPolygons),nameA,nameB)#,"assigned_subspecies"
   #)
   colnames(inNeitherPolygon_1) = c(colnames(inNeitherPolygon),nameA,nameB)#,"assigned_subspecies"
