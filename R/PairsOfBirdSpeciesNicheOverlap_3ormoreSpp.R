@@ -739,6 +739,7 @@ polygonTrimmer = function(polygonList,namesList) {
         newPolygonList[[slotA]] = subsppA_densityPolygon_trim
         newPolygonList[[slotB]] = subsppB_densityPolygon_trim
         names(newPolygonList) = names(polygonList)
+        print(names(newPolygonList))
 
         #plot(bg,col="grey",colNA="darkgrey")
         #plot(subsppA_densityPolygon_trim,add=T,border="cyan",lwd=7)
