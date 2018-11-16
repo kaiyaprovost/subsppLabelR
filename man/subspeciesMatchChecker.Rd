@@ -4,7 +4,7 @@
 \alias{subspeciesMatchChecker}
 \title{Check Subspecies Matches and Labels}
 \usage{
-subspeciesMatchChecker(locfile = nitens_loc)
+subspeciesMatchChecker(locfile = nitens_loc, subsppNames)
 }
 \arguments{
 \item{locfile}{Points with subspecies assignments and boolean locations with respect to polygons.}
