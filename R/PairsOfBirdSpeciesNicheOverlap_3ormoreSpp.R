@@ -821,31 +821,33 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   print(colnames(inNeitherPolygon))
   print(colnames(onlypolygonA))
   print(colnames(onlypolygonB))
+  print("names to add")
+  print(paste(nameA,nameB))
 
   inBothPolygons_1 = cbind(inBothPolygons,
                            rep(1,length(inBothPolygons[,1])),
-                           rep(1,length(inBothPolygons[,1]))#,rep("both",length(inBothPolygons[,1]))
-  )
+                           rep(1,length(inBothPolygons[,1])))#,rep("both",length(inBothPolygons[,1]))
+  #)
   inNeitherPolygon_1 = cbind(inNeitherPolygon,
                              rep(0,length(inNeitherPolygon[,1])),
-                             rep(0,length(inNeitherPolygon[,1]))#,rep("neither",length(inNeitherPolygon[,1]))
-  )
+                             rep(0,length(inNeitherPolygon[,1])))#,rep("neither",length(inNeitherPolygon[,1]))
+  #)
   onlypolygonA_1 = cbind(onlypolygonA,
                          rep(1,length(onlypolygonA[,1])),
-                         rep(0,length(onlypolygonA[,1]))#,rep(nameA,length(onlypolygonA[,1]))
-  )
+                         rep(0,length(onlypolygonA[,1])))#,rep(nameA,length(onlypolygonA[,1]))
+  #)
   onlypolygonB_1 = cbind(onlypolygonB,
                          rep(0,length(onlypolygonB[,1])),
-                         rep(1,length(onlypolygonB[,1]))#,rep(nameB,length(onlypolygonB[,1]))
-  )
-  colnames(inBothPolygons_1) = c(colnames(inBothPolygons),nameA,nameB#,"assigned_subspecies"
-  )
-  colnames(inNeitherPolygon_1) = c(colnames(inNeitherPolygon),nameA,nameB#,"assigned_subspecies"
-  )
-  colnames(onlypolygonA_1) = c(colnames(onlypolygonA),nameA,nameB#,"assigned_subspecies"
-  )
-  colnames(onlypolygonB_1) = c(colnames(onlypolygonB),nameA,nameB#,"assigned_subspecies"
-  )
+                         rep(1,length(onlypolygonB[,1])))#,rep(nameB,length(onlypolygonB[,1]))
+  #)
+  colnames(inBothPolygons_1) = c(colnames(inBothPolygons),nameA,nameB)#,"assigned_subspecies"
+  #)
+  colnames(inNeitherPolygon_1) = c(colnames(inNeitherPolygon),nameA,nameB)#,"assigned_subspecies"
+  #)
+  colnames(onlypolygonA_1) = c(colnames(onlypolygonA),nameA,nameB)#,"assigned_subspecies"
+  #)
+  colnames(onlypolygonB_1) = c(colnames(onlypolygonB),nameA,nameB)#,"assigned_subspecies"
+  #)
 
   print("colnames post adding")
   print(colnames(inBothPolygons_1))
