@@ -113,42 +113,6 @@ library(subsppLabelR,verbose=T)
 par(ask=F)
 
 }
-processedSpecies = databaseToAssignedSubspecies(spp=species,
-                                                subsppList=subspecies,
-                                                pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
-                                                quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
-                                                outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
-                                                datafile=alllocs,
-                                                epsilon=0.0)
-
-## TRIMS PROPERLY NOW, BUT NOT KEEPING THE CORRECT STUFF?
-## LIKE NOT THROWING OUT VERY SMALL THINGS
-## ALSO NOT RETAINING NAMES AFTER THE FIX WHICH IS ANNOYING
-## HOWEVER 1,2,3 are in alphabetical order still so its easy to fix
-
-loc_suspect = processedSpecies$loc_suspect
-loc_good = processedSpecies$loc_good
-pol = processedSpecies$pol
-
-write.table(loc_suspect,paste(paste("SuspectLoci",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
-            quote=FALSE,sep="\t",row.names=FALSE)
-write.table(loc_good,paste(paste("GoodLoci",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
-            quote=FALSE,sep="\t",row.names=FALSE)
-
-library(rgdal)
-library(sp)
-for (i in 1:length(pol)) {
-  obj = pol[[i]]
-  name = names(pol)[i]
-  #print(name)
-  obj2 = SpatialPolygonsDataFrame(obj,data=as.data.frame(rep(1,length(obj))),
-                                  match.ID = FALSE)
-  #print(obj)
-  #print("---")
-  writeOGR(obj=obj2,dsn=paste(paste("Polygon",species,name,sep="_"),".shp",sep=""),
-           layer=name,driver="ESRI Shapefile")
-  #print("end")
-}
 
 
 
@@ -170,7 +134,9 @@ for (i in 1:length(pol)) {
 
 ## build png of the points used
 
+## ALL OF THESE FUNCTIONS LAYER UNKNOWN POINTS ON LAST
 printPointsPng = function(species,subspecies,bg,loc_good){
+  print("PrintPointsPNG")
   png(paste("Subspecies_assignment_",species,".png",sep=""))
   #print(length(subspecies))
   #col = floor(sqrt(length(subspecies)))
@@ -179,25 +145,44 @@ printPointsPng = function(species,subspecies,bg,loc_good){
   if(mf[[1]] > mf[[2]]){mf = rev(mf)}
   par(mfrow=mf)
 
+  unkInd = which(levels(loc_good$subspecies)=="unknown")
+  notUnkInd = which(levels(loc_good$subspecies)!="unknown")
+  loc_good$subspecies = factor(loc_good$subspecies,levels(loc_good$subspecies)[c(unkInd,notUnkInd)])
+
   for(sub in subspecies){
     print(sub)
     raster::plot(bg, col="grey",colNA="darkgrey",main=paste("assigned",sub,sep=" "),
                  legend=F)
     temp = loc_good[loc_good$assigned==sub,]
-    points(temp[temp$assigned==sub,2:3],
-           col=as.factor(temp$subspecies),
-           pch=as.numeric(as.factor(temp$subspecies)))
+    if (nrow(temp) > 0) {
+
+      for (assignNum in 1:length(levels(temp$subspecies))){
+        #print(assignNum)
+        assignSub = levels(temp$subspecies)[assignNum]
+        mycol = palette()[assignNum]
+
+        points(temp[temp$subspecies==assignSub,2:3],
+               col=mycol,
+               pch=assignNum)
+
+      }
+
+    #points(temp[temp$assigned==sub,2:3],
+    #       col=as.factor(temp$subspecies),
+    #       pch=as.numeric(as.factor(temp$subspecies)))
     legend("top", legend=as.factor(unique(temp$subspecies)),
            pch=unique(as.numeric(as.factor(temp$subspecies))),
            bty="n",
            col=as.factor(unique(temp$subspecies)))
+    } else {
+      print("NO POINTS")
+    }
   }
   dev.off()
 }
 
-printPointsPng(species=species,subspecies=subspecies,bg=bg,loc_good=loc_good)
-
 printPointsPdfGood = function(species,subspecies,bg,loc_good){
+  print("PrintPointsPdfGood")
   pdf(paste("Subspecies_assignment_goodLoci_",species,".pdf",sep=""))
   #print(length(subspecies))
   #col = floor(sqrt(length(subspecies)))
@@ -206,24 +191,45 @@ printPointsPdfGood = function(species,subspecies,bg,loc_good){
   #if(mf[[1]] > mf[[2]]){mf = rev(mf)}
   #par(mfrow=mf)
 
+  unkInd = which(levels(loc_good$subspecies)=="unknown")
+  notUnkInd = which(levels(loc_good$subspecies)!="unknown")
+  loc_good$subspecies = factor(loc_good$subspecies,levels(loc_good$subspecies)[c(unkInd,notUnkInd)])
+
   for(sub in subspecies){
     print(sub)
 
     raster::plot(bg, col="grey",colNA="darkgrey",main=paste("assigned",sub,sep=" "),
                  legend=F)
     temp = loc_good[loc_good$assigned==sub,]
-    points(temp[temp$assigned==sub,2:3],
-           col=as.factor(temp$subspecies),
-           pch=as.numeric(as.factor(temp$subspecies)))
+    if (nrow(temp) > 0) {
+
+      for (assignNum in 1:length(levels(temp$subspecies))){
+        #print(assignNum)
+        assignSub = levels(temp$subspecies)[assignNum]
+        mycol = palette()[assignNum]
+
+        points(temp[temp$subspecies==assignSub,2:3],
+               col=mycol,
+               pch=assignNum)
+
+      }
+
+    #points(temp[,2:3],
+    #       col=as.factor(temp$subspecies),
+    #       pch=as.numeric(as.factor(temp$subspecies)))
     legend("top", legend=as.factor(unique(temp$subspecies)),
            pch=unique(as.numeric(as.factor(temp$subspecies))),
            bty="n",
            col=as.factor(unique(temp$subspecies)))
+    } else {
+      print("NO POINTS")
+    }
   }
   dev.off()
 }
 
 printPointsPdfSuspect = function(species,subspecies,bg,loc_suspect){
+  print("PrintPointsSuspect")
   pdf(paste("Subspecies_assignment_suspectLoci_",species,".pdf",sep=""))
   #print(length(subspecies))
   #col = floor(sqrt(length(subspecies)))
@@ -232,24 +238,170 @@ printPointsPdfSuspect = function(species,subspecies,bg,loc_suspect){
   #if(mf[[1]] > mf[[2]]){mf = rev(mf)}
   #par(mfrow=mf)
 
+  unkInd = which(levels(loc_good$subspecies)=="unknown")
+  notUnkInd = which(levels(loc_good$subspecies)!="unknown")
+  loc_good$subspecies = factor(loc_good$subspecies,levels(loc_good$subspecies)[c(unkInd,notUnkInd)])
+
   for(sub in subspecies){
     print(sub)
     raster::plot(bg, col="grey",colNA="darkgrey",main=paste("assigned",sub,sep=" "),
                  legend=F)
     temp = loc_suspect[loc_suspect$assigned==sub,]
-    points(temp[temp$assigned==sub,2:3],
-           col=as.factor(temp$subspecies),
-           pch=as.numeric(as.factor(temp$subspecies)))
+    if(nrow(temp) > 0) {
+
+      for (assignNum in 1:length(levels(temp$subspecies))){
+        #print(assignNum)
+        assignSub = levels(temp$subspecies)[assignNum]
+        mycol = palette()[assignNum]
+
+        points(temp[temp$subspecies==assignSub,2:3],
+               col=mycol,
+               pch=assignNum)
+
+      }
+
+
+    #points(temp[temp$assigned==sub,2:3],
+    #       col=as.factor(temp$subspecies),
+    #       pch=as.numeric(as.factor(temp$subspecies)))
     legend("top", legend=as.factor(unique(temp$subspecies)),
            pch=unique(as.numeric(as.factor(temp$subspecies))),
            bty="n",
            col=as.factor(unique(temp$subspecies)))
+    } else {
+      print("NO POINTS")
+    }
   }
   dev.off()
 }
 
-printPointsPdfGood(species=species,subspecies=subspecies,bg=bg,loc_good=loc_good)
-printPointsPdfSuspect(species=species,subspecies=subspecies,bg=bg,loc_suspect=loc_suspect)
+outputProcessedSpecies = function(processedSpecies,outputDir,species,subspecies,bg) {
+
+  palette(c(adjustcolor(palette()[1],alpha.f=0.5),palette()[2:length(palette())]))
+
+  loc_suspect = processedSpecies$loc_suspect
+  loc_good = processedSpecies$loc_good
+  pol = processedSpecies$pol
+
+  print("Writing Tables")
+  write.table(loc_suspect,paste(paste("SuspectLoci",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
+              quote=FALSE,sep="\t",row.names=FALSE)
+  write.table(loc_good,paste(paste("GoodLoci",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
+              quote=FALSE,sep="\t",row.names=FALSE)
+
+  print("Saving polygons")
+  for (i in 1:length(pol)) {
+    obj = pol[[i]]
+    name = names(pol)[i]
+    #print(name)
+    obj2 = sp::SpatialPolygonsDataFrame(obj,data=as.data.frame(rep(1,length(obj))),
+                                    match.ID = FALSE)
+    #print(obj)
+    #print("---")
+    rgdal::writeOGR(obj=obj2,dsn=paste(paste("Polygon",species,name,sep="_"),".shp",sep=""),
+             layer=name,driver="ESRI Shapefile")
+    #print("end")
+  }
+
+  print("Printing PNG and PDF files")
+  printPointsPng(species=species,subspecies=subspecies,bg=bg,loc_good=loc_good)
+  printPointsPdfGood(species=species,subspecies=subspecies,bg=bg,loc_good=loc_good)
+  printPointsPdfSuspect(species=species,subspecies=subspecies,bg=bg,loc_suspect=loc_suspect)
+
+  palette("default")
+
+}
+
+processedSpecies = databaseToAssignedSubspecies(spp=species,
+                                                subsppList=subspecies,
+                                                pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
+                                                quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
+                                                outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
+                                                datafile=alllocs,
+                                                epsilon=1e-6)
+
+outputProcessedSpecies(processedSpecies=processedSpecies,outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
+                       species=species,subspecies=subspecies,bg=bg)
+
+## TESTING A NEURAL NETWORK WITH CARAT
+## SOURCE: http://www.cmap.polytechnique.fr/~lepennec/R/Learning/Learning.html
+{
+library("plyr")
+library("dplyr")
+library("ggplot2")
+library("grid")
+library("gridExtra")
+library("caret")
+library("h2o")
+library("doFuture")
+registerDoFuture()
+plan(multiprocess)
+library(AppliedPredictiveModeling)
+library(RColorBrewer)
+data(twoClassData)
+twoClass=cbind(as.data.frame(predictors),classes)
+twoClassColor <- brewer.pal(3,'Set1')[1:2]
+names(twoClassColor) <- c('Class1','Class2')
+ggplot(data = twoClass,aes(x = PredictorA, y = PredictorB)) +
+  geom_point(aes(color = classes), size = 6, alpha = .5) +
+  scale_colour_manual(name = 'classes', values = twoClassColor) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0))
+nbp <- 250;
+PredA <- seq(min(twoClass$PredictorA), max(twoClass$PredictorA), length = nbp)
+PredB <- seq(min(twoClass$PredictorB), max(twoClass$PredictorB), length = nbp)
+Grid <- expand.grid(PredictorA = PredA, PredictorB = PredB)
+
+PlotGrid <- function(pred,title) {
+  surf <- (ggplot(data = twoClass, aes(x = PredictorA, y = PredictorB,
+                                       color = classes)) +
+             geom_tile(data = cbind(Grid, classes = pred), aes(fill = classes)) +
+             scale_fill_manual(name = 'classes', values = twoClassColor) +
+             ggtitle("Decision region") + theme(legend.text = element_text(size = 10)) +
+             scale_colour_manual(name = 'classes', values = twoClassColor)) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_continuous(expand = c(0,0))
+  pts <- (ggplot(data = twoClass, aes(x = PredictorA, y = PredictorB,
+                                      color = classes)) +
+            geom_contour(data = cbind(Grid, classes = pred), aes(z = as.numeric(classes)),
+                         color = "red", breaks = c(1.5)) +
+            geom_point(size = 4, alpha = .5) +
+            ggtitle("Decision boundary") +
+            theme(legend.text = element_text(size = 10)) +
+            scale_colour_manual(name = 'classes', values = twoClassColor)) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_continuous(expand = c(0,0))
+  grid.arrange(surf, pts, top = textGrob(title, gp = gpar(fontsize = 20)), ncol = 2)
+}
+library("caret")
+V <- 10
+T <- 4
+TrControl <- trainControl(method = "repeatedcv",
+                          number = V,
+                          repeats = T)
+
+Seed <- 345
+ErrsCaret <- function(Model, Name) {
+  Errs <- data.frame(t(postResample(predict(Model, newdata = twoClass), twoClass[["classes"]])),
+                     Resample = "None", model = Name)
+  rbind(Errs, data.frame(Model$resample, model = Name))
+}
+
+Errs <- data.frame()
+CaretLearnAndDisplay <- function (Errs, Name, Formula, Method, ...) {
+  set.seed(Seed)
+  Model <- train(as.formula(Formula), data = twoClass, method = Method, trControl = TrControl, ...)
+  Pred <- predict(Model, newdata = Grid)
+  PlotGrid(Pred, Name)
+  Errs <- rbind(Errs, ErrsCaret(Model, Name))
+}
+Errs <- CaretLearnAndDisplay(Errs, "Neural Network", "classes ~ .", "mlp")
+}
+## TRIMS PROPERLY NOW, BUT NOT KEEPING THE CORRECT STUFF?
+## LIKE NOT THROWING OUT VERY SMALL THINGS
+## ALSO NOT RETAINING NAMES AFTER THE FIX WHICH IS ANNOYING
+## HOWEVER 1,2,3 are in alphabetical order still so its easy to fix
+
 
 
 # png("Phainopepla nitens assignment.png")

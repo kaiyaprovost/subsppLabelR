@@ -1089,7 +1089,7 @@ detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
 #' subspecies_polygons = phainopeplaNitens$pol
 databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quantile=0.95,xmin=-125,
                                         xmax=-60,ymin=10,ymax=50,plotIt=F,bgLayer,outputDir,datafile=NULL,
-                                        epsilon=0.0001,...) {
+                                        epsilon=1e-6,...) {
 
   ## TODO: allow to begin from any step?
 
@@ -1159,14 +1159,14 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   for (i in 0:length(c(subsppNames))) {
     if (i == 0) {
-      print("full")
+      #print("full")
       #print(nrow(labeledLoc))
       detectedLocs = detectSpatialOutliers(localities=labeledLoc,epsilon = epsilon)
     }
     else {
       name = subsppNames[[i]]
       if (name != "unknown") {
-        print(name)
+        #print(name)
         subset = labeledLoc[labeledLoc$subspecies==name,]
         #print(nrow(subset))
         detectedLocs = detectSpatialOutliers(localities=subset,epsilon = epsilon)
@@ -1175,7 +1175,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     purged = detectedLocs[[1]]
     anomalies = detectedLocs[[2]]
     kept = detectedLocs[[3]] ## DO NOT KEEP THIS
-    print(length(anomalies))
+    #print(length(anomalies))
 
     purged_list = rbind(purged_list,purged)
     list_of_anomalies = c(list_of_anomalies,anomalies)
