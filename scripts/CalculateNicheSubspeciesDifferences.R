@@ -114,9 +114,26 @@ par(ask=F)
 
 }
 
+list_of_taxa = "/Users/kprovost/Documents/Dissertation/CHAPTER1_REVIEW/southwestern_subspecies.txt"
+taxa = read.csv(list_of_taxa,sep="\t",header=F)
+colnames(taxa) = c("GEN","SPP","SUB")
 
+for (rownum in 67:67) {
+#for (rownum in 1:nrow(taxa)) {
+  spp = paste((unlist(taxa[rownum,1:2])),sep=" ",collapse=" ")
+  subspp = paste((unlist(taxa[rownum,3])),sep=" ",collapse=" ")
 
+  processed = databaseToAssignedSubspecies(spp=spp,
+                                                  subsppList=subspp,
+                                                  pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
+                                                  quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
+                                                  outputDir="/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
+                                                  epsilon=1e-6)
 
+  outputProcessedSpecies(processedSpecies=processed,outputDir="/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
+                         species=spp,subspecies=subspp,bg=bg)
+
+}
 
 
 # loc_suspect = rbind(processedSpecies_card$loc_suspect,

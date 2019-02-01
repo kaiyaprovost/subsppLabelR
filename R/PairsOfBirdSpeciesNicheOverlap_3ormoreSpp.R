@@ -72,7 +72,7 @@ occ2df_subspeciesLabels = function(subsppOccList_object,subsppOccList_name){
   ## thus function turns an occ object into a dataframe with a column for subspecies
   ## TODO: make it optional to do the "unique" thing for future processing
 
-  sppDf = data.frame(occ2df(subsppOccList_object))
+  sppDf = data.frame(spocc::occ2df(subsppOccList_object))
   sppLoc = unique(na.omit(sppDf[,1:3]))
   sppLocLab = sppLoc
   sppLocLab$subspecies = subsppOccList_name
