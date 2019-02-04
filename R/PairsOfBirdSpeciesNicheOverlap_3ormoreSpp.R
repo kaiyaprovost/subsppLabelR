@@ -1011,8 +1011,8 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
 detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
   ## use MASS to do linear algebra
   m = length(localities[,1])
-  lat = localities$latitude
-  lon = localities$longitude
+  lat = as.numeric(localities$latitude)
+  lon = as.numeric(localities$longitude)
   space = cbind(lat,lon)
   n = length(space[1,])
   mu = colMeans(space)
@@ -1031,7 +1031,7 @@ detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
   ## it doesn't matter which you use here you get the same answer
 
   A=(2*pi)^(-n/2)*det(Sigma)^(-0.5)
-  B = exp(-0.5 *rowSums((space_mu %*% ginv(Sigma))*space_mu))
+  B = exp(-0.5 *rowSums((space_mu %*% MASS::ginv(Sigma))*space_mu))
   p_x=A*B
 
   #P_x = (1 /( ((2*pi)^(n/2) * (norm(Sigma) ^ (1/2))))) * exp (-1/2*(space-mu) %*% MASS::ginv(Sigma) %*% t(space-mu))
@@ -1197,8 +1197,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
       legend("top", legend=as.factor(unique(removed$subspecies)),pch=1,bty="n", col=as.factor(unique(removed$subspecies)))
       dev.off()
     }
-  }
-  else {
+  } else {
     print("No anomalies found")
   }
 
@@ -1426,3 +1425,4 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 #                                                 plotIt=T,
 #                                                 bgLayer=bg,
 #                                                 outputDir="/Users/kprovost/Documents/Classes/Spatial Bioinformatics/project/")
+
