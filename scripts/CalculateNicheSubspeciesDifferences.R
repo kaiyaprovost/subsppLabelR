@@ -86,8 +86,8 @@ bg = Env[[1]] ## just for plotting
 #species = "Phainopepla nitens"
 #subspecies = c("nitens","lepida")
 
-species = "Cardinalis sinuatus"
-subspecies = c("sinuatus","fulvescens","peninsulae")
+#species = "Cardinalis sinuatus"
+#subspecies = c("sinuatus","fulvescens","peninsulae")
 #species = "Cardinalis cardinalis"
 #subspecies = c("affinis","canicaudus","cardinalis","carneus",
 #                "clintoni","coccineus","flammiger","floridanus",
@@ -104,9 +104,9 @@ subspecies = c("sinuatus","fulvescens","peninsulae")
 ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
 ## will delete that subspecies. no bueno
 
-alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/big_sinuatus_testrun_NOTWORKING/AllLoci_Cardinalis sinuatus_sinuatus fulvescens peninsulae_clean.txt"
-labeledLoc = read.csv(alllocs,sep="\t")
-locs = labeledLoc
+#alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/big_sinuatus_testrun_NOTWORKING/AllSubspp_Cardinalis sinuatus_sinuatus fulvescens peninsulae_clean.txt"
+#labeledLoc = read.csv(alllocs,sep="\t")
+#locs = labeledLoc
 detach("package:subsppLabelR", unload=TRUE)
 library(subsppLabelR,verbose=T)
 
@@ -114,47 +114,9 @@ par(ask=F)
 
 }
 
-list_of_taxa = "/Users/kprovost/Documents/Dissertation/CHAPTER1_REVIEW/southwestern_subspecies.txt"
-taxa = read.csv(list_of_taxa,sep="\t",header=F)
-colnames(taxa) = c("GEN","SPP","SUB")
-
-unique_species = unique(taxa[,1:2])
-
-for (rownum in 1:1) {
-#for (rownum in 1:nrow(unique_species)) {
-  temp = taxa[taxa$GEN==unique_species$GEN[rownum],]
-  temp = temp[temp$SPP==unique_species$SPP[rownum],]
-  subspp = droplevels.factor(unlist(temp$SUB))
-  spp = paste((unlist(temp[1,1:2])),sep=" ",collapse=" ")
-
-  processed = databaseToAssignedSubspecies(spp=spp,
-                                           subsppList=subspp,
-                                           pointLimit=1000,dbToQuery=c("gbif","bison","ecoengine","vertnet"), ## removed everythign besides gbif and vertnet
-                                           quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
-                                           outputDir="/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
-                                           epsilon=1e-6)
-
-  outputProcessedSpecies(processedSpecies=processed,outputDir="/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
-                         species=spp,subspecies=subspp,bg=bg)
-
-}
-
-# loc_suspect = rbind(processedSpecies_card$loc_suspect,
-#                     processedSpecies_cocc$loc_suspect,
-#                     processedSpecies_rest$loc_suspect,
-#                     processedSpecies_igne$loc_suspect)
-# loc_good = rbind(processedSpecies_card$loc_good,
-#                  processedSpecies_cocc$loc_good,
-#                  processedSpecies_rest$loc_good,
-#                  processedSpecies_igne$loc_good)
-# loc_good = rbind(processedSpecies_card$loc_good,
-#                  processedSpecies_cocc$loc_good,
-#                  processedSpecies_rest$loc_good,
-#                  processedSpecies_igne$loc_good)
-
-## build png of the points used
-
+## GENERATE FUNCTIONS
 ## ALL OF THESE FUNCTIONS LAYER UNKNOWN POINTS ON LAST
+{
 printPointsPng = function(species,subspecies,bg,loc_good){
   print("PrintPointsPNG")
   png(paste("Subspecies_assignment_",species,".png",sep=""))
@@ -187,13 +149,13 @@ printPointsPng = function(species,subspecies,bg,loc_good){
 
       }
 
-    #points(temp[temp$assigned==sub,2:3],
-    #       col=as.factor(temp$subspecies),
-    #       pch=as.numeric(as.factor(temp$subspecies)))
-    legend("top", legend=as.factor(unique(temp$subspecies)),
-           pch=unique(as.numeric(as.factor(temp$subspecies))),
-           bty="n",
-           col=as.factor(unique(temp$subspecies)))
+      #points(temp[temp$assigned==sub,2:3],
+      #       col=as.factor(temp$subspecies),
+      #       pch=as.numeric(as.factor(temp$subspecies)))
+      legend("top", legend=as.factor(unique(temp$subspecies)),
+             pch=unique(as.numeric(as.factor(temp$subspecies))),
+             bty="n",
+             col=as.factor(unique(temp$subspecies)))
     } else {
       print("NO POINTS")
     }
@@ -203,7 +165,7 @@ printPointsPng = function(species,subspecies,bg,loc_good){
 
 printPointsPdfGood = function(species,subspecies,bg,loc_good){
   print("PrintPointsPdfGood")
-  pdf(paste("Subspecies_assignment_goodLoci_",species,".pdf",sep=""))
+  pdf(paste("Subspecies_assignment_goodSubspp_",species,".pdf",sep=""))
   #print(length(subspecies))
   #col = floor(sqrt(length(subspecies)))
   #row = ceiling((sqrt(length(subspecies))))
@@ -234,13 +196,13 @@ printPointsPdfGood = function(species,subspecies,bg,loc_good){
 
       }
 
-    #points(temp[,2:3],
-    #       col=as.factor(temp$subspecies),
-    #       pch=as.numeric(as.factor(temp$subspecies)))
-    legend("top", legend=as.factor(unique(temp$subspecies)),
-           pch=unique(as.numeric(as.factor(temp$subspecies))),
-           bty="n",
-           col=as.factor(unique(temp$subspecies)))
+      #points(temp[,2:3],
+      #       col=as.factor(temp$subspecies),
+      #       pch=as.numeric(as.factor(temp$subspecies)))
+      legend("top", legend=as.factor(unique(temp$subspecies)),
+             pch=unique(as.numeric(as.factor(temp$subspecies))),
+             bty="n",
+             col=as.factor(unique(temp$subspecies)))
     } else {
       print("NO POINTS")
     }
@@ -250,7 +212,7 @@ printPointsPdfGood = function(species,subspecies,bg,loc_good){
 
 printPointsPdfSuspect = function(species,subspecies,bg,loc_suspect){
   print("PrintPointsSuspect")
-  pdf(paste("Subspecies_assignment_suspectLoci_",species,".pdf",sep=""))
+  pdf(paste("Subspecies_assignment_suspectSubspp_",species,".pdf",sep=""))
   #print(length(subspecies))
   #col = floor(sqrt(length(subspecies)))
   #row = ceiling((sqrt(length(subspecies))))
@@ -281,13 +243,13 @@ printPointsPdfSuspect = function(species,subspecies,bg,loc_suspect){
       }
 
 
-    #points(temp[temp$assigned==sub,2:3],
-    #       col=as.factor(temp$subspecies),
-    #       pch=as.numeric(as.factor(temp$subspecies)))
-    legend("top", legend=as.factor(unique(temp$subspecies)),
-           pch=unique(as.numeric(as.factor(temp$subspecies))),
-           bty="n",
-           col=as.factor(unique(temp$subspecies)))
+      #points(temp[temp$assigned==sub,2:3],
+      #       col=as.factor(temp$subspecies),
+      #       pch=as.numeric(as.factor(temp$subspecies)))
+      legend("top", legend=as.factor(unique(temp$subspecies)),
+             pch=unique(as.numeric(as.factor(temp$subspecies))),
+             bty="n",
+             col=as.factor(unique(temp$subspecies)))
     } else {
       print("NO POINTS")
     }
@@ -304,9 +266,9 @@ outputProcessedSpecies = function(processedSpecies,outputDir,species,subspecies,
   pol = processedSpecies$pol
 
   print("Writing Tables")
-  write.table(loc_suspect,paste(paste("SuspectLoci",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
+  write.table(loc_suspect,paste(paste("SuspectSubspp",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
               quote=FALSE,sep="\t",row.names=FALSE)
-  write.table(loc_good,paste(paste("GoodLoci",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
+  write.table(loc_good,paste(paste("GoodSubspp",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
               quote=FALSE,sep="\t",row.names=FALSE)
 
   print("Saving polygons")
@@ -315,11 +277,11 @@ outputProcessedSpecies = function(processedSpecies,outputDir,species,subspecies,
     name = names(pol)[i]
     #print(name)
     obj2 = sp::SpatialPolygonsDataFrame(obj,data=as.data.frame(rep(1,length(obj))),
-                                    match.ID = FALSE)
+                                        match.ID = FALSE)
     #print(obj)
     #print("---")
     rgdal::writeOGR(obj=obj2,dsn=paste(paste("Polygon",species,name,sep="_"),".shp",sep=""),
-             layer=name,driver="ESRI Shapefile")
+                    layer=name,driver="ESRI Shapefile")
     #print("end")
   }
 
@@ -331,6 +293,40 @@ outputProcessedSpecies = function(processedSpecies,outputDir,species,subspecies,
   palette("default")
 
 }
+}
+
+
+
+list_of_taxa = "/Users/kprovost/Documents/Dissertation/CHAPTER1_REVIEW/southwestern_subspecies.txt"
+taxa = read.csv(list_of_taxa,sep="\t",header=F)
+colnames(taxa) = c("GEN","SPP","SUB")
+
+unique_species = unique(taxa[,1:2])
+
+#for (rownum in 1:1) {
+for (rownum in 1:nrow(unique_species)) {
+  temp = taxa[taxa$GEN==unique_species$GEN[rownum],]
+  temp = temp[temp$SPP==unique_species$SPP[rownum],]
+  subspp = droplevels.factor(unlist(temp$SUB))
+  spp = paste((unlist(temp[1,1:2])),sep=" ",collapse=" ")
+  print(spp)
+  print(subspp)
+
+  processed = databaseToAssignedSubspecies(spp=spp,
+                                           subsppList=subspp,
+                                           pointLimit=1000,dbToQuery=c("gbif","bison","ecoengine","vertnet"), ## removed everythign besides gbif and vertnet
+                                           quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
+                                           outputDir=paste("/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",spp,sep=""),
+                                           epsilon=1e-6)
+
+  outputProcessedSpecies(processedSpecies=processed,
+                         outputDir=paste("/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",spp,sep=""),
+                         species=spp,
+                         subspecies=subspp,
+                         bg=bg)
+
+}
+
 
 processedSpecies = databaseToAssignedSubspecies(spp=species,
                                                 subsppList=subspecies,
@@ -342,6 +338,22 @@ processedSpecies = databaseToAssignedSubspecies(spp=species,
 
 outputProcessedSpecies(processedSpecies=processedSpecies,outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
                        species=species,subspecies=subspecies,bg=bg)
+
+# loc_suspect = rbind(processedSpecies_card$loc_suspect,
+#                     processedSpecies_cocc$loc_suspect,
+#                     processedSpecies_rest$loc_suspect,
+#                     processedSpecies_igne$loc_suspect)
+# loc_good = rbind(processedSpecies_card$loc_good,
+#                  processedSpecies_cocc$loc_good,
+#                  processedSpecies_rest$loc_good,
+#                  processedSpecies_igne$loc_good)
+# loc_good = rbind(processedSpecies_card$loc_good,
+#                  processedSpecies_cocc$loc_good,
+#                  processedSpecies_rest$loc_good,
+#                  processedSpecies_igne$loc_good)
+
+## build png of the points used
+
 
 ## TESTING A NEURAL NETWORK WITH CARAT
 ## SOURCE: http://www.cmap.polytechnique.fr/~lepennec/R/Learning/Learning.html

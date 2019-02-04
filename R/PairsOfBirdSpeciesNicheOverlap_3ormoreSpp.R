@@ -1011,6 +1011,15 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
 detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
   ## use MASS to do linear algebra
   m = length(localities[,1])
+
+  if (m==1){
+    anomalies = 0
+    purged = c()
+    kept = localities
+
+    return(list(purged,anomalies,kept))
+  }
+
   lat = as.numeric(localities$latitude)
   lon = as.numeric(localities$longitude)
   space = cbind(lat,lon)
@@ -1122,7 +1131,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
 
     ## EXPORT THE OCCURRENCE DATA!
-    ## NOTE: you don't need to do this. it is identical to merging goodLoci and suspectLoci and only taking first four cols
+    ## NOTE: you don't need to do this. it is identical to merging goodsubspp and suspectsubspp and only taking first four cols
     ## (name	longitude	latitude	subspecies)
     #print("Exporting Occurrence Data")
     #write.table(labeledLoc,paste(paste("OccurrenceDatabase",spp,paste(subspecies,collapse=" "),sep="_"),".occ",sep=""),
@@ -1168,7 +1177,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
       if (name != "unknown") {
         #print(name)
         subset = labeledLoc[labeledLoc$subspecies==name,]
-        #print(nrow(subset))
+        print(nrow(subset))
         detectedLocs = detectSpatialOutliers(localities=subset,epsilon = epsilon)
       }
     }
