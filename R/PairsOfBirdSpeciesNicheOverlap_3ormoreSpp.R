@@ -150,6 +150,12 @@ subspeciesDensityMap = function(localities,quantile=0.95,xmin=-125,
 
   w1 = matrix(1,3,3)
   ## generate the two dimensional kernel density estimation
+
+  if (nrow(localities) == 1) {
+    print("NOT ENOUGH LOCALITIES")
+    return(NULL)
+  }
+
   density = MASS::kde2d(as.numeric(localities$longitude), as.numeric(localities$latitude), lims=range, n=50)
   ## convert to raster
   densRas = raster::raster(density)
@@ -1220,9 +1226,14 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   print("Building species kernel density maps")
 
   densityRasters = lapply(subsppNames,function(subspp){
+    print(subspp)
+    #subspp="hidalgensis"
     locs = labeledLoc[labeledLoc$subspecies==subspp,]
     #print(head(locs))
     dens = subspeciesDensityMap(localities=locs,quantile=quantile,xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)
+    if (is.null(dens)) {
+      dens = 0
+    }
     names(dens) = subspp
     return(dens)
   })

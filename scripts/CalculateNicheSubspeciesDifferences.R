@@ -304,7 +304,7 @@ colnames(taxa) = c("GEN","SPP","SUB")
 unique_species = unique(taxa[,1:2])
 
 #for (rownum in 1:1) {
-for (rownum in 1:nrow(unique_species)) {
+for (rownum in 2:nrow(unique_species)) {
   temp = taxa[taxa$GEN==unique_species$GEN[rownum],]
   temp = temp[temp$SPP==unique_species$SPP[rownum],]
   subspp = droplevels.factor(unlist(temp$SUB))
