@@ -71,14 +71,24 @@ subspeciesOccQuery = function(spp="Phainopepla nitens",subsppList=c("nitens","le
 occ2df_subspeciesLabels = function(subsppOccList_object,subsppOccList_name){
   ## thus function turns an occ object into a dataframe with a column for subspecies
   ## TODO: make it optional to do the "unique" thing for future processing
+  ## TODO: does not work if zero records 
 
   sppDf = data.frame(spocc::occ2df(subsppOccList_object))
+  
+  if (nrow(sppDf) <= 0) {
+  	sppLocLab = sppDf
+  	print("THIS SUBSPECIES HAS ZERO RECORDS")
+  } else {
+  
   sppLoc = unique(na.omit(sppDf[,1:3]))
-  sppLocLab = sppLoc
+  sppLocLab = sppDf
   sppLocLab$subspecies = subsppOccList_name
+
+  }
 
   ## TODO: add a way to make this output the dataframe
 
+  #print("return")
   return(sppLocLab)
 }
 
@@ -102,12 +112,14 @@ occ2df_subspeciesLabels = function(subsppOccList_object,subsppOccList_name){
 labelSubspecies = function(subsppOccList) {
   ## this function takes a list of three taxa and labels them with subspecies information
   ## TODO: turn this into a function to give multiple subspecies and return it
+  ## TODO: doesn't work if one subspp has zero records
   sppOcc = subsppOccList[[1]]
   name_sppOcc = names(subsppOccList)[1]
   #print("Giving occ2df labels")
   sppLocLab = occ2df_subspeciesLabels(subsppOccList_object=sppOcc,subsppOccList_name=name_sppOcc)
   labeledOcc = subsppOccList[[2]]
   for(occ in 1:length(labeledOcc)){
+  	print(names(labeledOcc)[[occ]])
     subsppLoc = occ2df_subspeciesLabels(subsppOccList_object=labeledOcc[[occ]],
                                         subsppOccList_name=names(labeledOcc)[[occ]])
     sppLocLab = rbind(sppLocLab,subsppLoc)
