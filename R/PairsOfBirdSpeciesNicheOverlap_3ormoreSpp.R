@@ -1163,7 +1163,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 	## check whether given an object or a string 
 
     print("Uploading datafile")
-    labeledLoc = read.csv(datafile,sep="\t")
+    labeledLoc = read.csv(datafile,sep="\t",stringsAsFactors=F)
     print("Extracting datafile relevant cols")
     labeledLoc = labeledLoc[,1:4]
     } else {
@@ -1179,7 +1179,11 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   if(plotIt==T){
     png(paste("Labeled occurences",spp,".png"))
     #print("Plotting")
-    plot(bgLayer, col="grey",colNA="darkgrey",main=spp)
+    
+    ## TODO: make this work again it doesn't 
+    
+    raster::plot(bgLayer, col="grey",colNA="darkgrey",main=spp)
+    ## need to make sure not factors and plotting numeric
     points(labeledLoc$longitude,labeledLoc$latitude,
            col=as.factor(labeledLoc$subspecies))
     legend("top", legend=as.factor(unique(labeledLoc$subspecies)),pch=1,bty="n", col=as.factor(unique(labeledLoc$subspecies)))
@@ -1226,7 +1230,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
     if (plotIt==T) {
       png(paste("AnomaliesRemoved_",spp,".png",sep=""))
-      plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Anomalies"))
+      raster::plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Anomalies"))
       points(labeledLoc$longitude,labeledLoc$latitude,col="lightgrey",pch=0)
       points(removed$longitude,removed$latitude,col=as.factor(removed$subspecies))
       legend("top", legend=as.factor(unique(removed$subspecies)),pch=1,bty="n", col=as.factor(unique(removed$subspecies)))
@@ -1273,10 +1277,25 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   }
   #print("endplot1")
 
+
+## removing single individual subspecies 
+  print("Removing single-individual subspecies")
+
+
+for (sub in unique(labeledLoc$subspecies)){
+  print(sub)
+  rows = (nrow(labeledLoc[labeledLoc$subspecies==sub,]))
+  if(rows==1){
+    print("removing")
+    labeledLoc = labeledLoc[labeledLoc$subspecies!=sub,]
+  }
+}
+
+
   ## convert to polygons
   print("Converting density maps to polygons")
-  ## TODO: not working properly!
-
+  ## can't handle if there's no data in previous step 
+   
   densityPolygons = lapply(densityRasters,function(dens){
     densPol = densityMapToPolygons(densityMap=dens)
     return(densPol)
