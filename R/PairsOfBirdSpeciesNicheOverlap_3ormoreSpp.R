@@ -1159,10 +1159,18 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   } else if (!(is.null(datafile))) {
 
+	if (class(datafile)=="character") {
+	## check whether given an object or a string 
+
     print("Uploading datafile")
     labeledLoc = read.csv(datafile,sep="\t")
     print("Extracting datafile relevant cols")
     labeledLoc = labeledLoc[,1:4]
+    } else {
+    
+    labeledLoc = datafile[,c("name","longitude","latitude","subspecies")]
+    
+    }
 
   }
 
