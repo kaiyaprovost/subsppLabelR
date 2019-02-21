@@ -1240,6 +1240,21 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     print("No anomalies found")
   }
 
+  ## removing single individual subspecies
+  print("Removing single-individual subspecies")
+
+
+  for (sub in unique(labeledLoc$subspecies)){
+    print(sub)
+    rows = (nrow(labeledLoc[labeledLoc$subspecies==sub,]))
+    if(rows==1){
+      print("removing")
+      labeledLoc = labeledLoc[labeledLoc$subspecies!=sub,]
+    }
+  }
+  subsppNames = unique(labeledLoc$subspecies)
+
+
   ## to reduce error take only subspecies within main density
   ## clean up the polygons so that if grouping way out in middle of nowhere, get rid of it
   ## remove points that fall within the other subspecies' polygon
@@ -1278,18 +1293,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   #print("endplot1")
 
 
-## removing single individual subspecies
-  print("Removing single-individual subspecies")
 
-
-for (sub in unique(labeledLoc$subspecies)){
-  print(sub)
-  rows = (nrow(labeledLoc[labeledLoc$subspecies==sub,]))
-  if(rows==1){
-    print("removing")
-    labeledLoc = labeledLoc[labeledLoc$subspecies!=sub,]
-  }
-}
 
 
   ## convert to polygons
@@ -1297,10 +1301,10 @@ for (sub in unique(labeledLoc$subspecies)){
   ## can't handle if there's no data in previous step
 
   densityPolygons = lapply(densityRasters,function(dens){
+    print(names(dens))
     densPol = densityMapToPolygons(densityMap=dens)
     return(densPol)
   })
-  print("1")
 
   if (plotIt==T) {
     for(i in 1:length(densityPolygons)){
@@ -1310,7 +1314,6 @@ for (sub in unique(labeledLoc$subspecies)){
       sp::spplot(densityPolygons[[i]],add=T,col=viridis::viridis(99))
       dev.off()
     }
-    print("2")
 
     png(paste("RawDensityPolygon_",spp," ALL.png",sep=""))
     raster::plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
@@ -1326,7 +1329,6 @@ for (sub in unique(labeledLoc$subspecies)){
            border=cols)
     dev.off()
   }
-  print("3")
 
   ## check overlaps between polygons
 
