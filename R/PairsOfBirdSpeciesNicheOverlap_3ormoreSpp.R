@@ -1300,6 +1300,7 @@ for (sub in unique(labeledLoc$subspecies)){
     densPol = densityMapToPolygons(densityMap=dens)
     return(densPol)
   })
+  print("1")
 
   if (plotIt==T) {
     for(i in 1:length(densityPolygons)){
@@ -1309,6 +1310,7 @@ for (sub in unique(labeledLoc$subspecies)){
       sp::spplot(densityPolygons[[i]],add=T,col=viridis::viridis(99))
       dev.off()
     }
+    print("2")
 
     png(paste("RawDensityPolygon_",spp," ALL.png",sep=""))
     raster::plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
@@ -1324,6 +1326,7 @@ for (sub in unique(labeledLoc$subspecies)){
            border=cols)
     dev.off()
   }
+  print("3")
 
   ## check overlaps between polygons
 
