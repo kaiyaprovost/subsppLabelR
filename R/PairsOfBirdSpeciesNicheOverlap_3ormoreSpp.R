@@ -1311,14 +1311,14 @@ for (sub in unique(labeledLoc$subspecies)){
     }
 
     png(paste("RawDensityPolygon_",spp," ALL.png",sep=""))
-    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
+    raster::plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
     cols = c("black","red","blue","green","cyan","magenta",
              "pink","white","purple","orange","yellow","sienna",
              "thistle","palegreen","powderblue","aquamarine","violet","mediumslateblue",
              "lightsalmon","lightblue")
     for(i in 1:length(densityPolygons)){
       name = names(densityPolygons)[[i]]
-      plot(densityPolygons[[i]],add=T,border=cols[i],lwd=((3*i)/3))
+      sp::spplot(densityPolygons[[i]],add=T,border=cols[i],lwd=((3*i)/3))
     }
     legend("top", legend=names(densityPolygons),bty="n",fill=rgb(0,0,0,0),
            border=cols)
