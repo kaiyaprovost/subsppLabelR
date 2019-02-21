@@ -71,15 +71,15 @@ subspeciesOccQuery = function(spp="Phainopepla nitens",subsppList=c("nitens","le
 occ2df_subspeciesLabels = function(subsppOccList_object,subsppOccList_name){
   ## thus function turns an occ object into a dataframe with a column for subspecies
   ## TODO: make it optional to do the "unique" thing for future processing
-  ## TODO: does not work if zero records 
+  ## TODO: does not work if zero records
 
   sppDf = data.frame(spocc::occ2df(subsppOccList_object))
-  
+
   if (nrow(sppDf) <= 0) {
   	sppLocLab = sppDf
   	print("THIS SUBSPECIES HAS ZERO RECORDS")
   } else {
-  
+
   sppLoc = unique(na.omit(sppDf[,1:3]))
   sppLocLab = sppDf
   sppLocLab$subspecies = subsppOccList_name
@@ -1160,16 +1160,16 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   } else if (!(is.null(datafile))) {
 
 	if (class(datafile)=="character") {
-	## check whether given an object or a string 
+	## check whether given an object or a string
 
     print("Uploading datafile")
     labeledLoc = read.csv(datafile,sep="\t",stringsAsFactors=F)
     print("Extracting datafile relevant cols")
     labeledLoc = labeledLoc[,1:4]
     } else {
-    
+
     labeledLoc = datafile[,c("name","longitude","latitude","subspecies")]
-    
+
     }
 
   }
@@ -1179,9 +1179,9 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   if(plotIt==T){
     png(paste("Labeled occurences",spp,".png"))
     #print("Plotting")
-    
-    ## TODO: make this work again it doesn't 
-    
+
+    ## TODO: make this work again it doesn't
+
     raster::plot(bgLayer, col="grey",colNA="darkgrey",main=spp)
     ## need to make sure not factors and plotting numeric
     points(labeledLoc$longitude,labeledLoc$latitude,
@@ -1278,7 +1278,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   #print("endplot1")
 
 
-## removing single individual subspecies 
+## removing single individual subspecies
   print("Removing single-individual subspecies")
 
 
@@ -1294,8 +1294,8 @@ for (sub in unique(labeledLoc$subspecies)){
 
   ## convert to polygons
   print("Converting density maps to polygons")
-  ## can't handle if there's no data in previous step 
-   
+  ## can't handle if there's no data in previous step
+
   densityPolygons = lapply(densityRasters,function(dens){
     densPol = densityMapToPolygons(densityMap=dens)
     return(densPol)
@@ -1305,8 +1305,8 @@ for (sub in unique(labeledLoc$subspecies)){
     for(i in 1:length(densityPolygons)){
       name = names(densityPolygons)[[i]]
       png(paste("RawDensityPolygon_",spp," ",name,".png",sep=""))
-      plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
-      plot(densityPolygons[[i]],add=T,col=viridis::viridis(99))
+      raster::plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
+      sp::spplot(densityPolygons[[i]],add=T,col=viridis::viridis(99))
       dev.off()
     }
 
