@@ -27,26 +27,37 @@ NULL
 #' listFromSubspeciesOcc = subspeciesOccQuery(spp="Cardinalis sinuatus",
 #'         subsppList=c("sinuatus","peninsulae","fulvescens"),pointLimit=100,
 #'         dbToQuery="gbif")
-subspeciesOccQuery = function(spp="Phainopepla nitens",subsppList=c("nitens","lepida"),
-                              pointLimit=500,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet")) {
+subspeciesOccQuery = function(spp = "Phainopepla nitens",
+                              subsppList = c("nitens", "lepida"),
+                              pointLimit = 500,
+                              dbToQuery = c("gbif", "bison", "inat", "ebird", "ecoengine", "vertnet")) {
   ## this function uses spocc to query for one species and multiple subspecies
   #library(spocc)
 
-  print(paste("Getting Species: ",spp))
-  sppOcc = spocc::occ(query=spp,limit=pointLimit,has_coords=T,from=dbToQuery)
+  print(paste("Getting Species: ", spp))
+  sppOcc = spocc::occ(
+    query = spp,
+    limit = pointLimit,
+    has_coords = T,
+    from = dbToQuery
+  )
 
-  subSppListOcc = lapply(subsppList,function(x){
-    print(paste("     Getting Subspecies: ",x))
-    return(spocc::occ(query=paste(spp,x,sep=" "),
-                      limit=pointLimit,has_coords=T,from=dbToQuery))
+  subSppListOcc = lapply(subsppList, function(x) {
+    print(paste("     Getting Subspecies: ", x))
+    return(spocc::occ(
+      query = paste(spp, x, sep = " "),
+      limit = pointLimit,
+      has_coords = T,
+      from = dbToQuery
+    ))
   })
   names(subSppListOcc) = subsppList
 
   print(sppOcc)
   print(subSppListOcc)
 
-  toReturn = list(sppOcc,subSppListOcc)
-  names(toReturn) = c("unknown","labeled")
+  toReturn = list(sppOcc, subSppListOcc)
+  names(toReturn) = c("unknown", "labeled")
   return(toReturn)
 
 }
@@ -68,7 +79,8 @@ subspeciesOccQuery = function(spp="Phainopepla nitens",subsppList=c("nitens","le
 #'         dbToQuery="gbif")
 #' sppLocLab = occ2df_subspeciesLabels(subsppOccList_object=listFromSubspeciesOcc[[1]],
 #'         subsppOccList_name=names(listFromSubspeciesOcc)[1])
-occ2df_subspeciesLabels = function(subsppOccList_object,subsppOccList_name){
+occ2df_subspeciesLabels = function(subsppOccList_object,
+                                   subsppOccList_name) {
   ## thus function turns an occ object into a dataframe with a column for subspecies
   ## TODO: make it optional to do the "unique" thing for future processing
   ## TODO: does not work if zero records
@@ -76,13 +88,12 @@ occ2df_subspeciesLabels = function(subsppOccList_object,subsppOccList_name){
   sppDf = data.frame(spocc::occ2df(subsppOccList_object))
 
   if (nrow(sppDf) <= 0) {
-  	sppLocLab = sppDf
-  	print("THIS SUBSPECIES HAS ZERO RECORDS")
+    sppLocLab = sppDf
+    print("THIS SUBSPECIES HAS ZERO RECORDS")
   } else {
-
-  sppLoc = unique(na.omit(sppDf[,1:3]))
-  sppLocLab = sppDf
-  sppLocLab$subspecies = subsppOccList_name
+    sppLoc = unique(na.omit(sppDf[, 1:3]))
+    sppLocLab = sppDf
+    sppLocLab$subspecies = subsppOccList_name
 
   }
 
@@ -116,13 +127,16 @@ labelSubspecies = function(subsppOccList) {
   sppOcc = subsppOccList[[1]]
   name_sppOcc = names(subsppOccList)[1]
   #print("Giving occ2df labels")
-  sppLocLab = occ2df_subspeciesLabels(subsppOccList_object=sppOcc,subsppOccList_name=name_sppOcc)
+  sppLocLab = occ2df_subspeciesLabels(subsppOccList_object = sppOcc,
+                                      subsppOccList_name = name_sppOcc)
   labeledOcc = subsppOccList[[2]]
-  for(occ in 1:length(labeledOcc)){
-  	print(names(labeledOcc)[[occ]])
-    subsppLoc = occ2df_subspeciesLabels(subsppOccList_object=labeledOcc[[occ]],
-                                        subsppOccList_name=names(labeledOcc)[[occ]])
-    sppLocLab = rbind(sppLocLab,subsppLoc)
+  for (occ in 1:length(labeledOcc)) {
+    print(names(labeledOcc)[[occ]])
+    subsppLoc = occ2df_subspeciesLabels(
+      subsppOccList_object = labeledOcc[[occ]],
+      subsppOccList_name = names(labeledOcc)[[occ]]
+    )
+    sppLocLab = rbind(sppLocLab, subsppLoc)
   }
   return(sppLocLab)
 }
@@ -150,17 +164,21 @@ labelSubspecies = function(subsppOccList) {
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' dens = subspeciesDensityMap(localities=locs,quantile=0.95,
 #'         xmin=-125,xmax=-60,ymin=10,ymax=50)
-subspeciesDensityMap = function(localities,quantile=0.95,xmin=-125,
-                                xmax=-60,ymin=10,ymax=50) {
+subspeciesDensityMap = function(localities,
+                                quantile = 0.95,
+                                xmin = -125,
+                                xmax = -60,
+                                ymin = 10,
+                                ymax = 50) {
   ## this function uses kernel density to make a raster that will then be used to filter
   ## the data to remove all but the 5% (or 1-quantile) most dense cells
 
   #library(MASS)
   #library(raster)
-  range = c( xmin, xmax, ymin, ymax)
+  range = c(xmin, xmax, ymin, ymax)
   ext = raster::extent(range)
 
-  w1 = matrix(1,3,3)
+  w1 = matrix(1, 3, 3)
   ## generate the two dimensional kernel density estimation
 
   if (nrow(localities) == 1) {
@@ -168,11 +186,16 @@ subspeciesDensityMap = function(localities,quantile=0.95,xmin=-125,
     return(NULL)
   }
 
-  density = MASS::kde2d(as.numeric(localities$longitude), as.numeric(localities$latitude), lims=range, n=50)
+  density = MASS::kde2d(
+    as.numeric(localities$longitude),
+    as.numeric(localities$latitude),
+    lims = range,
+    n = 50
+  )
   ## convert to raster
   densRas = raster::raster(density)
   ## take the top percentile of the points, only the densest areas
-  quan = quantile(densRas[densRas],quantile)
+  quan = quantile(densRas[densRas], quantile)
   densRas_trim = densRas
   densRas_trim[densRas_trim <= quan] = NA
   #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
@@ -205,7 +228,13 @@ densityMapToPolygons = function(densityMap) {
   #library(raster)
   polygon = densityMap
   polygon[!is.na(polygon)] = 1
-  polygon <- sp::disaggregate(raster::rasterToPolygons(polygon, fun=NULL, na.rm=T,dissolve=T))
+  polygon <-
+    sp::disaggregate(raster::rasterToPolygons(
+      polygon,
+      fun = NULL,
+      na.rm = T,
+      dissolve = T
+    ))
   #plot(polygon)
   return(polygon)
 }
@@ -251,7 +280,8 @@ densityMapToPolygons = function(densityMap) {
 #' ful_polygonsToRemove = polygonsToRemove$subsppBpoly_toremove
 #' overlapToRemove_sin = polygonsToRemove$subsppA_intToRemove
 #' overlapToRemove_ful = polygonsToRemove$subsppB_intToRemove
-flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
+flagPolygonOverlap = function(subsppPoly1 = polA,
+                              subsppPoly2 = polB) {
   ##function(subsppPoly1,subsppPoly2)
   ## this function checks for overlaps between polygons
   ## TODO: remove polygon if not touching another of same spp
@@ -267,8 +297,10 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
   overlapsToRemove_subsppA = c()
   overlapsToRemove_subsppB = c()
 
-  for (feature_subsppA in (1:length(subsppPoly1))){ ## get the features within the subspecies polygon
-    for(feature_subsppB in (1:length(subsppPoly2))) { ## get the features within the subspecies polygon
+  for (feature_subsppA in (1:length(subsppPoly1))) {
+    ## get the features within the subspecies polygon
+    for (feature_subsppB in (1:length(subsppPoly2))) {
+      ## get the features within the subspecies polygon
       ## check areas
       totArea1 = rgeos::gArea(subsppPoly1) ## the whole area of the subspecies
       totArea2 = rgeos::gArea(subsppPoly2) ## the whole area of the subspecies
@@ -280,9 +312,9 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
       # subsppPoly1[feature_subsppA,]$featureArea = area1
       # subsppPoly2[feature_subsppB]$featureArea = area2
 
-      if(rgeos::gIntersects(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])){
+      if (rgeos::gIntersects(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])) {
         #print("INTERSECTS")
-        testInt = rgeos::gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])
+        testInt = rgeos::gIntersection(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])
         #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
         #print(length(intersect))
 
@@ -293,16 +325,16 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
         #plot(subsppPoly2[feature_subsppB,],border="cyan",add=T)
         testArea = rgeos::gArea(testInt)
 
-        if(testArea > 0) {
+        if (testArea > 0) {
           #print("OVERLAP AREA NOT ZERO")
-          intersect = raster::intersect(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])
+          intersect = raster::intersect(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])
           #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
-          areaInt=rgeos::gArea(intersect)
+          areaInt = rgeos::gArea(intersect)
 
           ## if they overlap
 
-          area1percent = areaInt/totArea1 ## the area of the feature as a percent of the area of the subspecies
-          area2percent = areaInt/totArea2
+          area1percent = areaInt / totArea1 ## the area of the feature as a percent of the area of the subspecies
+          area2percent = areaInt / totArea2
 
           if (areaInt >= area1 || areaInt >= area2) {
             #print("SUBSUMED")
@@ -312,10 +344,10 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
 
 
               ## check if the area is the entire subspecies range
-              if (area1percent != 1){
+              if (area1percent != 1) {
                 ## remove the area
                 #print("SUBSPP1 SUBSUMED")
-                badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+                badList_subsppA_features = c(badList_subsppA_features, feature_subsppA)
               }
 
               ## TODO: change to check for density?
@@ -325,11 +357,11 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
               ## if the overlap entirely subsumes an area
 
               ## check if the area is the entire subspecies range
-              if (area2percent != 1){
+              if (area2percent != 1) {
                 ## remove the area
                 ## TODO: change to check for density?
                 #print("SUBSPP2 SUBSUMED")
-                badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+                badList_subsppB_features = c(badList_subsppB_features, feature_subsppB)
               }
 
             }
@@ -339,22 +371,24 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
             if (area1percent <= area2percent) {
               #print("AREA1 IS LARGER")
               #print("remove area1")
-              overlapsToRemove_subsppA = c(overlapsToRemove_subsppA,intersect)
+              overlapsToRemove_subsppA = c(overlapsToRemove_subsppA, intersect)
             }
             else if (area1percent >= area2percent) {
               #print("AREA2 IS LARGER")
               #print("remove area1")
-              overlapsToRemove_subsppB = c(overlapsToRemove_subsppB,intersect)
+              overlapsToRemove_subsppB = c(overlapsToRemove_subsppB, intersect)
             }
           }
         }
       }
     }
   }
-  toReturn = list(subsppApoly_toremove = badList_subsppA_features,
-                  subsppBpoly_toremove = badList_subsppB_features,
-                  subsppA_intToRemove = overlapsToRemove_subsppA,
-                  subsppB_intToRemove = overlapsToRemove_subsppB)
+  toReturn = list(
+    subsppApoly_toremove = badList_subsppA_features,
+    subsppBpoly_toremove = badList_subsppB_features,
+    subsppA_intToRemove = overlapsToRemove_subsppA,
+    subsppB_intToRemove = overlapsToRemove_subsppB
+  )
   return(toReturn)
 }
 
@@ -399,7 +433,9 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
 #' ful_polygonsToRemove = polygonsToRemove$subsppBpoly_toremove
 #' overlapToRemove_sin = polygonsToRemove$subsppA_intToRemove
 #' overlapToRemove_ful = polygonsToRemove$subsppB_intToRemove
-flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB,crs="+proj=longlat +ellps=WGS84"){
+flagPolygonOverlap2 = function(subsppPoly1 = polA,
+                               subsppPoly2 = polB,
+                               crs = "+proj=longlat +ellps=WGS84") {
   ##function(subsppPoly1,subsppPoly2)
   ## this function checks for overlaps between polygons
   ## TODO: remove polygon if not touching another of same spp
@@ -417,8 +453,10 @@ flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB,crs="+proj=long
 
   ## NOT RIGHT BECAUSE NOT ADDING TO CORRECT SPOTS
 
-  for (feature_subsppA in (1:length(subsppPoly1))){ ## get the features within the subspecies polygon
-    for(feature_subsppB in (1:length(subsppPoly2))) { ## get the features within the subspecies polygon
+  for (feature_subsppA in (1:length(subsppPoly1))) {
+    ## get the features within the subspecies polygon
+    for (feature_subsppB in (1:length(subsppPoly2))) {
+      ## get the features within the subspecies polygon
       ## check areas
 
       ## Warning message:
@@ -437,9 +475,9 @@ flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB,crs="+proj=long
       # subsppPoly1[feature_subsppA,]$featureArea = area1
       # subsppPoly2[feature_subsppB]$featureArea = area2
 
-      if(rgeos::gIntersects(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])){
+      if (rgeos::gIntersects(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])) {
         #print("INTERSECTS")
-        testInt = rgeos::gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])
+        testInt = rgeos::gIntersection(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])
         #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
         #print(length(intersect))
 
@@ -450,80 +488,99 @@ flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB,crs="+proj=long
         #plot(subsppPoly2[feature_subsppB,],border="cyan",add=T)
         testArea = rgeos::gArea(testInt)
 
-        if(testArea > 0) {
+        if (testArea > 0) {
           #print("OVERLAP AREA NOT ZERO")
-          intersect = raster::intersect(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,])
+          intersect = raster::intersect(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])
           #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
-          areaInt=rgeos::gArea(intersect)
+          areaInt = rgeos::gArea(intersect)
 
           ## if they overlap
 
-          area1percent = areaInt/totArea1 ## the area of the feature as a percent of the area of the subspecies
-          area2percent = areaInt/totArea2
+          area1percent = areaInt / totArea1 ## the area of the feature as a percent of the area of the subspecies
+          area2percent = areaInt / totArea2
 
           ## NEW IF STATEMENTS
-          if (area1 > area2) { ## if A big B small -- area1 vs area2
-            if (testArea < area2) { ## if B not subsumed, remove from A -- testArea
+          if (area1 > area2) {
+            ## if A big B small -- area1 vs area2
+            if (testArea < area2) {
+              ## if B not subsumed, remove from A -- testArea
               #badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
-              overlapsToRemove_subsppA = c(overlapsToRemove_subsppA,intersect)
+              overlapsToRemove_subsppA = c(overlapsToRemove_subsppA, intersect)
 
             }
-            else if (testArea >= area2) { ## else if B subsumed
-              if (area2percent == 1) { ## if B = 100% of subspecies, remove from A -- area2percent
+            else if (testArea >= area2) {
+              ## else if B subsumed
+              if (area2percent == 1) {
+                ## if B = 100% of subspecies, remove from A -- area2percent
                 #badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
-                overlapsToRemove_subsppA = c(overlapsToRemove_subsppA,intersect)
+                overlapsToRemove_subsppA = c(overlapsToRemove_subsppA, intersect)
 
               }
-              else if (area2percent != 1) { ## else if B not 100% of subspecies, remove from B
-                badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+              else if (area2percent != 1) {
+                ## else if B not 100% of subspecies, remove from B
+                badList_subsppB_features = c(badList_subsppB_features, feature_subsppB)
               }
             }
           }
-          else if (area1 < area2) { ## else if A small B big
-            if (testArea < area1) {## if A not subsumed, remove from B -- area1percent
+          else if (area1 < area2) {
+            ## else if A small B big
+            if (testArea < area1) {
+              ## if A not subsumed, remove from B -- area1percent
               #badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
-              overlapsToRemove_subsppB = c(overlapsToRemove_subsppB,intersect)
+              overlapsToRemove_subsppB = c(overlapsToRemove_subsppB, intersect)
 
             }
-            else if (testArea >= area1) { ## else if A subsumed
-              if (area1percent == 1) { ## if A = 100% of subspecies, remove from B
+            else if (testArea >= area1) {
+              ## else if A subsumed
+              if (area1percent == 1) {
+                ## if A = 100% of subspecies, remove from B
                 #badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
-                overlapsToRemove_subsppB = c(overlapsToRemove_subsppB,intersect)
+                overlapsToRemove_subsppB = c(overlapsToRemove_subsppB, intersect)
 
               }
-              else if (area1percent != 1) { ## else if A not 100% of subspecies, remove from A
-                badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+              else if (area1percent != 1) {
+                ## else if A not 100% of subspecies, remove from A
+                badList_subsppA_features = c(badList_subsppA_features, feature_subsppA)
               }
             }
           }
-          else if (area1 == area2) { ## else if A = B
+          else if (area1 == area2) {
+            ## else if A = B
             ## check total areas and remove larger
             if (totArea1 > totArea2) {
               ## if total A is greater than total B, remove A
               #badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
-              overlapsToRemove_subsppA = c(overlapsToRemove_subsppA,intersect)
+              overlapsToRemove_subsppA = c(overlapsToRemove_subsppA, intersect)
 
             }
-            else if (totArea1 < totArea2) { ## if total B is greater than total A, remove B
+            else if (totArea1 < totArea2) {
+              ## if total B is greater than total A, remove B
               #badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
-              overlapsToRemove_subsppB = c(overlapsToRemove_subsppB,intersect)
+              overlapsToRemove_subsppB = c(overlapsToRemove_subsppB, intersect)
 
             }
-            else if (totArea1 == totArea2) { ## if they are the exact same size
-              if (testArea < area1 && testArea < area2) { ## if neither subsumed, remove arbitrary
-                flip = sample(1:2,1)
-                if (flip == 1) { ## flip coin remove A
+            else if (totArea1 == totArea2) {
+              ## if they are the exact same size
+              if (testArea < area1 &&
+                  testArea < area2) {
+                ## if neither subsumed, remove arbitrary
+                flip = sample(1:2, 1)
+                if (flip == 1) {
+                  ## flip coin remove A
                   #badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
-                  overlapsToRemove_subsppA = c(overlapsToRemove_subsppA,intersect)
+                  overlapsToRemove_subsppA = c(overlapsToRemove_subsppA, intersect)
 
                 }
-                else if (flip == 2) { ## flip coin remove B
+                else if (flip == 2) {
+                  ## flip coin remove B
                   #badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
-                  overlapsToRemove_subsppB = c(overlapsToRemove_subsppB,intersect)
+                  overlapsToRemove_subsppB = c(overlapsToRemove_subsppB, intersect)
 
                 }
               }
-              else if (testArea == area1 && testArea == area2) { ## if both are subsumed, keep both
+              else if (testArea == area1 &&
+                       testArea == area2) {
+                ## if both are subsumed, keep both
                 print("EXACT MATCH, KEEPING BOTH ")
               }
             }
@@ -535,10 +592,12 @@ flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB,crs="+proj=long
 
 
 
-    toReturn = list(subsppApoly_toremove = badList_subsppA_features,
-                    subsppBpoly_toremove = badList_subsppB_features,
-                    subsppA_intToRemove = overlapsToRemove_subsppA,
-                    subsppB_intToRemove = overlapsToRemove_subsppB)
+    toReturn = list(
+      subsppApoly_toremove = badList_subsppA_features,
+      subsppBpoly_toremove = badList_subsppB_features,
+      subsppA_intToRemove = overlapsToRemove_subsppA,
+      subsppB_intToRemove = overlapsToRemove_subsppB
+    )
     return(toReturn)
   }
 }
@@ -565,7 +624,7 @@ flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB,crs="+proj=long
 #' @export
 #' @examples
 #'
-closestPolygonFunction = function(listOfPolygons){
+closestPolygonFunction = function(listOfPolygons) {
   ## TODO: is broken
   ##TODO: figure out how to do so that you check if polygons are between other polygons
   ## for now just remove if touching non-self boundary
@@ -573,29 +632,29 @@ closestPolygonFunction = function(listOfPolygons){
   newListPoly = listOfPolygons
   polyNames = names(newListPoly)
 
-  for(subspp_i in 1:length(newListPoly)){
-    if (polyNames[subspp_i]!="unknown"){
+  for (subspp_i in 1:length(newListPoly)) {
+    if (polyNames[subspp_i] != "unknown") {
       print(polyNames[subspp_i])
       wholePol = newListPoly[[subspp_i]]
       wholePol = sp::disaggregate(wholePol)
 
-      if( length(wholePol) <= 1) {
+      if (length(wholePol) <= 1) {
         print("only one feature, skipping")
       }
       else {
-        wholePol$area = rgeos::gArea(wholePol,byid=T)
+        wholePol$area = rgeos::gArea(wholePol, byid = T)
         print(wholePol$area)
 
         ## sort features by size
         wholePol = wholePol[rev(order(wholePol$area)),]
         #print(wholePol)
 
-        for(features_j in 1:length(wholePol)){
+        for (features_j in 1:length(wholePol)) {
           feat2check = wholePol[features_j,]
-          if(rgeos::gArea(feat2check)<max(wholePol$area)){
+          if (rgeos::gArea(feat2check) < max(wholePol$area)) {
             ## if not the largest chunk, check if touching other chunks
-            int = (rgeos::gIntersection(feat2check,wholePol[-features_j,]))
-            if(is.null(int)){
+            int = (rgeos::gIntersection(feat2check, wholePol[-features_j,]))
+            if (is.null(int)) {
               ## diagonal is fine
               ## if not touching, check what polygon is shortest distance to
               polyListForCheck = newListPoly
@@ -603,16 +662,28 @@ closestPolygonFunction = function(listOfPolygons){
               #plot(newListPoly[[subspp_i]])
               #plot(polyListForCheck[[subspp_i]])
               #polyListForCheck = polyListForCheck[names(polyListForCheck)!="unknown"]
-              dists = sapply(1:length(polyListForCheck),function(i){
-                x = ((rgeos::gDistance(feat2check,polyListForCheck[[i]])))
+              dists = sapply(1:length(polyListForCheck), function(i) {
+                x = ((
+                  rgeos::gDistance(feat2check, polyListForCheck[[i]])
+                ))
                 names(x) = names(polyListForCheck)[[i]]
                 return(x)
               })
-              dists[which(names(dists)=="unknown")] = 1e9
-              print(paste("Testing ",names(polyListForCheck)[subspp_i]," against ",paste(names(which(dists==min(dists))),collapse=", "),sep=""))
-              if (!(polyNames[subspp_i] %in% names(which(dists==min(dists))))){
+              dists[which(names(dists) == "unknown")] = 1e9
+              print(paste(
+                "Testing ",
+                names(polyListForCheck)[subspp_i],
+                " against ",
+                paste(names(which(
+                  dists == min(dists)
+                )), collapse = ", "),
+                sep = ""
+              ))
+              if (!(polyNames[subspp_i] %in% names(which(dists == min(
+                dists
+              ))))) {
                 print("Closest is not same subspecies")
-                if(min(dists) == 0){
+                if (min(dists) == 0) {
                   print("Touching other subspecies, removing")
                   removed = wholePol[-features_j,]
                   newListPoly[[subspp_i]] = removed
@@ -662,34 +733,36 @@ closestPolygonFunction = function(listOfPolygons){
 #'         idList = sin_polygonsToRemove,intList=overlapToRemove_sin)
 #' ful_densityPolygon_trim = trimPolygonsByOverlap(polygon=densPol_ful,
 #'         idList = ful_polygonsToRemove,intList=overlapToRemove_ful)
-trimPolygonsByOverlap = function(polygon,idList=NULL,intList=NULL) {
+trimPolygonsByOverlap = function(polygon,
+                                 idList = NULL,
+                                 intList = NULL) {
   ## function(polygon,idList=NULL,intList=NULL)
   ## it then removes polygons that are completely within another polygon as ID'd by flagPolygonOverlap()
   ## TODO: what about things that are in neither polygon?
   ## TODO: what about things that are in both?
 
   polytrim = polygon
-  if(is.null(idList)){
-    if(is.null(intList)){
+  if (is.null(idList)) {
+    if (is.null(intList)) {
       #print("no overlaps to remove")
-      polytrim = rgeos::gUnion(polytrim,polytrim)
+      polytrim = rgeos::gUnion(polytrim, polytrim)
     }
     else {
-      for(int in 1:length(intList)){
-        polytrim = rgeos::gDifference(polytrim,intList[[int]])
+      for (int in 1:length(intList)) {
+        polytrim = rgeos::gDifference(polytrim, intList[[int]])
       }
       #print("removing differences from larger shapefile")
     }
   }
   else {
     polytrim = polygon[-idList,]
-    if(is.null(intList)){
+    if (is.null(intList)) {
       #print("removing subsumed polygons")
-      polytrim = rgeos::gUnion(polytrim,polytrim)
+      polytrim = rgeos::gUnion(polytrim, polytrim)
     }
     else {
-      for(int in 1:length(intList)){
-        polytrim = rgeos::gDifference(polytrim,intList[[int]])
+      for (int in 1:length(intList)) {
+        polytrim = rgeos::gDifference(polytrim, intList[[int]])
       }
       #print("removing subsumed polygons and differences from larger shape")
     }
@@ -728,11 +801,12 @@ trimPolygonsByOverlap = function(polygon,idList=NULL,intList=NULL) {
 #' densityPolygons_trim = polygonTrimmer(polygonList=densityPolygons,
 #'         namesList=c("sinuatus","fulvescens"))
 #'
-polygonTrimmer = function(polygonList,namesList) {
+polygonTrimmer = function(polygonList, namesList) {
   newPolygonList = polygonList
-  for(slotA in 1:length(namesList)){
-    for(slotB in 1:length(namesList)){
-      if(namesList[[slotA]]!="unknown" && namesList[[slotB]]!="unknown" && slotA!=slotB){
+  for (slotA in 1:length(namesList)) {
+    for (slotB in 1:length(namesList)) {
+      if (namesList[[slotA]] != "unknown" &&
+          namesList[[slotB]] != "unknown" && slotA != slotB) {
         #print(paste(slotA,slotB,sep=" "))
         #print(paste(namesList[[slotA]],"with",namesList[[slotB]],sep=" "))
         polA = newPolygonList[[slotA]]
@@ -751,19 +825,19 @@ polygonTrimmer = function(polygonList,namesList) {
 
 
         ## this throws the warnings
-        polygonsToRemove = (flagPolygonOverlap2(polA,polB)) ######### CHANGED
+        polygonsToRemove = (flagPolygonOverlap2(polA, polB)) ######### CHANGED
         #print("CALLING NEW FUNCTION")
         subsppA_polygonsToRemove = polygonsToRemove$subsppApoly_toremove
         subsppB_polygonsToRemove = polygonsToRemove$subsppBpoly_toremove
         overlapToRemove_subsppA = polygonsToRemove$subsppA_intToRemove
         overlapToRemove_subsppB = polygonsToRemove$subsppB_intToRemove
 
-        subsppA_densityPolygon_trim = trimPolygonsByOverlap(polygon=polA,
+        subsppA_densityPolygon_trim = trimPolygonsByOverlap(polygon = polA,
                                                             idList = subsppA_polygonsToRemove,
-                                                            intList=overlapToRemove_subsppA)
-        subsppB_densityPolygon_trim = trimPolygonsByOverlap(polygon=polB,
+                                                            intList = overlapToRemove_subsppA)
+        subsppB_densityPolygon_trim = trimPolygonsByOverlap(polygon = polB,
                                                             idList = subsppB_polygonsToRemove,
-                                                            intList=overlapToRemove_subsppB)
+                                                            intList = overlapToRemove_subsppB)
 
 
         subsppA = namesList[[slotA]]
@@ -817,30 +891,35 @@ polygonTrimmer = function(polygonList,namesList) {
 #' polyLocations = labeledLoc
 #' polyLocations = locatePolygonPoints(test_points=polyLocations,polygonA=densPol_sin,
 #'         polygonB=densPol_ful,crs="+proj=longlat +ellps=WGS84",setcoord = TRUE,nameA="sinuatus",nameB="fulvescens")
-locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat +ellps=WGS84",setcoord = TRUE,
-                               nameA="A",nameB="B") {
+locatePolygonPoints = function(test_points,
+                               polygonA,
+                               polygonB,
+                               crs = "+proj=longlat +ellps=WGS84",
+                               setcoord = TRUE,
+                               nameA = "A",
+                               nameB = "B") {
   ## this function determines whether points overlap with polygon A, polygon B, neither, or both
   ## and then adds columns to label them
   #library(dplyr)
   pts = test_points
   pts$longitude = as.numeric(pts$longitude)
   pts$latitude = as.numeric(pts$latitude)
-  if(setcoord==T){
-    sp::coordinates(pts) = ~longitude+latitude
+  if (setcoord == T) {
+    sp::coordinates(pts) = ~ longitude + latitude
     sp::proj4string(pts) = sp::CRS(crs)
-    polygonA = sp::spTransform(polygonA,crs)
-    polygonB = sp::spTransform(polygonB,crs)
+    polygonA = sp::spTransform(polygonA, crs)
+    polygonB = sp::spTransform(polygonB, crs)
   }
 
-  inpolygonA = test_points[which(!is.na(sp::over(pts,polygonA))),]
-  inpolygonB = test_points[which(!is.na(sp::over(pts,polygonB))),]
-  notInpolygonA = test_points[which(is.na(sp::over(pts,polygonA))),]
-  notInpolygonB = test_points[which(is.na(sp::over(pts,polygonB))),]
+  inpolygonA = test_points[which(!is.na(sp::over(pts, polygonA))),]
+  inpolygonB = test_points[which(!is.na(sp::over(pts, polygonB))),]
+  notInpolygonA = test_points[which(is.na(sp::over(pts, polygonA))),]
+  notInpolygonB = test_points[which(is.na(sp::over(pts, polygonB))),]
 
-  inBothPolygons = dplyr::intersect(inpolygonA,inpolygonB)
-  inNeitherPolygon = dplyr::intersect(notInpolygonA,notInpolygonB)
-  onlypolygonA = dplyr::intersect(inpolygonA,notInpolygonB)
-  onlypolygonB = dplyr::intersect(inpolygonB,notInpolygonA)
+  inBothPolygons = dplyr::intersect(inpolygonA, inpolygonB)
+  inNeitherPolygon = dplyr::intersect(notInpolygonA, notInpolygonB)
+  onlypolygonA = dplyr::intersect(inpolygonA, notInpolygonB)
+  onlypolygonB = dplyr::intersect(inpolygonB, notInpolygonA)
 
   #print("testpoint colnames")
   #print(colnames(test_points))
@@ -857,22 +936,24 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   #print(paste(nameA,nameB))
 
   inBothPolygons_1 = cbind(inBothPolygons,
-                           testcol1=rep(1,length(inBothPolygons[,1])),
-                           testcol2=rep(1,length(inBothPolygons[,1])))#,rep("both",length(inBothPolygons[,1]))
+                           testcol1 = rep(1, length(inBothPolygons[, 1])),
+                           testcol2 = rep(1, length(inBothPolygons[, 1])))#,rep("both",length(inBothPolygons[,1]))
   #)
   #print(head(inBothPolygons_1))
 
-  inNeitherPolygon_1 = cbind(inNeitherPolygon,
-                             testcol1=rep(0,length(inNeitherPolygon[,1])),
-                             testcol2=rep(0,length(inNeitherPolygon[,1])))#,rep("neither",length(inNeitherPolygon[,1]))
+  inNeitherPolygon_1 = cbind(
+    inNeitherPolygon,
+    testcol1 = rep(0, length(inNeitherPolygon[, 1])),
+    testcol2 = rep(0, length(inNeitherPolygon[, 1]))
+  )#,rep("neither",length(inNeitherPolygon[,1]))
   #)
   onlypolygonA_1 = cbind(onlypolygonA,
-                         testcol1=rep(1,length(onlypolygonA[,1])),
-                         testcol2=rep(0,length(onlypolygonA[,1])))#,rep(nameA,length(onlypolygonA[,1]))
+                         testcol1 = rep(1, length(onlypolygonA[, 1])),
+                         testcol2 = rep(0, length(onlypolygonA[, 1])))#,rep(nameA,length(onlypolygonA[,1]))
   #)
   onlypolygonB_1 = cbind(onlypolygonB,
-                         testcol1=rep(0,length(onlypolygonB[,1])),
-                         testcol2=rep(1,length(onlypolygonB[,1])))#,rep(nameB,length(onlypolygonB[,1]))
+                         testcol1 = rep(0, length(onlypolygonB[, 1])),
+                         testcol2 = rep(1, length(onlypolygonB[, 1])))#,rep(nameB,length(onlypolygonB[,1]))
   #)
   #print("AHHHHHHH")
   # length_colnames = length(colnames(inBothPolygons))
@@ -881,14 +962,14 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   #
   # inBothPolygons_1 <- setNames(inBothPolygons_1, c(colnames(inBothPolygons[,1:(length_colnames-2)]),nameA,nameB))
 
-  colnames(inBothPolygons_1)[which(colnames(inBothPolygons_1)=="testcol1")] = paste(nameA) ## WHY IS THIS SETTING TO 2 AND 3 INSTEAD OF 2 AND 1 ETCCCCCC
-  colnames(inBothPolygons_1)[which(colnames(inBothPolygons_1)=="testcol2")] = paste(nameB)
-  colnames(inNeitherPolygon_1)[which(colnames(inNeitherPolygon_1)=="testcol1")] = paste(nameA)
-  colnames(inNeitherPolygon_1)[which(colnames(inNeitherPolygon_1)=="testcol2")] = paste(nameB)
-  colnames(onlypolygonA_1)[which(colnames(onlypolygonA_1)=="testcol1")] = paste(nameA)
-  colnames(onlypolygonA_1)[which(colnames(onlypolygonA_1)=="testcol2")] = paste(nameB)
-  colnames(onlypolygonB_1)[which(colnames(onlypolygonB_1)=="testcol1")] = paste(nameA)
-  colnames(onlypolygonB_1)[which(colnames(onlypolygonB_1)=="testcol2")] = paste(nameB)
+  colnames(inBothPolygons_1)[which(colnames(inBothPolygons_1) == "testcol1")] = paste(nameA) ## WHY IS THIS SETTING TO 2 AND 3 INSTEAD OF 2 AND 1 ETCCCCCC
+  colnames(inBothPolygons_1)[which(colnames(inBothPolygons_1) == "testcol2")] = paste(nameB)
+  colnames(inNeitherPolygon_1)[which(colnames(inNeitherPolygon_1) == "testcol1")] = paste(nameA)
+  colnames(inNeitherPolygon_1)[which(colnames(inNeitherPolygon_1) == "testcol2")] = paste(nameB)
+  colnames(onlypolygonA_1)[which(colnames(onlypolygonA_1) == "testcol1")] = paste(nameA)
+  colnames(onlypolygonA_1)[which(colnames(onlypolygonA_1) == "testcol2")] = paste(nameB)
+  colnames(onlypolygonB_1)[which(colnames(onlypolygonB_1) == "testcol1")] = paste(nameA)
+  colnames(onlypolygonB_1)[which(colnames(onlypolygonB_1) == "testcol2")] = paste(nameB)
 
   #colnames(inBothPolygons_1)[to_replace_A] = nameA
   #colnames(inBothPolygons_1)[to_replace_B] = nameB
@@ -908,8 +989,10 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
   #print(colnames(onlypolygonA_1))
   #print(colnames(onlypolygonB_1))
 
-  toReturn = rbind(inBothPolygons_1,inNeitherPolygon_1,
-                   onlypolygonA_1,onlypolygonB_1)
+  toReturn = rbind(inBothPolygons_1,
+                   inNeitherPolygon_1,
+                   onlypolygonA_1,
+                   onlypolygonB_1)
 
   return(toReturn)
 }
@@ -941,9 +1024,9 @@ locatePolygonPoints = function(test_points,polygonA,polygonB,crs="+proj=longlat 
 #' checked = subspeciesMatchChecker(locfile = polyLocations)
 #' checked_suspect = checked$suspect
 #' checked_good = checked$good
-subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
+subspeciesMatchChecker = function(locfile = nitens_loc, subsppNames) {
   #print("a")
-  locWithSubspecies=locfile
+  locWithSubspecies = locfile
   #print("b")
   #subsppNames = names(locWithSubspecies[5:length(names(locWithSubspecies))])
   #print("c")
@@ -953,7 +1036,7 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
   #print("e")
   lastSubsppCol = length(colnames(locWithSubspecies))
   #print("f")
-  subsppAssignCol = locWithSubspecies[,5:length(colnames(locWithSubspecies))]
+  subsppAssignCol = locWithSubspecies[, 5:length(colnames(locWithSubspecies))]
   #print(head(locWithSubspecies))
   # for (colnum in 5:length(colnames(locWithSubspecies))){
   #   print(paste("colnum",colnum))
@@ -971,75 +1054,79 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
   #print("g")
   subsppPriorCol = locWithSubspecies$subspecies
   #print("h")
-  locWithSubspecies$numSubsppGroups <- rowSums(subsppAssignCol, na.rm = TRUE)
+  locWithSubspecies$numSubsppGroups <-
+    rowSums(subsppAssignCol, na.rm = TRUE)
   #print("i")
-  locWithSubspecies$assigned=NA
+  locWithSubspecies$assigned = NA
   #print("j")
 
-  notassigned = locWithSubspecies[which(locWithSubspecies$numSubsppGroups==0),]
+  notassigned = locWithSubspecies[which(locWithSubspecies$numSubsppGroups ==
+                                          0),]
   #print("k")
-  if(nrow(notassigned)!=0){
-    notassigned$assigned="none"
+  if (nrow(notassigned) != 0) {
+    notassigned$assigned = "none"
   }
   #print("l")
 
-  multigroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroups>1),]
+  multigroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroups >
+                                         1),]
   #print("m")
-  if(nrow(multigroup)!=0){
-    multigroup$assigned="multiple"
+  if (nrow(multigroup) != 0) {
+    multigroup$assigned = "multiple"
   }
   #print("n")
 
-  singlegroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroup==1),]
+  singlegroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroup ==
+                                          1),]
   #print("o")
 
   ## check whether mismatch between apriori and not
-  suspectpoints = rbind(multigroup,notassigned)
+  suspectpoints = rbind(multigroup, notassigned)
   goodpoints = data.frame()
   #print("p")
 
-  for(column in 5:lastSubsppCol){
+  for (column in 5:lastSubsppCol) {
     #print(column)
     name = colnames(singlegroup)[column]
     #print(name)
-    assignedThat = singlegroup[singlegroup[,column]==1,]
+    assignedThat = singlegroup[singlegroup[, column] == 1,]
 
     ## breaking if none assigned
 
-    if(nrow(assignedThat)==0){
+    if (nrow(assignedThat) == 0) {
       print("NONE ASSIGNED:")
       print(name)
     } else {
-
-    ## subspp should be unk or the subspp
-    assignedThat$assigned = name
+      ## subspp should be unk or the subspp
+      assignedThat$assigned = name
 
     }
-    okaynames = c("unknown",name)
+    okaynames = c("unknown", name)
 
     wrong1 = assignedThat[which(!(assignedThat$subspecies %in% okaynames)),]
     right1 = assignedThat[which(assignedThat$subspecies %in% okaynames),]
 
 
 
-    notassignedThat = singlegroup[singlegroup[,column]==0,]
+    notassignedThat = singlegroup[singlegroup[, column] == 0,]
 
     wrong2 = notassignedThat[which(notassignedThat$subspecies == name),]
     right2 = notassignedThat[which(notassignedThat$subspecies != name),]
 
     ## DO NOT ADD RIGHT/WRONG 2, NOT ENOUGH INFORMATION YET
-    suspectpoints = rbind(suspectpoints,wrong1)
-    goodpoints = rbind(goodpoints,right1)
+    suspectpoints = rbind(suspectpoints, wrong1)
+    goodpoints = rbind(goodpoints, right1)
   }
   #print("q")
-  suspectpoints=unique(suspectpoints)
-  goodpoints=unique(goodpoints)
+  suspectpoints = unique(suspectpoints)
+  goodpoints = unique(goodpoints)
   #print("r")
 
 
-  return(list(suspect=suspectpoints,
-              good=goodpoints))
+  return(list(suspect = suspectpoints,
+              good = goodpoints))
 }
+
 
 
 
@@ -1054,21 +1141,22 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
 #' @examples
 #'
 #'
-detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
+detectSpatialOutliers = function(localities = locs,
+                                 epsilon = 0.0001) {
   ## use MASS to do linear algebra
-  m = length(localities[,1])
+  m = length(localities[, 1])
 
-  if (m==1){
+  if (m == 1) {
     anomalies = 0
     purged = c()
     kept = localities
 
-    return(list(purged,anomalies,kept))
+    return(list(purged, anomalies, kept))
   }
 
   lat = as.numeric(localities$latitude)
   lon = as.numeric(localities$longitude)
-  space = cbind(lat,lon)
+  space = cbind(lat, lon)
   n = length(space[1,])
   mu = colMeans(space)
   Sigma = cov(space) ## this does the above but faster
@@ -1076,8 +1164,8 @@ detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
   ## SOURCE: https://datascience-enthusiast.com/R/anomaly_detection_R.html
   ## And also the Corusera course Machine Learning by A. Ng
   ## this uses a somewhat different probability density function
-  centered <- caret::preProcess(space,method="center")
-  space_mu <- as.matrix(predict(centered,space))
+  centered <- caret::preProcess(space, method = "center")
+  space_mu <- as.matrix(predict(centered, space))
 
   #sigma2=diag(var(X2))
   #sigma2
@@ -1085,21 +1173,22 @@ detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
   #sigma2 ## this is the same as Sigma on the diagonals, but different on the off-diags
   ## it doesn't matter which you use here you get the same answer
 
-  A=(2*pi)^(-n/2)*det(Sigma)^(-0.5)
-  B = exp(-0.5 *rowSums((space_mu %*% MASS::ginv(Sigma))*space_mu))
-  p_x=A*B
+  A = (2 * pi) ^ (-n / 2) * det(Sigma) ^ (-0.5)
+  B = exp(-0.5 * rowSums((space_mu %*% MASS::ginv(Sigma)) * space_mu))
+  p_x = A * B
 
   #P_x = (1 /( ((2*pi)^(n/2) * (norm(Sigma) ^ (1/2))))) * exp (-1/2*(space-mu) %*% MASS::ginv(Sigma) %*% t(space-mu))
 
-  p_x = cbind(p_x); colnames(p_x) = "anomaly"
+  p_x = cbind(p_x)
+  colnames(p_x) = "anomaly"
 
-  locs_2 = cbind(localities,p_x)
+  locs_2 = cbind(localities, p_x)
 
-  anomalies = which(locs_2$anomaly<epsilon)
+  anomalies = which(locs_2$anomaly < epsilon)
   purged = localities[anomalies,]
   kept = localities[-(anomalies),]
 
-  return(list(purged,anomalies,kept))
+  return(list(purged, anomalies, kept))
 
 }
 
@@ -1142,10 +1231,21 @@ detectSpatialOutliers = function(localities=locs,epsilon = 0.0001){
 #' suspect_occurrences = phainopeplaNitens$loc_suspect,
 #' good_occurrences = phainopeplaNitens$loc_good,
 #' subspecies_polygons = phainopeplaNitens$pol
-databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quantile=0.95,xmin=-125,
-                                        xmax=-60,ymin=10,ymax=50,plotIt=F,bgLayer,outputDir,datafile=NULL,
-                                        epsilon=1e-6,...) {
-
+databaseToAssignedSubspecies = function(spp,
+                                        subsppList,
+                                        pointLimit,
+                                        dbToQuery,
+                                        quantile = 0.95,
+                                        xmin = -125,
+                                        xmax = -60,
+                                        ymin = 10,
+                                        ymax = 50,
+                                        plotIt = F,
+                                        bgLayer,
+                                        outputDir,
+                                        datafile = NULL,
+                                        epsilon = 1e-6,
+                                        ...) {
   ## TODO: allow to begin from any step?
 
   setwd(outputDir)
@@ -1163,15 +1263,18 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   #print(is.null(datafile))
 
   if (is.null(datafile)) {
-
     print("Downloading species occurrences")
     ## TODO: add progress bar
-    listFromSubspeciesOcc = subspeciesOccQuery(spp=spp,subsppList=subsppList,
-                                               pointLimit=pointLimit,dbToQuery=dbToQuery)
+    listFromSubspeciesOcc = subspeciesOccQuery(
+      spp = spp,
+      subsppList = subsppList,
+      pointLimit = pointLimit,
+      dbToQuery = dbToQuery
+    )
 
     ## label the data by subspeces
     print("Labeling data by subspecies")
-    labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
+    labeledLoc = labelSubspecies(subsppOccList = listFromSubspeciesOcc)
 
     ## TODO: add a check where you make sure that the species is correct
 
@@ -1186,17 +1289,15 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
 
   } else if (!(is.null(datafile))) {
+    if (class(datafile) == "character") {
+      ## check whether given an object or a string
 
-	if (class(datafile)=="character") {
-	## check whether given an object or a string
-
-    print("Uploading datafile")
-    labeledLoc = read.csv(datafile,sep="\t",stringsAsFactors=F)
-    print("Extracting datafile relevant cols")
-    labeledLoc = labeledLoc[,1:4]
+      print("Uploading datafile")
+      labeledLoc = read.csv(datafile, sep = "\t", stringsAsFactors = F)
+      print("Extracting datafile relevant cols")
+      labeledLoc = labeledLoc[, 1:4]
     } else {
-
-    labeledLoc = datafile[,c("name","longitude","latitude","subspecies")]
+      labeledLoc = datafile[, c("name", "longitude", "latitude", "subspecies")]
 
     }
 
@@ -1204,17 +1305,27 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   subsppNames = unique(labeledLoc$subspecies)
 
-  if(plotIt==T){
-    png(paste("Labeled occurences",spp,".png"))
+  if (plotIt == T) {
+    png(paste("Labeled occurences", spp, ".png"))
     #print("Plotting")
 
     ## TODO: make this work again it doesn't
 
-    raster::plot(bgLayer, col="grey",colNA="darkgrey",main=spp)
+    raster::plot(bgLayer,
+                 col = "grey",
+                 colNA = "darkgrey",
+                 main = spp)
     ## need to make sure not factors and plotting numeric
-    points(labeledLoc$longitude,labeledLoc$latitude,
-           col=as.factor(labeledLoc$subspecies))
-    legend("top", legend=as.factor(unique(labeledLoc$subspecies)),pch=1,bty="n", col=as.factor(unique(labeledLoc$subspecies)))
+    points(labeledLoc$longitude,
+           labeledLoc$latitude,
+           col = as.factor(labeledLoc$subspecies))
+    legend(
+      "top",
+      legend = as.factor(unique(labeledLoc$subspecies)),
+      pch = 1,
+      bty = "n",
+      col = as.factor(unique(labeledLoc$subspecies))
+    )
     dev.off()
   }
 
@@ -1228,15 +1339,15 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     if (i == 0) {
       #print("full")
       #print(nrow(labeledLoc))
-      detectedLocs = detectSpatialOutliers(localities=labeledLoc,epsilon = epsilon)
+      detectedLocs = detectSpatialOutliers(localities = labeledLoc, epsilon = epsilon)
     }
     else {
       name = subsppNames[[i]]
       if (name != "unknown") {
         #print(name)
-        subset = labeledLoc[labeledLoc$subspecies==name,]
+        subset = labeledLoc[labeledLoc$subspecies == name,]
         #print(nrow(subset))
-        detectedLocs = detectSpatialOutliers(localities=subset,epsilon = epsilon)
+        detectedLocs = detectSpatialOutliers(localities = subset, epsilon = epsilon)
       }
     }
     purged = detectedLocs[[1]]
@@ -1244,24 +1355,45 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
     kept = detectedLocs[[3]] ## DO NOT KEEP THIS
     #print(length(anomalies))
 
-    purged_list = rbind(purged_list,purged)
-    list_of_anomalies = c(list_of_anomalies,anomalies)
-    kept_list = rbind(kept_list,kept)
+    purged_list = rbind(purged_list, purged)
+    list_of_anomalies = c(list_of_anomalies, anomalies)
+    kept_list = rbind(kept_list, kept)
   }
   rows_purged = sort(unique(as.integer(rownames(purged_list))))
 
   if (length(rows_purged) > 0) {
-
-    print(paste("Removing",length(rows_purged),"of",length(labeledLoc[,1]),"detected anomalies"))
+    print(paste(
+      "Removing",
+      length(rows_purged),
+      "of",
+      length(labeledLoc[, 1]),
+      "detected anomalies"
+    ))
     removed = labeledLoc[(rows_purged),]
     labeledLoc = labeledLoc[-(rows_purged),]
 
-    if (plotIt==T) {
-      png(paste("AnomaliesRemoved_",spp,".png",sep=""))
-      raster::plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Anomalies"))
-      points(labeledLoc$longitude,labeledLoc$latitude,col="lightgrey",pch=0)
-      points(removed$longitude,removed$latitude,col=as.factor(removed$subspecies))
-      legend("top", legend=as.factor(unique(removed$subspecies)),pch=1,bty="n", col=as.factor(unique(removed$subspecies)))
+    if (plotIt == T) {
+      png(paste("AnomaliesRemoved_", spp, ".png", sep = ""))
+      raster::plot(
+        bgLayer,
+        col = "grey",
+        colNA = "darkgrey",
+        main = paste("Anomalies")
+      )
+      points(labeledLoc$longitude,
+             labeledLoc$latitude,
+             col = "lightgrey",
+             pch = 0)
+      points(removed$longitude,
+             removed$latitude,
+             col = as.factor(removed$subspecies))
+      legend(
+        "top",
+        legend = as.factor(unique(removed$subspecies)),
+        pch = 1,
+        bty = "n",
+        col = as.factor(unique(removed$subspecies))
+      )
       dev.off()
     }
   } else {
@@ -1271,12 +1403,12 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## removing single individual subspecies
   print("Removing single-individual subspecies")
 
-  for (sub in unique(labeledLoc$subspecies)){
+  for (sub in unique(labeledLoc$subspecies)) {
     #print(sub)
-    rows = (nrow(labeledLoc[labeledLoc$subspecies==sub,]))
-    if(rows==1){
+    rows = (nrow(labeledLoc[labeledLoc$subspecies == sub,]))
+    if (rows == 1) {
       print(sub)
-      labeledLoc = labeledLoc[labeledLoc$subspecies!=sub,]
+      labeledLoc = labeledLoc[labeledLoc$subspecies != sub,]
     }
   }
   subsppNames = unique(labeledLoc$subspecies)
@@ -1291,12 +1423,19 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   print("Building species kernel density maps")
 
-  densityRasters = lapply(subsppNames,function(subspp){
+  densityRasters = lapply(subsppNames, function(subspp) {
     #print(subspp)
     #subspp="hidalgensis"
-    locs = labeledLoc[labeledLoc$subspecies==subspp,]
+    locs = labeledLoc[labeledLoc$subspecies == subspp,]
     #print(head(locs))
-    dens = subspeciesDensityMap(localities=locs,quantile=quantile,xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)
+    dens = subspeciesDensityMap(
+      localities = locs,
+      quantile = quantile,
+      xmin = xmin,
+      xmax = xmax,
+      ymin = ymin,
+      ymax = ymax
+    )
     if (is.null(dens)) {
       dens = 0
     }
@@ -1307,13 +1446,20 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   names(densityRasters) = subsppNames
 
   #print("start plot1")
-  if (plotIt==T) {
-    for(i in 1:length(densityRasters)){
+  if (plotIt == T) {
+    for (i in 1:length(densityRasters)) {
       #print("plotforloop")
       name = names(densityRasters)[[i]]
-      png(paste("DensityRaster_",spp," ",name,".png",sep=""))
-      plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Density, subspp:",name))
-      plot(densityRasters[[i]],add=T,col=viridis::viridis(99))
+      png(paste("DensityRaster_", spp, " ", name, ".png", sep = ""))
+      plot(
+        bgLayer,
+        col = "grey",
+        colNA = "darkgrey",
+        main = paste("Density, subspp:", name)
+      )
+      plot(densityRasters[[i]],
+           add = T,
+           col = viridis::viridis(99))
       dev.off()
     }
   }
@@ -1327,33 +1473,73 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   print("Converting density maps to polygons")
   ## can't handle if there's no data in previous step
 
-  densityPolygons = lapply(densityRasters,function(dens){
+  densityPolygons = lapply(densityRasters, function(dens) {
     #print(names(dens))
-    densPol = densityMapToPolygons(densityMap=dens)
+    densPol = densityMapToPolygons(densityMap = dens)
     return(densPol)
   })
 
-  if (plotIt==T) {
-    for(i in 1:length(densityPolygons)){
+  if (plotIt == T) {
+    for (i in 1:length(densityPolygons)) {
       name = names(densityPolygons)[[i]]
-      png(paste("RawDensityPolygon_",spp," ",name,".png",sep=""))
-      raster::plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
-      sp::spplot(densityPolygons[[i]],add=T,col=viridis::viridis(99))
+      png(paste("RawDensityPolygon_", spp, " ", name, ".png", sep = ""))
+      raster::plot(
+        bgLayer,
+        col = "grey",
+        colNA = "darkgrey",
+        main = paste("Polygon, subspp:", name)
+      )
+      sp::spplot(densityPolygons[[i]],
+                 add = T,
+                 col = viridis::viridis(99))
       dev.off()
     }
 
-    png(paste("RawDensityPolygon_",spp," ALL.png",sep=""))
-    raster::plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
-    cols = c("black","red","blue","green","cyan","magenta",
-             "pink","white","purple","orange","yellow","sienna",
-             "thistle","palegreen","powderblue","aquamarine","violet","mediumslateblue",
-             "lightsalmon","lightblue")
-    for(i in 1:length(densityPolygons)){
+    png(paste("RawDensityPolygon_", spp, " ALL.png", sep = ""))
+    raster::plot(
+      bgLayer,
+      col = "grey",
+      colNA = "darkgrey",
+      main = paste("Polygon, subspp:", name)
+    )
+    cols = c(
+      "black",
+      "red",
+      "blue",
+      "green",
+      "cyan",
+      "magenta",
+      "pink",
+      "white",
+      "purple",
+      "orange",
+      "yellow",
+      "sienna",
+      "thistle",
+      "palegreen",
+      "powderblue",
+      "aquamarine",
+      "violet",
+      "mediumslateblue",
+      "lightsalmon",
+      "lightblue"
+    )
+    for (i in 1:length(densityPolygons)) {
       name = names(densityPolygons)[[i]]
-      sp::spplot(densityPolygons[[i]],add=T,border=cols[i],lwd=((3*i)/3))
+      sp::spplot(
+        densityPolygons[[i]],
+        add = T,
+        border = cols[i],
+        lwd = ((3 * i) / 3)
+      )
     }
-    legend("top", legend=names(densityPolygons),bty="n",fill=rgb(0,0,0,0),
-           border=cols)
+    legend(
+      "top",
+      legend = names(densityPolygons),
+      bty = "n",
+      fill = rgb(0, 0, 0, 0),
+      border = cols
+    )
     dev.off()
   }
 
@@ -1367,29 +1553,70 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
   ## will delete that subspecies. no bueno
 
-  densityPolygons_trim1 = polygonTrimmer(polygonList=densityPolygons,namesList=subsppNames)
+  densityPolygons_trim1 = polygonTrimmer(polygonList = densityPolygons, namesList =
+                                           subsppNames)
 
-  if (plotIt==T) {
-    for(i in 1:length(densityPolygons_trim1)){
+  if (plotIt == T) {
+    for (i in 1:length(densityPolygons_trim1)) {
       name = names(densityPolygons_trim1)[[i]]
-      png(paste("TrimDensityPolygon_",spp," ",name,".png",sep=""))
-      plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
-      plot(densityPolygons_trim1[[i]],add=T,col=viridis::viridis(99))
+      png(paste("TrimDensityPolygon_", spp, " ", name, ".png", sep = ""))
+      plot(
+        bgLayer,
+        col = "grey",
+        colNA = "darkgrey",
+        main = paste("Polygon, subspp:", name)
+      )
+      plot(densityPolygons_trim1[[i]],
+           add = T,
+           col = viridis::viridis(99))
       dev.off()
     }
 
-    png(paste("TrimDensityPolygon_",spp," ALL.png",sep=""))
-    plot(bgLayer, col="grey",colNA="darkgrey",main=paste("Polygon, subspp:",name))
-    cols = c("black","red","blue","green","cyan","magenta",
-             "pink","white","purple","orange","yellow","sienna",
-             "thistle","palegreen","powderblue","aquamarine","violet","mediumslateblue",
-             "lightsalmon","lightblue")
-    for(i in 1:length(densityPolygons_trim1)){
+    png(paste("TrimDensityPolygon_", spp, " ALL.png", sep = ""))
+    plot(
+      bgLayer,
+      col = "grey",
+      colNA = "darkgrey",
+      main = paste("Polygon, subspp:", name)
+    )
+    cols = c(
+      "black",
+      "red",
+      "blue",
+      "green",
+      "cyan",
+      "magenta",
+      "pink",
+      "white",
+      "purple",
+      "orange",
+      "yellow",
+      "sienna",
+      "thistle",
+      "palegreen",
+      "powderblue",
+      "aquamarine",
+      "violet",
+      "mediumslateblue",
+      "lightsalmon",
+      "lightblue"
+    )
+    for (i in 1:length(densityPolygons_trim1)) {
       name = names(densityPolygons_trim1)[[i]]
-      plot(densityPolygons_trim1[[i]],add=T,border=cols[i],lwd=((3*i)/3))
+      plot(
+        densityPolygons_trim1[[i]],
+        add = T,
+        border = cols[i],
+        lwd = ((3 * i) / 3)
+      )
     }
-    legend("top", legend=names(densityPolygons_trim1),bty="n",fill=rgb(0,0,0,0),
-           border=cols)
+    legend(
+      "top",
+      legend = names(densityPolygons_trim1),
+      bty = "n",
+      fill = rgb(0, 0, 0, 0),
+      border = cols
+    )
     dev.off()
   }
 
@@ -1409,23 +1636,25 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   polyLocations = labeledLoc
 
-  for(slotA in 1:length(subsppNames)){
-    for(slotB in 1:length(subsppNames)){
-      if(subsppNames[[slotA]]!="unknown" && subsppNames[[slotB]]!="unknown" && slotA!=slotB){
-
-        polyLocations = locatePolygonPoints(test_points=polyLocations,
-                                            polygonA=densityPolygons_trim[[slotA]],
-                                            polygonB=densityPolygons_trim[[slotB]],
-                                            nameA=subsppNames[[slotA]],
-                                            nameB=subsppNames[[slotB]],
-                                            setcoord = T)
-
-        }
+  for (slotA in 1:length(subsppNames)) {
+    for (slotB in 1:length(subsppNames)) {
+      if (subsppNames[[slotA]] != "unknown" &&
+          subsppNames[[slotB]] != "unknown" && slotA != slotB) {
+        polyLocations = locatePolygonPoints(
+          test_points = polyLocations,
+          polygonA = densityPolygons_trim[[slotA]],
+          polygonB = densityPolygons_trim[[slotB]],
+          nameA = subsppNames[[slotA]],
+          nameB = subsppNames[[slotB]],
+          setcoord = T
+        )
 
       }
 
     }
+
   }
+
 
 
   print ("Cleaning up duplicate columns")
@@ -1433,18 +1662,18 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   #print(polyLocations)
 
-  for(colNumA in 5:length(colnames(polyLocations))){
-    for(colNumB in 6:length(colnames(polyLocations))){
-      if(colNumA<colNumB) {
+  for (colNumA in 5:length(colnames(polyLocations))) {
+    for (colNumB in 6:length(colnames(polyLocations))) {
+      if (colNumA < colNumB) {
         #print(paste("compare",colNumA,colNumB,sep=" "))
-        if(identical(polyLocations[[colNumA]],polyLocations[[colNumB]])){
+        if (identical(polyLocations[[colNumA]], polyLocations[[colNumB]])) {
           #print("identical, deleting")
-          colsToDelete = c(colsToDelete,colNumB)
+          colsToDelete = c(colsToDelete, colNumB)
         }
       }
     }
   }
-  if(!(is.null(colsToDelete))){
+  if (!(is.null(colsToDelete))) {
     #print("is null cols")
     #print(colsToDelete)
     #print(names(polyLocations))
@@ -1468,7 +1697,8 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## TODO: consider putting this in the other script file
 
   print("Matching subspecies")
-  checked = subspeciesMatchChecker(locfile = polyLocations,subsppNames=subsppNames)
+  checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
+                                     subsppNames)
   #print("c1")
   checked_suspect = checked$suspect
   #print("c2")
@@ -1477,9 +1707,13 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   ## return nice clean data
   print("Warning: no valid definition for subspecies given!")
-  return(list(loc_suspect=checked_suspect,
-              loc_good=checked_good,
-              pol=densityPolygons_trim))
+  return(
+    list(
+      loc_suspect = checked_suspect,
+      loc_good = checked_good,
+      pol = densityPolygons_trim
+    )
+  )
 
 }
 
@@ -1516,4 +1750,3 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 #                                                 plotIt=T,
 #                                                 bgLayer=bg,
 #                                                 outputDir="/Users/kprovost/Documents/Classes/Spatial Bioinformatics/project/")
-
