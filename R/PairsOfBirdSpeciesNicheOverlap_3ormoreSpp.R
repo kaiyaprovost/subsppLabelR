@@ -399,7 +399,7 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
 #' ful_polygonsToRemove = polygonsToRemove$subsppBpoly_toremove
 #' overlapToRemove_sin = polygonsToRemove$subsppA_intToRemove
 #' overlapToRemove_ful = polygonsToRemove$subsppB_intToRemove
-flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB){
+flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB,crs="+proj=longlat +ellps=WGS84"){
   ##function(subsppPoly1,subsppPoly2)
   ## this function checks for overlaps between polygons
   ## TODO: remove polygon if not touching another of same spp
@@ -420,6 +420,13 @@ flagPolygonOverlap2 = function(subsppPoly1=polA,subsppPoly2=polB){
   for (feature_subsppA in (1:length(subsppPoly1))){ ## get the features within the subspecies polygon
     for(feature_subsppB in (1:length(subsppPoly2))) { ## get the features within the subspecies polygon
       ## check areas
+
+      ## Warning message:
+      ## In RGEOSMiscFunc(spgeom, byid, "rgeos_area") :
+      ##  Spatial object is not projected; GEOS expects planar coordinates
+
+
+
       totArea1 = rgeos::gArea(subsppPoly1) ## the whole area of the subspecies
       totArea2 = rgeos::gArea(subsppPoly2) ## the whole area of the subspecies
       area1 = rgeos::gArea(subsppPoly1[feature_subsppA,]) ## the area of the single feature
@@ -664,7 +671,8 @@ trimPolygonsByOverlap = function(polygon,idList=NULL,intList=NULL) {
   polytrim = polygon
   if(is.null(idList)){
     if(is.null(intList)){
-      print("no overlaps to remove")
+      #print("no overlaps to remove")
+      polytrim = rgeos::gUnion(polytrim,polytrim)
     }
     else {
       for(int in 1:length(intList)){
@@ -676,7 +684,8 @@ trimPolygonsByOverlap = function(polygon,idList=NULL,intList=NULL) {
   else {
     polytrim = polygon[-idList,]
     if(is.null(intList)){
-      print("removing subsumed polygons")
+      #print("removing subsumed polygons")
+      polytrim = rgeos::gUnion(polytrim,polytrim)
     }
     else {
       for(int in 1:length(intList)){
@@ -725,9 +734,12 @@ polygonTrimmer = function(polygonList,namesList) {
     for(slotB in 1:length(namesList)){
       if(namesList[[slotA]]!="unknown" && namesList[[slotB]]!="unknown" && slotA!=slotB){
         #print(paste(slotA,slotB,sep=" "))
-        print(paste(namesList[[slotA]],"with",namesList[[slotB]],sep=" "))
+        #print(paste(namesList[[slotA]],"with",namesList[[slotB]],sep=" "))
         polA = newPolygonList[[slotA]]
         polB = newPolygonList[[slotB]]
+
+        #print(class(polA))
+        #print(class(polB))
 
         # plot(bg,col="grey",colNA="darkgrey")
         # plot(polA,add=T,border="cyan",lwd=7)
@@ -738,6 +750,7 @@ polygonTrimmer = function(polygonList,namesList) {
         # }
 
 
+        ## this throws the warnings
         polygonsToRemove = (flagPolygonOverlap2(polA,polB)) ######### CHANGED
         #print("CALLING NEW FUNCTION")
         subsppA_polygonsToRemove = polygonsToRemove$subsppApoly_toremove
@@ -986,16 +999,31 @@ subspeciesMatchChecker = function(locfile=nitens_loc,subsppNames){
   #print("p")
 
   for(column in 5:lastSubsppCol){
+    #print(column)
     name = colnames(singlegroup)[column]
+    #print(name)
     assignedThat = singlegroup[singlegroup[,column]==1,]
+
+    ## breaking if none assigned
+
+    if(nrow(assignedThat)==0){
+      print("NONE ASSIGNED:")
+      print(name)
+    } else {
+
     ## subspp should be unk or the subspp
     assignedThat$assigned = name
+
+    }
     okaynames = c("unknown",name)
 
     wrong1 = assignedThat[which(!(assignedThat$subspecies %in% okaynames)),]
     right1 = assignedThat[which(assignedThat$subspecies %in% okaynames),]
 
+
+
     notassignedThat = singlegroup[singlegroup[,column]==0,]
+
     wrong2 = notassignedThat[which(notassignedThat$subspecies == name),]
     right2 = notassignedThat[which(notassignedThat$subspecies != name),]
 
@@ -1384,15 +1412,15 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   for(slotA in 1:length(subsppNames)){
     for(slotB in 1:length(subsppNames)){
       if(subsppNames[[slotA]]!="unknown" && subsppNames[[slotB]]!="unknown" && slotA!=slotB){
-        #if(slotA<slotB)
-        #print(paste("Name A in slot",slotA,":",subsppNames[[slotA]]))
-        #print(paste("Name B in slot",slotB,":",subsppNames[[slotB]]))
+
         polyLocations = locatePolygonPoints(test_points=polyLocations,
                                             polygonA=densityPolygons_trim[[slotA]],
                                             polygonB=densityPolygons_trim[[slotB]],
                                             nameA=subsppNames[[slotA]],
                                             nameB=subsppNames[[slotB]],
-                                            setcoord = TRUE)
+                                            setcoord = T)
+
+        }
 
       }
 
@@ -1441,11 +1469,11 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   print("Matching subspecies")
   checked = subspeciesMatchChecker(locfile = polyLocations,subsppNames=subsppNames)
-  print("c1")
+  #print("c1")
   checked_suspect = checked$suspect
-  print("c2")
+  #print("c2")
   checked_good = checked$good
-  print("done")
+  #print("done")
 
   ## return nice clean data
   print("Warning: no valid definition for subspecies given!")
