@@ -1442,11 +1442,11 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
 
   print("Matching subspecies")
   checked = subspeciesMatchChecker(locfile = polyLocations,subsppNames=subsppNames)
-  #print("c1")
+  print("c1")
   checked_suspect = checked$suspect
-  #print("c2")
+  print("c2")
   checked_good = checked$good
-  #print("done")
+  print("done")
 
   ## return nice clean data
   print("Warning: no valid definition for subspecies given!")
