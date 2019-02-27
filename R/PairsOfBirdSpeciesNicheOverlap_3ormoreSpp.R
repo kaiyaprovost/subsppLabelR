@@ -1207,7 +1207,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
       if (name != "unknown") {
         #print(name)
         subset = labeledLoc[labeledLoc$subspecies==name,]
-        print(nrow(subset))
+        #print(nrow(subset))
         detectedLocs = detectSpatialOutliers(localities=subset,epsilon = epsilon)
       }
     }
@@ -1243,12 +1243,11 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## removing single individual subspecies
   print("Removing single-individual subspecies")
 
-
   for (sub in unique(labeledLoc$subspecies)){
-    print(sub)
+    #print(sub)
     rows = (nrow(labeledLoc[labeledLoc$subspecies==sub,]))
     if(rows==1){
-      print("removing")
+      print(sub)
       labeledLoc = labeledLoc[labeledLoc$subspecies!=sub,]
     }
   }
@@ -1265,7 +1264,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   print("Building species kernel density maps")
 
   densityRasters = lapply(subsppNames,function(subspp){
-    print(subspp)
+    #print(subspp)
     #subspp="hidalgensis"
     locs = labeledLoc[labeledLoc$subspecies==subspp,]
     #print(head(locs))
@@ -1301,7 +1300,7 @@ databaseToAssignedSubspecies = function(spp,subsppList,pointLimit,dbToQuery,quan
   ## can't handle if there's no data in previous step
 
   densityPolygons = lapply(densityRasters,function(dens){
-    print(names(dens))
+    #print(names(dens))
     densPol = densityMapToPolygons(densityMap=dens)
     return(densPol)
   })
