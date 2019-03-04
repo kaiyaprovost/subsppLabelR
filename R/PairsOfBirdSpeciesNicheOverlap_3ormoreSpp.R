@@ -1424,8 +1424,8 @@ databaseToAssignedSubspecies = function(spp,
   print("Building species kernel density maps")
 
   densityRasters = lapply(subsppNames, function(subspp) {
-    #print(subspp)
-    #subspp="hidalgensis"
+    print(subspp)
+    #subspp="relicta"
     locs = labeledLoc[labeledLoc$subspecies == subspp,]
     #print(head(locs))
     dens = subspeciesDensityMap(
@@ -1437,13 +1437,22 @@ databaseToAssignedSubspecies = function(spp,
       ymax = ymax
     )
     if (is.null(dens)) {
-      dens = 0
+      dens = NA
     }
+
+    if ((length((raster::unique(dens,na.last=NA)))) == 0) {
+    dens = NA
+  }
+
     names(dens) = subspp
     return(dens)
   })
   #print("done density")
   names(densityRasters) = subsppNames
+
+  ## remove failed ones
+  densityRasters = densityRasters[!(is.na(densityRasters))]
+  subsppNames = names(densityRasters)
 
   #print("start plot1")
   if (plotIt == T) {
@@ -1478,6 +1487,8 @@ databaseToAssignedSubspecies = function(spp,
     densPol = densityMapToPolygons(densityMap = dens)
     return(densPol)
   })
+
+  densityPolygons
 
   if (plotIt == T) {
     for (i in 1:length(densityPolygons)) {
@@ -1640,6 +1651,7 @@ databaseToAssignedSubspecies = function(spp,
     for (slotB in 1:length(subsppNames)) {
       if (subsppNames[[slotA]] != "unknown" &&
           subsppNames[[slotB]] != "unknown" && slotA != slotB) {
+        #print(paste(slotA,slotB,sep=" "))
         polyLocations = locatePolygonPoints(
           test_points = polyLocations,
           polygonA = densityPolygons_trim[[slotA]],
