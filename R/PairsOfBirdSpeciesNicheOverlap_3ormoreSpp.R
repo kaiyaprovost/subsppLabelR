@@ -1040,7 +1040,7 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
   #print("e")
   lastSubsppCol = length(colnames(locWithSubspecies))
   #print("f")
-  subsppAssignCol = locWithSubspecies[, 5:length(colnames(locWithSubspecies))]
+  subsppAssignCol = locWithSubspecies[, (1+lastSubsppCol-numSub):lastSubsppCol]
   #print(head(locWithSubspecies))
   # for (colnum in 5:length(colnames(locWithSubspecies))){
   #   print(paste("colnum",colnum))
