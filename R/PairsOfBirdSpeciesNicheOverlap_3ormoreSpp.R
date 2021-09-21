@@ -1024,13 +1024,17 @@ locatePolygonPoints = function(test_points,
 #' checked = subspeciesMatchChecker(locfile = polyLocations)
 #' checked_suspect = checked$suspect
 #' checked_good = checked$good
-subspeciesMatchChecker = function(locfile = nitens_loc, subsppNames) {
+subspeciesMatchChecker = function(locfile, subsppNames) {
   #print("a")
   locWithSubspecies = locfile
   #print("b")
   #subsppNames = names(locWithSubspecies[5:length(names(locWithSubspecies))])
   #print("c")
-  numSub = length(subsppNames)
+  if("unknown" %in% subsppNames){
+    numSub = length(subsppNames)-1
+  } else {
+    numSub = length(subsppNames)
+  }
   #print("d")
   numPoints = length(rownames(locWithSubspecies))
   #print("e")
@@ -1303,6 +1307,9 @@ databaseToAssignedSubspecies = function(spp,
 
   }
 
+  labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),]
+  labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
+  
   subsppNames = unique(labeledLoc$subspecies)
 
   if (plotIt == T) {
