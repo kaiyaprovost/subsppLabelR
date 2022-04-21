@@ -1,6 +1,12 @@
+devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
+detach("package:subsppLabelR", unload = TRUE)
 library(subsppLabelR)
 
+EBIRD_KEY = "f49839r87f7g"
+
 ## phainopepla
+## TODO: add ebird support, currently not working
+## TODO: add support for when too few points are given
 
 nitens = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                     subsppList = c("lepida","nitens"),
@@ -8,7 +14,7 @@ nitens = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                     quantile=0.95,
                                                     #xmin=-125,xmax=-60,ymin=10,ymax=55,
                                                     plotIt=T,
-                                                    bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
+                                                    #bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
                                                     outputDir="~/")
 nitens$loc_suspect
 nitens$loc_good
