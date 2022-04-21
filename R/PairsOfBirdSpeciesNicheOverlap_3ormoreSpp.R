@@ -1381,38 +1381,21 @@ databaseToAssignedSubspecies = function(spp,
   rows_purged = sort(unique(as.integer(rownames(purged_list))))
 
   if (length(rows_purged) > 0) {
-    print(paste(
-      "Removing",
-      length(rows_purged),
-      "of",
-      length(labeledLoc[, 1]),
-      "detected anomalies"
-    ))
+    print(paste("Removing",length(rows_purged),"of",length(labeledLoc[, 1]),"detected anomalies"))
     removed = labeledLoc[(rows_purged),]
     labeledLoc = labeledLoc[-(rows_purged),]
 
     if (plotIt == T) {
       png(paste("AnomaliesRemoved_", spp, ".png", sep = ""))
-      raster::plot(
-        bgLayer,
-        col = "grey",
-        colNA = "darkgrey",
-        main = paste("Anomalies")
-      )
-      points(labeledLoc$longitude,
-             labeledLoc$latitude,
-             col = "lightgrey",
-             pch = 0)
-      points(removed$longitude,
-             removed$latitude,
+      raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Anomalies"))
+      points(labeledLoc$longitude,labeledLoc$latitude,
+             col = "lightgrey",pch = 0)
+      points(removed$longitude,removed$latitude,
              col = as.factor(removed$subspecies))
-      legend(
-        "top",
+      legend("top",
         legend = as.factor(unique(removed$subspecies)),
-        pch = 1,
-        bty = "n",
-        col = as.factor(unique(removed$subspecies))
-      )
+        pch = 1,bty = "n",
+        col = as.factor(unique(removed$subspecies)))
       dev.off()
     }
   } else {
@@ -1425,7 +1408,7 @@ databaseToAssignedSubspecies = function(spp,
   for (sub in unique(labeledLoc$subspecies)) {
     #print(sub)
     rows = (nrow(labeledLoc[labeledLoc$subspecies == sub,]))
-    if (rows == 1) {
+    if (rows <= 1) {
       print(sub)
       labeledLoc = labeledLoc[labeledLoc$subspecies != sub,]
     }
