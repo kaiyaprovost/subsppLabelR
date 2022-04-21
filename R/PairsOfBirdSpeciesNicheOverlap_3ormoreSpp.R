@@ -1304,6 +1304,7 @@ databaseToAssignedSubspecies = function(spp,
   
   print("Cleaning bgLayer")
   if(is.null(bgLayer)){
+    print(paste(xmin,xmax,ymin,ymax))
     ext = raster::extent(c(xmin,xmax,ymin,ymax))
     print(ext)
     bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
