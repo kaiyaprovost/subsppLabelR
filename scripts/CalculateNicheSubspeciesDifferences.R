@@ -1,49 +1,6 @@
 ##### NOTES FROM LAB MEETING #####
 {
-  # ideas for subsppR
-  # -- mccormack 2010 jniche paper -- niche tests are not very robust
-  # -- scale issue -- why not just do by longitude or whatever?
-  #   -- what about the rotation of points or something?
-  #   -- GIGO though, the data points aren't good.
-  # -- are the son/chi desert different or the same? scale?
-  # -- are the climatic envelopes different at a biome scale?
-  # -- also phaino is a weird one to test
-  # -- have you tried using other layers?
-  # -- eclogy keeps them separated or not?
-  # -- first one -- are the deserts different -- does env drive differentiation, what about it? local adaptation? flipside of CFB -- locally adapted is same as saying cant cross CFB. but can be locally adapted and have the same niche so what's important s why can't cross barrier.
-  # -- second one is getting at the latter. try to understand why the barrier affects your species. then can set up to test ability of them to cross using niche models in comparative framework.
-  # -- consistent biases allows for answers
-  # -- to test the strength of the barrier - does resistance explain differentiation across the barrier.
-  # -- ideally with spatially explicit simulation. going to be difficult to get aorund points and scale issues of niche model.
-  # -- barrier is small geographic area with large scale data. but can refine data down.
-  # -- ditch ebird stuff totally from the gbif data. probably just stationary counts less than 10 minutes and will get tons of recrods.
-  # -- specimens may have too much lat long error.
-  # -- remember the error estimates.
-  # -- stationary counts, like <1 hour or something? see how much data that is. past 5 years? people using ebird app which does very good lat long. high res high quality points. factor in cell phone shittiness.
-  # -- most of these birds not a climatic issue. but is correlated with broad scale habitat?
-  # -- start with large scale stuff to see if it works? then it probalby wont and go for small stuff.
-  # -- how habitat associations correlate with climate?
-  # -- could do the ML though. LandSat? landscape classification?
-  # -- mary has a remose sensing package?
-  
-  ## -- hypervolumes are more accurate than minimum convex polygons! r package hypervolume. see the woodpecker color paper https://www.biorxiv.org/content/biorxiv/early/2018/07/23/375261.full.pdf
-  
-  
-  
-  
-  ## input object: results of PairsOfBirdSpeciesNicheOverlap-3orMoreSpecies.R
-  ## list of two objects
-  ## first of which is a dataframe with columns: name (spp name), lat, long, subspecies (a priori),
-  ## then some number of columns of boolean values as to whether a point
-  ## is assigned to a subspecies or not
-  ## second of which are polygons associated with each subspecies
-  
-  ## problem: multiple tests between 19 subspecies? bonferoni corrections
-  ## maybe only do if adjacent? -- probably not, says the instructors
-  ## may want to figure out another way to measure similarity to walk through subspp space
   ##TODO: consider lumping?
-  
-  
   ## for now testing with phainopeplaNitens
   ##TODO: change all the lapply to function if possible
   ##TODO: update plotting here (and in other file) so that everything plots iteratively, esp if pairwise
