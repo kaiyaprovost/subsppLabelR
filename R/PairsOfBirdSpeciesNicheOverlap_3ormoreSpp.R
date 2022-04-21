@@ -36,6 +36,7 @@ subspeciesOccQuery = function(spp = "Phainopepla nitens",
   #library(spocc)
   
   print(paste("Getting Species: ", spp))
+  
   sppOcc = spocc::occ(query = spp,limit = pointLimit,has_coords = T,from = dbToQuery,...)
   
   subSppListOcc = lapply(subsppList, function(x) {
@@ -126,7 +127,9 @@ labelSubspecies = function(subsppOccList) {
   for (occ in 1:length(labeledOcc)) {
     print(names(labeledOcc)[[occ]])
     subsppLoc = occ2df_subspeciesLabels(subsppOccList_object = labeledOcc[[occ]],subsppOccList_name = names(labeledOcc)[[occ]])
+    print("check1")
     sppLocLab = rbind(sppLocLab, subsppLoc)
+    print("check2")
   }
   return(sppLocLab)
 }
