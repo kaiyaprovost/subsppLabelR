@@ -122,6 +122,7 @@ labelSubspecies = function(subsppOccList) {
   sppLocLab = occ2df_subspeciesLabels(subsppOccList_object = sppOcc,
                                       subsppOccList_name = name_sppOcc)
   labeledOcc = subsppOccList[[2]]
+  print(paste("Length labeledOcc:",length(labeledOcc)))
   for (occ in 1:length(labeledOcc)) {
     print(names(labeledOcc)[[occ]])
     subsppLoc = occ2df_subspeciesLabels(subsppOccList_object = labeledOcc[[occ]],subsppOccList_name = names(labeledOcc)[[occ]])
