@@ -838,12 +838,12 @@ polygonTrimmer = function(polygonList, namesList) {
         subsppB_densityPolygon_trim = trimPolygonsByOverlap(polygon = polB,
                                                             idList = subsppB_polygonsToRemove,
                                                             intList = overlapToRemove_subsppB)
-
-
+        
+        ## TODO: fix this
         subsppA = namesList[[slotA]]
         subsppB = namesList[[slotB]]
-        newPolygonList[[slotA]] = subsppA_densityPolygon_trim
-        newPolygonList[[slotB]] = subsppB_densityPolygon_trim
+        if(!(is.null(subsppA_densityPolygon_trim))){newPolygonList[[slotA]] = subsppA_densityPolygon_trim}
+        if(!(is.null(subsppB_densityPolygon_trim))){newPolygonList[[slotB]] = subsppB_densityPolygon_trim}
         names(newPolygonList) = names(polygonList)
         #print(names(newPolygonList))
 
@@ -1240,12 +1240,12 @@ databaseToAssignedSubspecies = function(spp,
                                         pointLimit,
                                         dbToQuery,
                                         quantile = 0.95,
-                                        xmin = -125,
-                                        xmax = -60,
-                                        ymin = 10,
-                                        ymax = 50,
+                                        xmin = NULL,
+                                        xmax = NULL,
+                                        ymin = NULL,
+                                        ymax = NULL,
                                         plotIt = F,
-                                        bgLayer,
+                                        bgLayer = NULL,
                                         outputDir,
                                         datafile = NULL,
                                         epsilon = 1e-6,
@@ -1309,6 +1309,16 @@ databaseToAssignedSubspecies = function(spp,
 
   labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),]
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
+  
+  if(is.null(xmin)) { xmin = min(labeledLoc$longitude,na.rm=T) }
+  if(is.null(xmax)) { xmax = max(labeledLoc$longitude,na.rm=T) }
+  if(is.null(ymin)) { ymin = min(labeledLoc$latitude,na.rm=T) }
+  if(is.null(ymax)) { ymax = max(labeledLoc$latitude,na.rm=T) }
+  
+  if(is.null(bgLayer)){
+    ext = raster::extent(c(xmin,xmax,ymin,ymax))
+    bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
+  }
   
   subsppNames = unique(labeledLoc$subspecies)
 
