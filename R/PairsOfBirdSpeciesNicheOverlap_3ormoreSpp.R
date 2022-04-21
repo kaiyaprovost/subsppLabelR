@@ -1480,10 +1480,10 @@ databaseToAssignedSubspecies = function(spp,
     png(paste("RawDensityPolygon_", spp, " ALL.png", sep = ""))
     raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
     cols = c("black","red", "blue", "green",
-      "cyan", "magenta", "pink", "white",
-      "purple", "orange", "yellow", "sienna",
-      "thistle", "palegreen", "powderblue", "aquamarine",
-      "violet", "mediumslateblue", "lightsalmon", "lightblue")
+             "cyan", "magenta", "pink", "white",
+             "purple", "orange", "yellow", "sienna",
+             "thistle", "palegreen", "powderblue", "aquamarine",
+             "violet", "mediumslateblue", "lightsalmon", "lightblue")
     for (i in 1:length(densityPolygons)) {
       name = names(densityPolygons)[[i]]
       sp::spplot(densityPolygons[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
@@ -1502,70 +1502,28 @@ databaseToAssignedSubspecies = function(spp,
   ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
   ## will delete that subspecies. no bueno
   
-  densityPolygons_trim1 = polygonTrimmer(polygonList = densityPolygons, namesList =
-                                           subsppNames)
+  densityPolygons_trim1 = polygonTrimmer(polygonList = densityPolygons, namesList = subsppNames)
   
   if (plotIt == T) {
     for (i in 1:length(densityPolygons_trim1)) {
       name = names(densityPolygons_trim1)[[i]]
       png(paste("TrimDensityPolygon_", spp, " ", name, ".png", sep = ""))
-      plot(
-        bgLayer,
-        col = "grey",
-        colNA = "darkgrey",
-        main = paste("Polygon, subspp:", name)
-      )
-      plot(densityPolygons_trim1[[i]],
-           add = T,
-           col = viridis::viridis(99))
+      plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
+      plot(densityPolygons_trim1[[i]],add = T,col = viridis::viridis(99))
       dev.off()
     }
     
     png(paste("TrimDensityPolygon_", spp, " ALL.png", sep = ""))
-    plot(
-      bgLayer,
-      col = "grey",
-      colNA = "darkgrey",
-      main = paste("Polygon, subspp:", name)
-    )
-    cols = c(
-      "black",
-      "red",
-      "blue",
-      "green",
-      "cyan",
-      "magenta",
-      "pink",
-      "white",
-      "purple",
-      "orange",
-      "yellow",
-      "sienna",
-      "thistle",
-      "palegreen",
-      "powderblue",
-      "aquamarine",
-      "violet",
-      "mediumslateblue",
-      "lightsalmon",
-      "lightblue"
-    )
+    plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
+    cols = c( "black", "red", "blue", "green", "cyan", "magenta",
+              "pink", "white", "purple", "orange", "yellow", "sienna",
+              "thistle", "palegreen", "powderblue", "aquamarine", "violet", "mediumslateblue",
+              "lightsalmon", "lightblue")
     for (i in 1:length(densityPolygons_trim1)) {
       name = names(densityPolygons_trim1)[[i]]
-      plot(
-        densityPolygons_trim1[[i]],
-        add = T,
-        border = cols[i],
-        lwd = ((3 * i) / 3)
-      )
+      plot(densityPolygons_trim1[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
     }
-    legend(
-      "top",
-      legend = names(densityPolygons_trim1),
-      bty = "n",
-      fill = rgb(0, 0, 0, 0),
-      border = cols
-    )
+    legend("top",legend = names(densityPolygons_trim1),bty = "n",fill = rgb(0, 0, 0, 0),border = cols)
     dev.off()
   }
   
@@ -1587,22 +1545,14 @@ databaseToAssignedSubspecies = function(spp,
   
   for (slotA in 1:length(subsppNames)) {
     for (slotB in 1:length(subsppNames)) {
-      if (subsppNames[[slotA]] != "unknown" &&
-          subsppNames[[slotB]] != "unknown" && slotA != slotB) {
+      if (subsppNames[[slotA]] != "unknown" && subsppNames[[slotB]] != "unknown" && slotA != slotB) {
         #print(paste(slotA,slotB,sep=" "))
-        polyLocations = locatePolygonPoints(
-          test_points = polyLocations,
-          polygonA = densityPolygons_trim[[slotA]],
-          polygonB = densityPolygons_trim[[slotB]],
-          nameA = subsppNames[[slotA]],
-          nameB = subsppNames[[slotB]],
-          setcoord = T
-        )
-        
+        polyLocations = locatePolygonPoints(test_points = polyLocations,
+          polygonA = densityPolygons_trim[[slotA]],polygonB = densityPolygons_trim[[slotB]],
+          nameA = subsppNames[[slotA]],nameB = subsppNames[[slotB]],
+          setcoord = T)
       }
-      
     }
-    
   }
   
   
@@ -1656,14 +1606,8 @@ databaseToAssignedSubspecies = function(spp,
   #print("done")
   
   ## return nice clean data
-  print("Warning: no valid definition for subspecies given!")
-  return(
-    list(
-      loc_suspect = checked_suspect,
-      loc_good = checked_good,
-      pol = densityPolygons_trim
-    )
-  )
+  print("Warning: no valid definition for subspecies given!") ## this is a joke
+  return(list(loc_suspect = checked_suspect,loc_good = checked_good,pol = densityPolygons_trim))
   
 }
 
