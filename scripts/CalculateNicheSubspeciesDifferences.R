@@ -1,4 +1,3 @@
-##### NOTES FROM LAB MEETING #####
 {
   ##TODO: consider lumping?
   ## for now testing with phainopeplaNitens
