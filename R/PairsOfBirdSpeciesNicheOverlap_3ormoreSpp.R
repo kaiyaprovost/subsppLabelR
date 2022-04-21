@@ -6,6 +6,7 @@
 #' @import sp
 #' @import viridis
 #' @import caret
+#' @import rebird
 NULL
 
 #' Pull Subspecies Occurrences
@@ -30,7 +31,7 @@ NULL
 subspeciesOccQuery = function(spp = "Phainopepla nitens",
                               subsppList = c("nitens", "lepida"),
                               pointLimit = 500,
-                              dbToQuery = c("gbif", "bison", "inat", "ebird", "ecoengine", "vertnet"),
+                              dbToQuery = c("gbif", "bison", "inat", "ecoengine", "vertnet"),
                               ...) {
   ## this function uses spocc to query for one species and multiple subspecies
   #library(spocc)
