@@ -30,7 +30,8 @@ NULL
 subspeciesOccQuery = function(spp = "Phainopepla nitens",
                               subsppList = c("nitens", "lepida"),
                               pointLimit = 500,
-                              dbToQuery = c("gbif", "bison", "inat", "ebird", "ecoengine", "vertnet")) {
+                              dbToQuery = c("gbif", "bison", "inat", "ebird", "ecoengine", "vertnet"),
+                              ...) {
   ## this function uses spocc to query for one species and multiple subspecies
   #library(spocc)
 
@@ -39,7 +40,8 @@ subspeciesOccQuery = function(spp = "Phainopepla nitens",
     query = spp,
     limit = pointLimit,
     has_coords = T,
-    from = dbToQuery
+    from = dbToQuery,
+    ...
   )
 
   subSppListOcc = lapply(subsppList, function(x) {
