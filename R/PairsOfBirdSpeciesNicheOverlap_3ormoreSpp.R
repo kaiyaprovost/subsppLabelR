@@ -1415,7 +1415,6 @@ databaseToAssignedSubspecies = function(spp,
   }
   subsppNames = unique(labeledLoc$subspecies)
 
-
   ## to reduce error take only subspecies within main density
   ## clean up the polygons so that if grouping way out in middle of nowhere, get rid of it
   ## remove points that fall within the other subspecies' polygon
@@ -1425,27 +1424,15 @@ databaseToAssignedSubspecies = function(spp,
 
   print("Building species kernel density maps")
 
+  ## TODO: add something to increase quantiles dynamically here? so if 0.95 does not return all the valid subspecies, reduce to 0.90 etc? 
   densityRasters = lapply(subsppNames, function(subspp) {
     print(subspp)
     #subspp="relicta"
     locs = labeledLoc[labeledLoc$subspecies == subspp,]
     #print(head(locs))
-    dens = subspeciesDensityMap(
-      localities = locs,
-      quantile = quantile,
-      xmin = xmin,
-      xmax = xmax,
-      ymin = ymin,
-      ymax = ymax
-    )
-    if (is.null(dens)) {
-      dens = NA
-    }
-
-    if ((length((raster::unique(dens,na.last=NA)))) == 0) {
-    dens = NA
-  }
-
+    dens = subspeciesDensityMap(localities = locs,quantile = quantile,xmin = xmin,xmax = xmax,ymin = ymin,ymax = ymax)
+    if (is.null(dens)) { dens = NA }
+    if ((length((raster::unique(dens,na.last=NA)))) <= 0) { dens = NA }
     names(dens) = subspp
     return(dens)
   })
@@ -1462,23 +1449,12 @@ databaseToAssignedSubspecies = function(spp,
       #print("plotforloop")
       name = names(densityRasters)[[i]]
       png(paste("DensityRaster_", spp, " ", name, ".png", sep = ""))
-      plot(
-        bgLayer,
-        col = "grey",
-        colNA = "darkgrey",
-        main = paste("Density, subspp:", name)
-      )
-      plot(densityRasters[[i]],
-           add = T,
-           col = viridis::viridis(99))
+      plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Density, subspp:", name))
+      plot(densityRasters[[i]],add = T,col = viridis::viridis(99))
       dev.off()
     }
   }
   #print("endplot1")
-
-
-
-
 
   ## convert to polygons
   print("Converting density maps to polygons")
@@ -1490,7 +1466,7 @@ databaseToAssignedSubspecies = function(spp,
     return(densPol)
   })
 
-  densityPolygons
+  #print(densityPolygons)
 
   if (plotIt == T) {
     for (i in 1:length(densityPolygons)) {
