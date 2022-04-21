@@ -169,7 +169,6 @@ subspeciesDensityMap = function(localities,
   if(is.null(ymin)) { ymin = min(localities$latitude,na.rm=T) }
   if(is.null(ymax)) { ymax = max(localities$latitude,na.rm=T) }
   
-  
   range = c(xmin, xmax, ymin, ymax)
   ext = raster::extent(range)
   
@@ -181,12 +180,8 @@ subspeciesDensityMap = function(localities,
     return(NULL)
   }
   
-  density = MASS::kde2d(
-    as.numeric(localities$longitude),
-    as.numeric(localities$latitude),
-    lims = range,
-    n = 50
-  )
+  density = MASS::kde2d(as.numeric(localities$longitude),as.numeric(localities$latitude),
+    lims = range,n = 50)
   ## convert to raster
   densRas = raster::raster(density)
   ## take the top percentile of the points, only the densest areas
@@ -223,13 +218,7 @@ densityMapToPolygons = function(densityMap) {
   #library(raster)
   polygon = densityMap
   polygon[!is.na(polygon)] = 1
-  polygon <-
-    sp::disaggregate(raster::rasterToPolygons(
-      polygon,
-      fun = NULL,
-      na.rm = T,
-      dissolve = T
-    ))
+  polygon <- sp::disaggregate(raster::rasterToPolygons(polygon,fun = NULL,na.rm = T,dissolve = T))
   #plot(polygon)
   return(polygon)
 }
@@ -1264,19 +1253,13 @@ databaseToAssignedSubspecies = function(spp,
   if (is.null(datafile)) {
     print("Downloading species occurrences")
     ## TODO: add progress bar
-    listFromSubspeciesOcc = subspeciesOccQuery(
-      spp = spp,
-      subsppList = subsppList,
-      pointLimit = pointLimit,
-      dbToQuery = dbToQuery
-    )
+    listFromSubspeciesOcc = subspeciesOccQuery(spp = spp,subsppList = subsppList,pointLimit = pointLimit,dbToQuery = dbToQuery)
     
     ## label the data by subspeces
     print("Labeling data by subspecies")
     labeledLoc = labelSubspecies(subsppOccList = listFromSubspeciesOcc)
     
     ## TODO: add a check where you make sure that the species is correct
-    
     
     ## EXPORT THE OCCURRENCE DATA!
     ## NOTE: you don't need to do this. it is identical to merging goodsubspp and suspectsubspp and only taking first four cols
