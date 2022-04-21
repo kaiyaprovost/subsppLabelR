@@ -1257,6 +1257,9 @@ databaseToAssignedSubspecies = function(spp,
     
     ## label the data by subspeces
     print("Labeling data by subspecies")
+    
+    ## why is this failing here
+    
     labeledLoc = labelSubspecies(subsppOccList = listFromSubspeciesOcc)
     
     ## TODO: add a check where you make sure that the species is correct
@@ -1285,6 +1288,7 @@ databaseToAssignedSubspecies = function(spp,
     
   }
   
+  print("Cleaning bad lat/longs")
   labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),]
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
   
