@@ -1305,7 +1305,9 @@ databaseToAssignedSubspecies = function(spp,
   print("Cleaning bgLayer")
   if(is.null(bgLayer)){
     ext = raster::extent(c(xmin,xmax,ymin,ymax))
+    print(ext)
     bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
+    print(bgLayer)
   }
   
   subsppNames = unique(labeledLoc$subspecies)
@@ -1316,21 +1318,12 @@ databaseToAssignedSubspecies = function(spp,
     
     ## TODO: make this work again it doesn't
     
-    raster::plot(bgLayer,
-                 col = "grey",
-                 colNA = "darkgrey",
-                 main = spp)
+    raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = spp)
     ## need to make sure not factors and plotting numeric
-    points(labeledLoc$longitude,
-           labeledLoc$latitude,
-           col = as.factor(labeledLoc$subspecies))
-    legend(
-      "top",
+    points(labeledLoc$longitude,labeledLoc$latitude,col = as.factor(labeledLoc$subspecies))
+    legend("top",
       legend = as.factor(unique(labeledLoc$subspecies)),
-      pch = 1,
-      bty = "n",
-      col = as.factor(unique(labeledLoc$subspecies))
-    )
+      pch = 1,bty = "n",col = as.factor(unique(labeledLoc$subspecies)))
     dev.off()
   }
   
