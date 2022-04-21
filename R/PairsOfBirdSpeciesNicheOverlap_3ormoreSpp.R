@@ -1297,15 +1297,16 @@ databaseToAssignedSubspecies = function(spp,
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
   
   print("Check xy maxmin")
-  if(is.null(xmin)) { xmin = min(labeledLoc$longitude,na.rm=T) }
-  if(is.null(xmax)) { xmax = max(labeledLoc$longitude,na.rm=T) }
-  if(is.null(ymin)) { ymin = min(labeledLoc$latitude,na.rm=T) }
-  if(is.null(ymax)) { ymax = max(labeledLoc$latitude,na.rm=T) }
+  if(is.null(xmin)) { xmin = as.numeric(min(labeledLoc$longitude,na.rm=T)) }
+  if(is.null(xmax)) { xmax = as.numeric(max(labeledLoc$longitude,na.rm=T)) }
+  if(is.null(ymin)) { ymin = as.numeric(min(labeledLoc$latitude,na.rm=T)) }
+  if(is.null(ymax)) { ymax = as.numeric(max(labeledLoc$latitude,na.rm=T)) }
   
   print("Cleaning bgLayer")
   if(is.null(bgLayer)){
     print(paste(xmin,xmax,ymin,ymax))
-    ext = raster::extent(c(xmin,xmax,ymin,ymax))
+    ext = raster::extent(c(as.numeric(xmin),as.numeric(xmax),
+                           as.numeric(ymin),as.numeric(ymax)))
     print(ext)
     bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
     print(bgLayer)
