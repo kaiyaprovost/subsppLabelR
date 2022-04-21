@@ -123,13 +123,13 @@ labelSubspecies = function(subsppOccList) {
   sppLocLab = occ2df_subspeciesLabels(subsppOccList_object = sppOcc,
                                       subsppOccList_name = name_sppOcc)
   labeledOcc = subsppOccList[[2]]
-  print(paste("Length labeledOcc:",length(labeledOcc)))
+  #print(paste("Length labeledOcc:",length(labeledOcc)))
   for (occ in 1:length(labeledOcc)) {
     print(names(labeledOcc)[[occ]])
     subsppLoc = occ2df_subspeciesLabels(subsppOccList_object = labeledOcc[[occ]],subsppOccList_name = names(labeledOcc)[[occ]])
-    print("check1")
+    #print("check1")
     sppLocLab = rbind(sppLocLab, subsppLoc)
-    print("check2")
+    #print("check2")
   }
   return(sppLocLab)
 }
@@ -1296,11 +1296,13 @@ databaseToAssignedSubspecies = function(spp,
   labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),]
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
   
+  print("Check xy maxmin")
   if(is.null(xmin)) { xmin = min(labeledLoc$longitude,na.rm=T) }
   if(is.null(xmax)) { xmax = max(labeledLoc$longitude,na.rm=T) }
   if(is.null(ymin)) { ymin = min(labeledLoc$latitude,na.rm=T) }
   if(is.null(ymax)) { ymax = max(labeledLoc$latitude,na.rm=T) }
   
+  print("Cleaning bgLayer")
   if(is.null(bgLayer)){
     ext = raster::extent(c(xmin,xmax,ymin,ymax))
     bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
