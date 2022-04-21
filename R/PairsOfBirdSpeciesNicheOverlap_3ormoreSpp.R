@@ -36,22 +36,12 @@ subspeciesOccQuery = function(spp = "Phainopepla nitens",
   #library(spocc)
   
   print(paste("Getting Species: ", spp))
-  sppOcc = spocc::occ(
-    query = spp,
-    limit = pointLimit,
-    has_coords = T,
-    from = dbToQuery,
-    ...
-  )
+  sppOcc = spocc::occ(query = spp,limit = pointLimit,has_coords = T,from = dbToQuery,...)
   
   subSppListOcc = lapply(subsppList, function(x) {
     print(paste("     Getting Subspecies: ", x))
-    return(spocc::occ(
-      query = paste(spp, x, sep = " "),
-      limit = pointLimit,
-      has_coords = T,
-      from = dbToQuery
-    ))
+    return(spocc::occ(query = paste(spp, x, sep = " "),
+      limit = pointLimit,has_coords = T,from = dbToQuery))
   })
   names(subSppListOcc) = subsppList
   
@@ -134,10 +124,7 @@ labelSubspecies = function(subsppOccList) {
   labeledOcc = subsppOccList[[2]]
   for (occ in 1:length(labeledOcc)) {
     print(names(labeledOcc)[[occ]])
-    subsppLoc = occ2df_subspeciesLabels(
-      subsppOccList_object = labeledOcc[[occ]],
-      subsppOccList_name = names(labeledOcc)[[occ]]
-    )
+    subsppLoc = occ2df_subspeciesLabels(subsppOccList_object = labeledOcc[[occ]],subsppOccList_name = names(labeledOcc)[[occ]])
     sppLocLab = rbind(sppLocLab, subsppLoc)
   }
   return(sppLocLab)
@@ -168,15 +155,21 @@ labelSubspecies = function(subsppOccList) {
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 subspeciesDensityMap = function(localities,
                                 quantile = 0.95,
-                                xmin = -125,
-                                xmax = -60,
-                                ymin = 10,
-                                ymax = 50) {
+                                xmin = NULL,
+                                xmax = NULL,
+                                ymin = NULL,
+                                ymax = NULL) {
   ## this function uses kernel density to make a raster that will then be used to filter
   ## the data to remove all but the 5% (or 1-quantile) most dense cells
   
   #library(MASS)
   #library(raster)
+  if(is.null(xmin)) { xmin = min(localities$longitude,na.rm=T) }
+  if(is.null(xmax)) { xmax = max(localities$longitude,na.rm=T) }
+  if(is.null(ymin)) { ymin = min(localities$latitude,na.rm=T) }
+  if(is.null(ymax)) { ymax = max(localities$latitude,na.rm=T) }
+  
+  
   range = c(xmin, xmax, ymin, ymax)
   ext = raster::extent(range)
   
