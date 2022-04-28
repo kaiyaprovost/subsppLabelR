@@ -118,7 +118,7 @@ if(!(file.exists("~/Geococcyx_californianus_subspplabelR_RAW.txt"))){
 } else {
   californianus_labeledLoc = read.table("~/Geococcyx_californianus_subspplabelR_RAW.txt",sep="\t",header=T)
 }
-
+if(!file.exists("~/Geococcyx_californianus_subspecies_subspplabelR_loc_good.txt")){
 californianus = subsppLabelR::databaseToAssignedSubspecies(spp="Geococcyx californianus",
                                                            pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
                                                            quantile=0.95,
@@ -129,7 +129,7 @@ californianus = subsppLabelR::databaseToAssignedSubspecies(spp="Geococcyx califo
                                                            outputDir="~/")
 write.table(californianus$loc_suspect,"~/Geococcyx_californianus_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
 write.table(californianus$loc_good,"~/Geococcyx_californianus_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
-
+}
 
 
 
