@@ -1149,6 +1149,8 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
 detectSpatialOutliers = function(localities = locs,
                                  epsilon = 0.0001) {
   ## use MASS to do linear algebra
+  ## TODO: why is this removing central anomalies? 
+  
   m = length(localities[, 1])
   
   if (m == 1) {
@@ -1578,7 +1580,7 @@ databaseToAssignedSubspecies = function(spp,
   #print(polyLocations)
   print(length(colnames(polyLocations)))
   
-  if(length(colnames(polyLocations)) < 6){
+  if(length(colnames(polyLocations)) > 6){
   
   for (colNumA in 5:length(colnames(polyLocations))) {
     for (colNumB in 6:length(colnames(polyLocations))) {
