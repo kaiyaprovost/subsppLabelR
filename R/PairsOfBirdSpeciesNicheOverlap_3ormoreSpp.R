@@ -177,6 +177,7 @@ subspeciesDensityMap = function(localities,
                                 ymax = NULL) {
   ## this function uses kernel density to make a raster that will then be used to filter
   ## the data to remove all but the 5% (or 1-quantile) most dense cells
+  ## TODO: allow for subspecies-specific quantiles 
   
   #library(MASS)
   #library(raster)
@@ -1571,9 +1572,13 @@ databaseToAssignedSubspecies = function(spp,
   
   
   print ("Cleaning up duplicate columns")
+  ## this does not work with only one species
   colsToDelete = c()
   
   #print(polyLocations)
+  print(length(colnames(polyLocations)))
+  
+  if(length(colnames(polyLocations)) < 6){
   
   for (colNumA in 5:length(colnames(polyLocations))) {
     for (colNumB in 6:length(colnames(polyLocations))) {
@@ -1593,6 +1598,8 @@ databaseToAssignedSubspecies = function(spp,
     #print(head(polyLocations))
     polyLocations = polyLocations[,-colsToDelete]
     #print("success")
+    
+  }
     
   }
   
