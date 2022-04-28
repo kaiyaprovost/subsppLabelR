@@ -1408,6 +1408,26 @@ databaseToAssignedSubspecies = function(spp,
   }
   subsppNames = unique(labeledLoc$subspecies)
   
+  ## clean up the bgLayer again in case it needs to be smaller 
+  print("Check xy maxmin 2nd time")
+  xmin2 = as.numeric(min(as.numeric(labeledLoc$longitude),na.rm=T))
+  xmax2 = as.numeric(max(as.numeric(labeledLoc$longitude),na.rm=T))
+  ymin2 = as.numeric(min(as.numeric(labeledLoc$latitude),na.rm=T))
+  ymax2 = as.numeric(max(as.numeric(labeledLoc$latitude),na.rm=T))
+  
+  print("Cleaning bgLayer 2nd time")
+  print(paste(xmin2,xmax2,ymin2,ymax2))
+  ext2 = raster::extent(c(as.numeric(xmin2),as.numeric(xmax2),
+                          as.numeric(ymin2),as.numeric(ymax2)))
+  print(ext)
+  if(nrow(bgLayer)==100 & ncol(bgLayer)==100) {
+    bgLayer = raster::raster(ext=ext2,nrow=100,ncol=100,vals=0)
+  } else {
+    bgLayer = raster::crop(bgLayer,ext=ext2)
+  }
+  
+  print(bgLayer)
+  
   ## to reduce error take only subspecies within main density
   ## clean up the polygons so that if grouping way out in middle of nowhere, get rid of it
   ## remove points that fall within the other subspecies' polygon
