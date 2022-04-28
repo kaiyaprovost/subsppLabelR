@@ -1036,6 +1036,9 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
   } else {
     numSub = length(subsppNames)
   }
+  
+  if(numSub>0){
+  
   #print("d")
   numPoints = length(rownames(locWithSubspecies))
   #print("e")
@@ -1126,7 +1129,10 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
   suspectpoints = unique(suspectpoints)
   goodpoints = unique(goodpoints)
   #print("r")
-  
+  } else {
+    suspectpoints = data.frame()
+    goodpoints = locWithSubspecies
+  }
   
   return(list(suspect = suspectpoints,
               good = goodpoints))
