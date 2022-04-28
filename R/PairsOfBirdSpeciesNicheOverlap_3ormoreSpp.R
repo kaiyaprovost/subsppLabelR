@@ -197,8 +197,14 @@ subspeciesDensityMap = function(localities,
     return(NULL)
   }
   
-  density = MASS::kde2d(as.numeric(localities$longitude),as.numeric(localities$latitude),
-                        lims = range,n = 50)
+  density = NULL
+  try({density = MASS::kde2d(as.numeric(localities$longitude),as.numeric(localities$latitude),
+                             lims = range,n = 50)})
+  
+  if(is.null(density)){
+    print("NULL")
+    return(NULL)
+  } else {
   ## convert to raster
   densRas = raster::raster(density)
   ## take the top percentile of the points, only the densest areas
@@ -208,6 +214,7 @@ subspeciesDensityMap = function(localities,
   #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
   
   return(densRas_trim)
+  }
   
 }
 
