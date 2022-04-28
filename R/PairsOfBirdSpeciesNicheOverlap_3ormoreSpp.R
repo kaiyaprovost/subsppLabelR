@@ -1031,13 +1031,14 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
   #print("b")
   #subsppNames = names(locWithSubspecies[5:length(names(locWithSubspecies))])
   #print("c")
+  print(subsppNames)
   if("unknown" %in% subsppNames){
     numSub = length(subsppNames)-1
   } else {
     numSub = length(subsppNames)
   }
   
-  if(numSub>0){
+  if(numSub>1){
   
   #print("d")
   numPoints = length(rownames(locWithSubspecies))
