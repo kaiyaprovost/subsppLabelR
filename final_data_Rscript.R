@@ -58,7 +58,7 @@ if(!file.exists("~/Cardinalis_sinuatus_subspecies_subspplabelR_loc_good.txt")){
 sinuatus = subsppLabelR::databaseToAssignedSubspecies(spp="Cardinalis sinuatus",
                                                       subsppList = c("sinuatus","fulvescens","peninsulae"),
                                                       pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
-                                                      quantile=0.95,
+                                                      quantile=0.95, ## works with 0 but does not work well 
                                                       #xmin=-130,xmax=-60,ymin=10,ymax=60,
                                                       plotIt=T,
                                                       datafile = sinuatus_labeledLoc,
@@ -119,14 +119,13 @@ if(!(file.exists("~/Geococcyx_californianus_subspplabelR_RAW.txt"))){
   californianus_labeledLoc = read.table("~/Geococcyx_californianus_subspplabelR_RAW.txt",sep="\t",header=T)
 }
 
-
 californianus = subsppLabelR::databaseToAssignedSubspecies(spp="Geococcyx californianus",
-                                                           subsppList = c(""),
                                                            pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
                                                            quantile=0.95,
-                                                           xmin=-180,xmax=-60,ymin=0,ymax=90,
+                                                           #xmin=-180,xmax=-60,ymin=0,ymax=90,
+                                                           datafile=californianus_labeledLoc,
                                                            plotIt=T,
-                                                           bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
+                                                           #bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
                                                            outputDir="~/")
 write.table(californianus$loc_suspect,"~/Geococcyx_californianus_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
 write.table(californianus$loc_good,"~/Geococcyx_californianus_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
