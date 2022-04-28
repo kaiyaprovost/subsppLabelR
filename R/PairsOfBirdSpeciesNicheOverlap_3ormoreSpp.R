@@ -1500,7 +1500,8 @@ databaseToAssignedSubspecies = function(spp,
   
   densityPolygons = lapply(densityRasters, function(dens) {
     #print(names(dens))
-    densPol = densityMapToPolygons(densityMap = dens)
+    densPol = NULL
+    try({densPol = densityMapToPolygons(densityMap = dens)})
     return(densPol)
   })
   
