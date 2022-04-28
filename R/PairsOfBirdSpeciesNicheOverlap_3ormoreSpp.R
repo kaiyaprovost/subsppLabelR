@@ -1460,6 +1460,19 @@ databaseToAssignedSubspecies = function(spp,
   ## build the density of the points
   ## remove all but 95% (or quantile) most dense cells
   
+  ## TODO: some subspecies come back with the entire range as their range due to the way the distribution is 
+  ## need to generate a raster file to crop the density maps to
+  total_range = bgLayer
+  raster::values(total_range)[!is.na(raster::values(bgLayer))] = NA
+  cells <- raster::cellFromXY(total_range, as.matrix(labeledLoc[,c("longitude","latitude")]));
+  celltable = table(cells)
+  total_range[as.numeric(names(celltable))] = celltable
+  if (plotIt == T) {
+    png(paste("FullDistribution", spp, ".png", sep = ""))
+    raster::plot(total_range,colNA = "darkgrey",main = paste("Distribution"))
+    dev.off()
+  }
+  
   print("Building species kernel density maps")
   
   ## TODO: add something to increase quantiles dynamically here? so if 0.95 does not return all the valid subspecies, reduce to 0.90 etc? 
@@ -1580,12 +1593,13 @@ databaseToAssignedSubspecies = function(spp,
   
   print("Locating points relative to polygons")
   
+  
   polyLocations = labeledLoc
   
   for (slotA in 1:length(subsppNames)) {
     for (slotB in 1:length(subsppNames)) {
       if (subsppNames[[slotA]] != "unknown" && subsppNames[[slotB]] != "unknown" && slotA != slotB) {
-        #print(paste(slotA,slotB,sep=" "))
+        print(paste(slotA,slotB,sep=" "))
         polyLocations = locatePolygonPoints(test_points = polyLocations,
                                             polygonA = densityPolygons_trim[[slotA]],polygonB = densityPolygons_trim[[slotB]],
                                             nameA = subsppNames[[slotA]],nameB = subsppNames[[slotB]],
