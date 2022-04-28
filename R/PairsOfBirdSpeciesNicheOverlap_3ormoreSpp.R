@@ -175,7 +175,7 @@ subspeciesDensityMap = function(localities,
                                 xmax = NULL,
                                 ymin = NULL,
                                 ymax = NULL,
-                                bgLayer) {
+                                total_range) {
   ## this function uses kernel density to make a raster that will then be used to filter
   ## the data to remove all but the 5% (or 1-quantile) most dense cells
   ## TODO: allow for subspecies-specific quantiles 
@@ -215,7 +215,8 @@ subspeciesDensityMap = function(localities,
   #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
   
   ## crop to the existing layers
-  densRas_trim = raster::crop(densRas_trim,bgLayer)
+  densRas_trim = raster::crop(densRas_trim,total_range)
+  raster::values(densRas_trim)[is.na(raster::values(total_range))] = NA
   
   return(densRas_trim)
   }
@@ -1481,7 +1482,7 @@ databaseToAssignedSubspecies = function(spp,
     #subspp="relicta"
     locs = labeledLoc[labeledLoc$subspecies == subspp,]
     #print(head(locs))
-    dens = subspeciesDensityMap(localities = locs,quantile = quantile,xmin = xmin,xmax = xmax,ymin = ymin,ymax = ymax, bgLayer=bgLayer)
+    dens = subspeciesDensityMap(localities = locs,quantile = quantile,xmin = xmin,xmax = xmax,ymin = ymin,ymax = ymax, total_range=total_range)
     if (is.null(dens)) { dens = NA }
     if ((length((raster::unique(dens,na.last=NA)))) <= 0) { dens = NA }
     names(dens) = subspp
