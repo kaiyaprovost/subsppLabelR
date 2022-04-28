@@ -22,8 +22,6 @@ write.table(nitens_labeledLoc,"~/Phainopela_nitens_subspplabelR_RAW.txt",sep="\t
 } else {
   nitens_labeledLoc = read.table("~/Phainopela_nitens_subspplabelR_RAW.txt",sep="\t",header=T)
 }
-
-
 if(!(file.exists("~/Phainopela_nitens_subspplabelR_loc_good.txt"))){
 nitens = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                     subsppList = c("lepida","nitens"),
@@ -42,7 +40,6 @@ write.table(nitens$loc_good,"~/Phainopela_nitens_subspplabelR_loc_good.txt",sep=
 }
 
 ## sinuatus
-
 if(!(file.exists("~/Cardinalis_sinuatus_subspplabelR_RAW.txt"))){
   sinuatus_listFromSubspeciesOcc = subspeciesOccQuery(spp="Cardinalis sinuatus",
                                                     subsppList = c("sinuatus","fulvescens","peninsulae"),
@@ -69,7 +66,6 @@ write.table(sinuatus$loc_good,"~/Cardinalis_sinuatus_subspecies_subspplabelR_loc
 }
 
 ## melodia
-
 if(!(file.exists("~/Melospiza_melodia_subspplabelR_RAW.txt"))){
   melodia_listFromSubspeciesOcc = subspeciesOccQuery(spp="Melospiza melodia",
                                                      subsppList = c("adusta","amaka","atlantica","beata","caurina",
