@@ -1324,6 +1324,10 @@ databaseToAssignedSubspecies = function(spp,
   print("Cleaning bad lat/longs")
   labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),] ## fine
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
+  labeledLoc = labeledLoc[labeledLoc$latitude<=90,]
+  labeledLoc = labeledLoc[labeledLoc$latitude>=-90,]
+  labeledLoc = labeledLoc[labeledLoc$longitude<=180,]
+  labeledLoc = labeledLoc[labeledLoc$longitude>=-180,]  
   
   print("Check xy maxmin")
   if(is.null(xmin)) { xmin = as.numeric(min(as.numeric(labeledLoc$longitude),na.rm=T)) } ## fine? 
