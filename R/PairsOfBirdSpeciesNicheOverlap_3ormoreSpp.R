@@ -1305,14 +1305,14 @@ databaseToAssignedSubspecies = function(spp,
   }
   
   print("Cleaning bad lat/longs")
-  labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),]
+  labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),] ## fine
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
   
   print("Check xy maxmin")
-  if(is.null(xmin)) { xmin = as.numeric(min(labeledLoc$longitude,na.rm=T)) }
-  if(is.null(xmax)) { xmax = as.numeric(max(labeledLoc$longitude,na.rm=T)) }
-  if(is.null(ymin)) { ymin = as.numeric(min(labeledLoc$latitude,na.rm=T)) }
-  if(is.null(ymax)) { ymax = as.numeric(max(labeledLoc$latitude,na.rm=T)) }
+  if(is.null(xmin)) { xmin = as.numeric(min(as.numeric(labeledLoc$longitude),na.rm=T)) } ## fine? 
+  if(is.null(xmax)) { xmax = as.numeric(max(as.numeric(labeledLoc$longitude),na.rm=T)) }
+  if(is.null(ymin)) { ymin = as.numeric(min(as.numeric(labeledLoc$latitude),na.rm=T)) }
+  if(is.null(ymax)) { ymax = as.numeric(max(as.numeric(labeledLoc$latitude),na.rm=T)) }
   
   print("Cleaning bgLayer")
   if(is.null(bgLayer)){

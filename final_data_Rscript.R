@@ -111,7 +111,7 @@ write.table(melodia$loc_good,"~/Melospiza_melodia_subspecies_subspplabelR_loc_go
 if(!(file.exists("~/Geococcyx_californianus_subspplabelR_RAW.txt"))){
   californianus_listFromSubspeciesOcc = subspeciesOccQuery(spp="Geococcyx californianus",
                                                      pointLimit=10000,
-                                                     c("gbif","inat","bison","vertnet"))
+                                                     dbToQuery=c("gbif","inat","bison","vertnet"))
   californianus_labeledLoc = labelSubspecies(subsppOccList=californianus_listFromSubspeciesOcc)
   head(californianus_labeledLoc)
   write.table(californianus_labeledLoc,"~/Geococcyx_californianus_subspplabelR_RAW.txt",sep="\t",row.names = F)
