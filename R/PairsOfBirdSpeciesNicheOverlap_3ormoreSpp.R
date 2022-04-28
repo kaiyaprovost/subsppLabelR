@@ -1285,7 +1285,7 @@ databaseToAssignedSubspecies = function(spp,
       print("Uploading datafile")
       labeledLoc = read.csv(datafile, sep = "\t", stringsAsFactors = F)
       print("Extracting datafile relevant cols")
-      labeledLoc = labeledLoc[, 1:4]
+      labeledLoc = labeledLoc[, c("name","longitude","latitude","subspecies")]
     } else {
       labeledLoc = datafile[, c("name", "longitude", "latitude", "subspecies")]
       
