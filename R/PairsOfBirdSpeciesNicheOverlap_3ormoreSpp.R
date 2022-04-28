@@ -28,11 +28,12 @@ NULL
 #' listFromSubspeciesOcc = subspeciesOccQuery(spp="Cardinalis sinuatus",
 #'    subsppList=c("sinuatus","peninsulae","fulvescens"),pointLimit=100,
 #'    dbToQuery="gbif")
-subspeciesOccQuery = function(spp = "Phainopepla nitens",
-                              subsppList = c("nitens", "lepida"),
+subspeciesOccQuery = function(spp,
+                              subsppList = NULL,
                               pointLimit = 500,
                               dbToQuery = c("gbif", "bison", "inat", "ecoengine", "vertnet"),
                               ...) {
+  ## TODO: support for no subspecies given 
   ## this function uses spocc to query for one species and multiple subspecies
   #library(spocc)
   
@@ -40,15 +41,20 @@ subspeciesOccQuery = function(spp = "Phainopepla nitens",
   
   sppOcc = spocc::occ(query = spp,limit = pointLimit,has_coords = T,from = dbToQuery,...)
   
-  subSppListOcc = lapply(subsppList, function(x) {
-    print(paste("     Getting Subspecies: ", x))
-    return(spocc::occ(query = paste(spp, x, sep = " "),
-      limit = pointLimit,has_coords = T,from = dbToQuery))
-  })
-  names(subSppListOcc) = subsppList
-  
-  print(sppOcc)
-  print(subSppListOcc)
+  if(is.null(subsppList)) {
+    print("WARNING: No subspecies given -- not doing subspecies labeling")
+    subSppListOcc = NULL
+  } else {
+    subSppListOcc = lapply(subsppList, function(x) {
+      print(paste("     Getting Subspecies: ", x))
+      return(spocc::occ(query = paste(spp, x, sep = " "),
+                        limit = pointLimit,has_coords = T,from = dbToQuery))
+    })
+    names(subSppListOcc) = subsppList
+    
+    print(sppOcc)
+    print(subSppListOcc)
+  }
   
   toReturn = list(sppOcc, subSppListOcc)
   names(toReturn) = c("unknown", "labeled")
@@ -123,14 +129,19 @@ labelSubspecies = function(subsppOccList) {
   #print("Giving occ2df labels")
   sppLocLab = occ2df_subspeciesLabels(subsppOccList_object = sppOcc,
                                       subsppOccList_name = name_sppOcc)
+  
   labeledOcc = subsppOccList[[2]]
-  #print(paste("Length labeledOcc:",length(labeledOcc)))
-  for (occ in 1:length(labeledOcc)) {
-    print(names(labeledOcc)[[occ]])
-    subsppLoc = occ2df_subspeciesLabels(subsppOccList_object = labeledOcc[[occ]],subsppOccList_name = names(labeledOcc)[[occ]])
-    #print("check1")
-    sppLocLab = rbind(sppLocLab, subsppLoc)
-    #print("check2")
+  if(is.null(labeledOcc)) {
+    print("No subspecies present -- returning for species only")
+  } else {
+    #print(paste("Length labeledOcc:",length(labeledOcc)))
+    for (occ in 1:length(labeledOcc)) {
+      print(names(labeledOcc)[[occ]])
+      subsppLoc = occ2df_subspeciesLabels(subsppOccList_object = labeledOcc[[occ]],subsppOccList_name = names(labeledOcc)[[occ]])
+      #print("check1")
+      sppLocLab = rbind(sppLocLab, subsppLoc)
+      #print("check2")
+    }
   }
   return(sppLocLab)
 }
@@ -186,7 +197,7 @@ subspeciesDensityMap = function(localities,
   }
   
   density = MASS::kde2d(as.numeric(localities$longitude),as.numeric(localities$latitude),
-    lims = range,n = 50)
+                        lims = range,n = 50)
   ## convert to raster
   densRas = raster::raster(density)
   ## take the top percentile of the points, only the densest areas
@@ -1325,8 +1336,8 @@ databaseToAssignedSubspecies = function(spp,
     ## need to make sure not factors and plotting numeric
     points(labeledLoc$longitude,labeledLoc$latitude,col = as.factor(labeledLoc$subspecies))
     legend("top",
-      legend = as.factor(unique(labeledLoc$subspecies)),
-      pch = 1,bty = "n",col = as.factor(unique(labeledLoc$subspecies)))
+           legend = as.factor(unique(labeledLoc$subspecies)),
+           pch = 1,bty = "n",col = as.factor(unique(labeledLoc$subspecies)))
     dev.off()
   }
   
@@ -1530,9 +1541,9 @@ databaseToAssignedSubspecies = function(spp,
       if (subsppNames[[slotA]] != "unknown" && subsppNames[[slotB]] != "unknown" && slotA != slotB) {
         #print(paste(slotA,slotB,sep=" "))
         polyLocations = locatePolygonPoints(test_points = polyLocations,
-          polygonA = densityPolygons_trim[[slotA]],polygonB = densityPolygons_trim[[slotB]],
-          nameA = subsppNames[[slotA]],nameB = subsppNames[[slotB]],
-          setcoord = T)
+                                            polygonA = densityPolygons_trim[[slotA]],polygonB = densityPolygons_trim[[slotB]],
+                                            nameA = subsppNames[[slotA]],nameB = subsppNames[[slotB]],
+                                            setcoord = T)
       }
     }
   }
