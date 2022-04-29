@@ -12,17 +12,17 @@ EBIRD_KEY = "f49839r87f7g"
 ## TODO: add support for when too few points are given
 
 ## phainopepla
-if(!(file.exists("~/Phainopela_nitens_subspplabelR_RAW.txt"))){
+if(!(file.exists("~/Phainopepla_nitens_subspplabelR_RAW.txt"))){
 nitens_listFromSubspeciesOcc = subspeciesOccQuery(spp="Phainopepla nitens",
   subsppList=c("lepida","nitens"),pointLimit=10000,
   c("gbif","inat","bison","vertnet"))
 nitens_labeledLoc = labelSubspecies(subsppOccList=nitens_listFromSubspeciesOcc)
 head(nitens_labeledLoc)
-write.table(nitens_labeledLoc,"~/Phainopela_nitens_subspplabelR_RAW.txt",sep="\t",row.names = F)
+write.table(nitens_labeledLoc,"~/Phainopepla_nitens_subspplabelR_RAW.txt",sep="\t",row.names = F)
 } else {
-  nitens_labeledLoc = read.table("~/Phainopela_nitens_subspplabelR_RAW.txt",sep="\t",header=T)
+  nitens_labeledLoc = read.table("~/Phainopepla_nitens_subspplabelR_RAW.txt",sep="\t",header=T)
 }
-if(!(file.exists("~/Phainopela_nitens_subspplabelR_loc_good.txt"))){
+if(!(file.exists("~/Phainopepla_nitens_subspplabelR_loc_good.txt"))){
 nitens = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                     subsppList = c("lepida","nitens"),
                                                     pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
@@ -35,8 +35,8 @@ nitens = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
 nitens$loc_suspect
 nitens$loc_good
 nitens$pol
-write.table(nitens$loc_suspect,"~/Phainopela_nitens_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
-write.table(nitens$loc_good,"~/Phainopela_nitens_subspplabelR_loc_good.txt",sep="\t",row.names = F)
+write.table(nitens$loc_suspect,"~/Phainopepla_nitens_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
+write.table(nitens$loc_good,"~/Phainopepla_nitens_subspplabelR_loc_good.txt",sep="\t",row.names = F)
 }
 
 ## sinuatus
@@ -139,4 +139,3 @@ californianus = subsppLabelR::databaseToAssignedSubspecies(spp="Geococcyx califo
 write.table(californianus$loc_suspect,"~/Geococcyx_californianus_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
 write.table(californianus$loc_good,"~/Geococcyx_californianus_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
 }
-
