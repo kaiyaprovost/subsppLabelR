@@ -1401,7 +1401,7 @@ databaseToAssignedSubspecies = function(spp,
   if(restrictNominate==T){
     polygons_notnom = densityPolygons[!(names(densityPolygons) %in% c(nominateSubspecies,"unknown"))]
     fullpoly=raster::bind(polygons_notnom)
-    densityPolygons[[nominateSubspecies]]=rgeos::gDiffexrence(densityPolygons[[nominateSubspecies]], fullpoly)
+    densityPolygons[[nominateSubspecies]]=rgeos::gDifference(densityPolygons[[nominateSubspecies]], fullpoly)
   }
   
   #print(densityPolygons)
