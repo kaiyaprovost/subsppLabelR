@@ -673,21 +673,24 @@ trimPolygonsByOverlap = function(polygon,
     if (is.null(intList)) {
       #print("no overlaps to remove")
       polytrim = rgeos::gUnion(polytrim, polytrim)
-    }
-    else {
+    } else {
       for (int in 1:length(intList)) {
         polytrim = rgeos::gDifference(polytrim, intList[[int]])
       }
       #print("removing differences from larger shapefile")
     }
-  }
-  else {
-    polytrim = polygon[-idList,]
+  } else {
+    ## add functionality in case removes the whole polygon? 
+    if(length(idList)<length(polygon)){
+      polytrim = polygon[-idList,]
+    } else {
+      ## whole polygon is going to be removed 
+      print("NOT REMOVING WHOLE POLYGON")
+    }
     if (is.null(intList)) {
       #print("removing subsumed polygons")
       polytrim = rgeos::gUnion(polytrim, polytrim)
-    }
-    else {
+    } else {
       for (int in 1:length(intList)) {
         polytrim = rgeos::gDifference(polytrim, intList[[int]])
       }
@@ -732,7 +735,7 @@ polygonTrimmer = function(polygonList, namesList) {
     for (slotB in 1:length(namesList)) {
       if (namesList[[slotA]] != "unknown" &&
           namesList[[slotB]] != "unknown" && slotA != slotB) {
-        #print(paste(slotA,slotB,sep=" "))
+        print(paste(slotA,slotB,sep=" "))
         #print(paste(namesList[[slotA]],"with",namesList[[slotB]],sep=" "))
         polA = newPolygonList[[slotA]]
         polB = newPolygonList[[slotB]]
@@ -755,6 +758,7 @@ polygonTrimmer = function(polygonList, namesList) {
         subsppA_densityPolygon_trim = trimPolygonsByOverlap(polygon = polA,
                                                             idList = subsppA_polygonsToRemove,
                                                             intList = overlapToRemove_subsppA)
+        ## THIS IS FAILING 
         subsppB_densityPolygon_trim = trimPolygonsByOverlap(polygon = polB,
                                                             idList = subsppB_polygonsToRemove,
                                                             intList = overlapToRemove_subsppB)
