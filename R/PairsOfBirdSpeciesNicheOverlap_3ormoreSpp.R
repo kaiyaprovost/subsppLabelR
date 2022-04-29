@@ -594,7 +594,7 @@ flagPolygonOverlap2 = function(subsppPoly1 = polA,
               else if (testArea == area1 &&
                        testArea == area2) {
                 ## if both are subsumed, keep both
-                print("EXACT MATCH, KEEPING BOTH ")
+                print("EXACT MATCH, KEEPING BOTH")
               }
             }
           }
@@ -1595,6 +1595,7 @@ databaseToAssignedSubspecies = function(spp,
   print("Locating points relative to polygons")
   
   
+  ## TODO: this is hanging 
   polyLocations = labeledLoc
   
   for (slotA in 1:length(subsppNames)) {
