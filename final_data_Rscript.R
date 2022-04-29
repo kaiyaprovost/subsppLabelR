@@ -1,6 +1,7 @@
-## TODO: update so that the density map gets plotted onto the environmental raster of choice?
 ## maybe calculate the density map based on points per grid cell?
 ## add a "method" param?
+
+## TODO: figure out alaska
 
 detach("package:subsppLabelR", unload = TRUE)
 devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
@@ -8,10 +9,9 @@ library(subsppLabelR)
 
 EBIRD_KEY = "f49839r87f7g"
 
-## phainopepla
-## TODO: add ebird support, currently not working
 ## TODO: add support for when too few points are given
 
+## phainopepla
 if(!(file.exists("~/Phainopela_nitens_subspplabelR_RAW.txt"))){
 nitens_listFromSubspeciesOcc = subspeciesOccQuery(spp="Phainopepla nitens",
   subsppList=c("lepida","nitens"),pointLimit=10000,
@@ -83,6 +83,7 @@ if(!(file.exists("~/Melospiza_melodia_subspplabelR_RAW.txt"))){
 } else {
   melodia_labeledLoc = read.table("~/Melospiza_melodia_subspplabelR_RAW.txt",sep="\t",header=T)
 }
+if(!file.exists("~/Melospiza_melodia_subspecies_subspplabelR_loc_good.txt")){
 melodia = subsppLabelR::databaseToAssignedSubspecies(spp="Melospiza melodia",
                                                      subsppList = c("adusta","amaka","atlantica","beata","caurina",
                                                                     "clementae","cleonensis","cooperi","coronatorum","euphonia","fallax","fisherella",
@@ -100,10 +101,22 @@ melodia = subsppLabelR::databaseToAssignedSubspecies(spp="Melospiza melodia",
                                                      outputDir="~/")
 write.table(melodia$loc_suspect,"~/Melospiza_melodia_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
 write.table(melodia$loc_good,"~/Melospiza_melodia_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
+}
+mg = melodia$loc_good
+mean_lon = aggregate(mg$longitude~mg$assigned,FUN=function(x){mean(x,na.rm=T)})
+sd_lon = aggregate(mg$longitude~mg$assigned,FUN=function(x){sd(x,na.rm=T)})
+mean_lat = aggregate(mg$latitude~mg$assigned,FUN=function(x){mean(x,na.rm=T)})
+sd_lat = aggregate(mg$latitude~mg$assigned,FUN=function(x){sd(x,na.rm=T)})
+means=merge(mean_lon,mean_lat); colnames(means) = c("name","meanlon","meanlat")
+sds=merge(sd_lon,sd_lat); colnames(sds) = c("name","sdlon","sdlat")
+means_sds = merge(means,sds)
+plot(means_sds[,2:3],pch=means_sds[,1],col=as.numeric(as.factor(means_sds[,1])))
+segments(x0=means_sds[,2]-means_sds[,4], means_sds[,3], x1 = means_sds[,2]+means_sds[,4], y1 = means_sds[,3],
+         col=as.numeric(as.factor(means_sds[,1])))
+segments(x0=means_sds[,2], means_sds[,3]-means_sds[,5], x1 = means_sds[,2], y1 = means_sds[,3]+means_sds[,5],
+         col=as.numeric(as.factor(means_sds[,1])))
 
 ## californianus 
-
-## this does not work at the "matching subspecies" stage
 if(!(file.exists("~/Geococcyx_californianus_subspplabelR_RAW.txt"))){
   californianus_listFromSubspeciesOcc = subspeciesOccQuery(spp="Geococcyx californianus",
                                                      pointLimit=10000,
@@ -127,6 +140,3 @@ write.table(californianus$loc_suspect,"~/Geococcyx_californianus_subspecies_subs
 write.table(californianus$loc_good,"~/Geococcyx_californianus_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
 }
 
-
-
-##
