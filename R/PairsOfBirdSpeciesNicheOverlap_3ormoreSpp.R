@@ -220,9 +220,7 @@ subspeciesDensityMap = function(localities,
     
     ## crop to the existing layers
     densRas_trim = raster::crop(densRas_trim,total_range)
-    if(raster::ncell(densRas_trim)!=raster::ncell(total_range)){
-      densRas_trim = projectRaster(densRas_trim,total_range)
-    }
+    densRas_trim = projectRaster(densRas_trim,total_range)
     raster::values(densRas_trim)[is.na(raster::values(total_range))] = NA
     
     
