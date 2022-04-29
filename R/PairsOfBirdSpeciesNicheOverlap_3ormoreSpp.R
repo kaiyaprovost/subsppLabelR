@@ -1430,6 +1430,7 @@ databaseToAssignedSubspecies = function(spp,
               "thistle", "palegreen", "powderblue", "aquamarine", "violet", "mediumslateblue",
               "lightsalmon", "lightblue")
     for (i in 1:length(densityPolygons_trim1)) {
+      print(i)
       name = names(densityPolygons_trim1)[[i]]
       plot(densityPolygons_trim1[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
     }
