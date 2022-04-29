@@ -1016,34 +1016,6 @@ locatePolygonPoints = function(test_points,
   return(toReturn)
 }
 
-#' Check Subspecies Matches and Labels
-#'
-#' This function takes the locations of points relative to polygons from locatePolygonPoints() or similar
-#' and checks where points are assigned. Points that are in 1) no polygons, 2) multiple polygons, or
-#' 3) have a subspecies label that does not match their assignment are flagged as "suspect".
-#' Any points that are in single polygons and either 1) were originally unlabeled or 2) have a subspecies
-#' label that matches their assignment are flagged as "good".
-#'
-#' @param locfile Points with subspecies assignments and boolean locations with respect to polygons.
-#'
-#' @export
-#' @examples
-#'
-#' listFromSubspeciesOcc = subspeciesOccQuery(spp="Cardinalis sinuatus",subsppList=c("sinuatus","peninsulae","fulvescens"),pointLimit=100,dbToQuery="gbif")
-#' labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
-#' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
-#' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
-#' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
-#' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
-#' polyLocations = labeledLoc
-#' polyLocations = locatePolygonPoints(test_points=polyLocations,polygonA=densPol_sin,polygonB=densPol_ful,crs="+proj=longlat +ellps=WGS84",setcoord = TRUE,nameA="sinuatus",nameB="fulvescens")
-#' checked = subspeciesMatchChecker(locfile = polyLocations)
-#' checked_suspect = checked$suspect
-#' checked_good = checked$good
-
 
 #' Point to Polygon Locator 2
 #'
@@ -1097,6 +1069,33 @@ locatePolygonPoints2 = function(test_points,
   
 }
 
+#' Check Subspecies Matches and Labels
+#'
+#' This function takes the locations of points relative to polygons from locatePolygonPoints() or similar
+#' and checks where points are assigned. Points that are in 1) no polygons, 2) multiple polygons, or
+#' 3) have a subspecies label that does not match their assignment are flagged as "suspect".
+#' Any points that are in single polygons and either 1) were originally unlabeled or 2) have a subspecies
+#' label that matches their assignment are flagged as "good".
+#'
+#' @param locfile Points with subspecies assignments and boolean locations with respect to polygons.
+#'
+#' @export
+#' @examples
+#'
+#' listFromSubspeciesOcc = subspeciesOccQuery(spp="Cardinalis sinuatus",subsppList=c("sinuatus","peninsulae","fulvescens"),pointLimit=100,dbToQuery="gbif")
+#' labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
+#' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
+#' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
+#' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50)
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50)
+#' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
+#' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
+#' polyLocations = labeledLoc
+#' polyLocations = locatePolygonPoints(test_points=polyLocations,polygonA=densPol_sin,polygonB=densPol_ful,crs="+proj=longlat +ellps=WGS84",setcoord = TRUE,nameA="sinuatus",nameB="fulvescens")
+#' checked = subspeciesMatchChecker(locfile = polyLocations)
+#' checked_suspect = checked$suspect
+#' checked_good = checked$good
 subspeciesMatchChecker = function(locfile, subsppNames) {
   #print("a")
   locWithSubspecies = locfile
@@ -1117,7 +1116,14 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
     #print("e")
     lastSubsppCol = length(colnames(locWithSubspecies))
     #print("f")
-    subsppAssignCol = locWithSubspecies[, (1+lastSubsppCol-numSub):lastSubsppCol]
+    ## FAILING HERE BECAUSE HAVE REMOVED SUBSPECIES AS WE WENT ALONG
+    
+    #if(lastSubsppCol<numSub) {
+    subsppAssignCol = locWithSubspecies[, (1+ which(colnames(locWithSubspecies)=="subspecies")):lastSubsppCol]
+    #} else {
+    #  subsppAssignCol = locWithSubspecies[, (1+lastSubsppCol-numSub):lastSubsppCol]
+    #}
+    
     #print(head(locWithSubspecies))
     # for (colnum in 5:length(colnames(locWithSubspecies))){
     #   print(paste("colnum",colnum))
@@ -1167,7 +1173,7 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
     #print("p")
     
     for (column in 5:lastSubsppCol) {
-      #print(column)
+      print(column)
       name = colnames(singlegroup)[column]
       #print(name)
       assignedThat = singlegroup[singlegroup[, column] == 1,]
@@ -1661,13 +1667,10 @@ databaseToAssignedSubspecies = function(spp,
   ## this is taking a long time 
   ## we are gonna try something else
   
-
-  
-  
-  
- ## iterate through each polygon
+  ## iterate through each polygon
   for(polygonSlot in 1:length(subsppNames)){
     if (subsppNames[[polygonSlot]] != "unknown"){
+      print(polygonSlot)
       polygonA=densityPolygons_trim[[polygonSlot]]
       polyLocations = locatePolygonPoints2(test_points = polyLocations,
                                            polygonA = densityPolygons_trim[[polygonSlot]],
@@ -1736,6 +1739,7 @@ databaseToAssignedSubspecies = function(spp,
   ## or subspecies assignment a priori does not match final
   ## TODO: consider putting this in the other script file
   
+  ## not working right now
   print("Matching subspecies")
   checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
                                      subsppNames)
