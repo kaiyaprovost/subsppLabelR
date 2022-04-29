@@ -206,19 +206,27 @@ subspeciesDensityMap = function(localities,
     print("NULL")
     return(NULL)
   } else {
-  ## convert to raster
-  densRas = raster::raster(density)
-  ## take the top percentile of the points, only the densest areas
-  quan = quantile(densRas[densRas], quantile)
-  densRas_trim = densRas
-  densRas_trim[densRas_trim <= quan] = NA
-  #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
-  
-  ## crop to the existing layers
-  densRas_trim = raster::crop(densRas_trim,total_range)
-  raster::values(densRas_trim)[is.na(raster::values(total_range))] = NA
-  
-  return(densRas_trim)
+    ## convert to raster
+    densRas = raster::raster(density)
+    ## take the top percentile of the points, only the densest areas
+    quan = quantile(densRas[densRas], quantile)
+    densRas_trim = densRas
+    densRas_trim[densRas_trim <= quan] = NA
+    #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
+    
+    total_crs = crs(total_range)
+    total_ext = extent(total_range)
+    total_res = res(total_range)
+    
+    ## crop to the existing layers
+    densRas_trim = raster::crop(densRas_trim,total_range)
+    if(raster::ncell(densRas_trim)!=raster::ncell(total_range)){
+      densRas_trim = projectRaster(densRas_trim,total_range)
+    }
+    raster::values(densRas_trim)[is.na(raster::values(total_range))] = NA
+    
+    
+    return(densRas_trim)
   }
   
 }
@@ -1051,97 +1059,97 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
   }
   
   if(numSub>1){
-  
-  #print("d")
-  numPoints = length(rownames(locWithSubspecies))
-  #print("e")
-  lastSubsppCol = length(colnames(locWithSubspecies))
-  #print("f")
-  subsppAssignCol = locWithSubspecies[, (1+lastSubsppCol-numSub):lastSubsppCol]
-  #print(head(locWithSubspecies))
-  # for (colnum in 5:length(colnames(locWithSubspecies))){
-  #   print(paste("colnum",colnum))
-  #   print(head(locWithSubspecies[,colnum]))
-  #   num_for_name = as.integer(colnames(locWithSubspecies)[colnum])
-  #   print(class(num_for_name))
-  #   print(paste("numforname",num_for_name))
-  #   print(subsppNames)
-  #   name_to_replace = subsppNames[num_for_name]
-  #   print(paste("nametoreplace",name_to_replace))
-  #   names(locWithSubspecies)[colnum] = name_to_replace
-  #   print(names(locWithSubspecies))
-  # }
-  
-  #print("g")
-  subsppPriorCol = locWithSubspecies$subspecies
-  #print("h")
-  locWithSubspecies$numSubsppGroups <-
-    rowSums(subsppAssignCol, na.rm = TRUE)
-  #print("i")
-  locWithSubspecies$assigned = NA
-  #print("j")
-  
-  notassigned = locWithSubspecies[which(locWithSubspecies$numSubsppGroups ==
-                                          0),]
-  #print("k")
-  if (nrow(notassigned) != 0) {
-    notassigned$assigned = "none"
-  }
-  #print("l")
-  
-  multigroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroups >
-                                         1),]
-  #print("m")
-  if (nrow(multigroup) != 0) {
-    multigroup$assigned = "multiple"
-  }
-  #print("n")
-  
-  singlegroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroup ==
-                                          1),]
-  #print("o")
-  
-  ## check whether mismatch between apriori and not
-  suspectpoints = rbind(multigroup, notassigned)
-  goodpoints = data.frame()
-  #print("p")
-  
-  for (column in 5:lastSubsppCol) {
-    #print(column)
-    name = colnames(singlegroup)[column]
-    #print(name)
-    assignedThat = singlegroup[singlegroup[, column] == 1,]
     
-    ## breaking if none assigned
+    #print("d")
+    numPoints = length(rownames(locWithSubspecies))
+    #print("e")
+    lastSubsppCol = length(colnames(locWithSubspecies))
+    #print("f")
+    subsppAssignCol = locWithSubspecies[, (1+lastSubsppCol-numSub):lastSubsppCol]
+    #print(head(locWithSubspecies))
+    # for (colnum in 5:length(colnames(locWithSubspecies))){
+    #   print(paste("colnum",colnum))
+    #   print(head(locWithSubspecies[,colnum]))
+    #   num_for_name = as.integer(colnames(locWithSubspecies)[colnum])
+    #   print(class(num_for_name))
+    #   print(paste("numforname",num_for_name))
+    #   print(subsppNames)
+    #   name_to_replace = subsppNames[num_for_name]
+    #   print(paste("nametoreplace",name_to_replace))
+    #   names(locWithSubspecies)[colnum] = name_to_replace
+    #   print(names(locWithSubspecies))
+    # }
     
-    if (nrow(assignedThat) == 0) {
-      print("NONE ASSIGNED:")
-      print(name)
-    } else {
-      ## subspp should be unk or the subspp
-      assignedThat$assigned = name
-      
+    #print("g")
+    subsppPriorCol = locWithSubspecies$subspecies
+    #print("h")
+    locWithSubspecies$numSubsppGroups <-
+      rowSums(subsppAssignCol, na.rm = TRUE)
+    #print("i")
+    locWithSubspecies$assigned = NA
+    #print("j")
+    
+    notassigned = locWithSubspecies[which(locWithSubspecies$numSubsppGroups ==
+                                            0),]
+    #print("k")
+    if (nrow(notassigned) != 0) {
+      notassigned$assigned = "none"
     }
-    okaynames = c("unknown", name)
+    #print("l")
     
-    wrong1 = assignedThat[which(!(assignedThat$subspecies %in% okaynames)),]
-    right1 = assignedThat[which(assignedThat$subspecies %in% okaynames),]
+    multigroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroups >
+                                           1),]
+    #print("m")
+    if (nrow(multigroup) != 0) {
+      multigroup$assigned = "multiple"
+    }
+    #print("n")
     
+    singlegroup = locWithSubspecies[which(locWithSubspecies$numSubsppGroup ==
+                                            1),]
+    #print("o")
     
+    ## check whether mismatch between apriori and not
+    suspectpoints = rbind(multigroup, notassigned)
+    goodpoints = data.frame()
+    #print("p")
     
-    notassignedThat = singlegroup[singlegroup[, column] == 0,]
-    
-    wrong2 = notassignedThat[which(notassignedThat$subspecies == name),]
-    right2 = notassignedThat[which(notassignedThat$subspecies != name),]
-    
-    ## DO NOT ADD RIGHT/WRONG 2, NOT ENOUGH INFORMATION YET
-    suspectpoints = rbind(suspectpoints, wrong1)
-    goodpoints = rbind(goodpoints, right1)
-  }
-  #print("q")
-  suspectpoints = unique(suspectpoints)
-  goodpoints = unique(goodpoints)
-  #print("r")
+    for (column in 5:lastSubsppCol) {
+      #print(column)
+      name = colnames(singlegroup)[column]
+      #print(name)
+      assignedThat = singlegroup[singlegroup[, column] == 1,]
+      
+      ## breaking if none assigned
+      
+      if (nrow(assignedThat) == 0) {
+        print("NONE ASSIGNED:")
+        print(name)
+      } else {
+        ## subspp should be unk or the subspp
+        assignedThat$assigned = name
+        
+      }
+      okaynames = c("unknown", name)
+      
+      wrong1 = assignedThat[which(!(assignedThat$subspecies %in% okaynames)),]
+      right1 = assignedThat[which(assignedThat$subspecies %in% okaynames),]
+      
+      
+      
+      notassignedThat = singlegroup[singlegroup[, column] == 0,]
+      
+      wrong2 = notassignedThat[which(notassignedThat$subspecies == name),]
+      right2 = notassignedThat[which(notassignedThat$subspecies != name),]
+      
+      ## DO NOT ADD RIGHT/WRONG 2, NOT ENOUGH INFORMATION YET
+      suspectpoints = rbind(suspectpoints, wrong1)
+      goodpoints = rbind(goodpoints, right1)
+    }
+    #print("q")
+    suspectpoints = unique(suspectpoints)
+    goodpoints = unique(goodpoints)
+    #print("r")
   } else {
     suspectpoints = data.frame()
     goodpoints = locWithSubspecies
@@ -1620,27 +1628,27 @@ databaseToAssignedSubspecies = function(spp,
   print(length(colnames(polyLocations)))
   
   if(length(colnames(polyLocations)) > 6){
-  
-  for (colNumA in 5:length(colnames(polyLocations))) {
-    for (colNumB in 6:length(colnames(polyLocations))) {
-      if (colNumA < colNumB) {
-        #print(paste("compare",colNumA,colNumB,sep=" "))
-        if (identical(polyLocations[[colNumA]], polyLocations[[colNumB]])) {
-          #print("identical, deleting")
-          colsToDelete = c(colsToDelete, colNumB)
+    
+    for (colNumA in 5:length(colnames(polyLocations))) {
+      for (colNumB in 6:length(colnames(polyLocations))) {
+        if (colNumA < colNumB) {
+          #print(paste("compare",colNumA,colNumB,sep=" "))
+          if (identical(polyLocations[[colNumA]], polyLocations[[colNumB]])) {
+            #print("identical, deleting")
+            colsToDelete = c(colsToDelete, colNumB)
+          }
         }
       }
     }
-  }
-  if (!(is.null(colsToDelete))) {
-    #print("is null cols")
-    #print(colsToDelete)
-    #print(names(polyLocations))
-    #print(head(polyLocations))
-    polyLocations = polyLocations[,-colsToDelete]
-    #print("success")
-    
-  }
+    if (!(is.null(colsToDelete))) {
+      #print("is null cols")
+      #print(colsToDelete)
+      #print(names(polyLocations))
+      #print(head(polyLocations))
+      polyLocations = polyLocations[,-colsToDelete]
+      #print("success")
+      
+    }
     
   }
   
