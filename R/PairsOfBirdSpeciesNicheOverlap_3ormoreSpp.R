@@ -1183,6 +1183,7 @@ databaseToAssignedSubspecies = function(spp,
                                         outputDir,
                                         datafile = NULL,
                                         epsilon = 1e-6,
+                                        restrictNominate=T,
                                         ...) {
   ## TODO: allow to begin from any step?
   setwd(outputDir)
@@ -1221,6 +1222,9 @@ databaseToAssignedSubspecies = function(spp,
       labeledLoc = datafile[, c("name", "longitude", "latitude", "subspecies")]
     }
   }
+  
+  nominateSubspecies = strsplit(spp," ")[[1]][2]
+  
   print("Cleaning bad lat/longs")
   labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),] ## fine
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
@@ -1356,7 +1360,8 @@ databaseToAssignedSubspecies = function(spp,
     #subspp="relicta"
     locs = labeledLoc[labeledLoc$subspecies == subspp,]
     #print(head(locs))
-    dens = subspeciesDensityMap(localities = locs,quantile = quantile,xmin = xmin,xmax = xmax,ymin = ymin,ymax = ymax, total_range=total_range)
+    dens = subspeciesDensityMap(localities = locs,quantile = quantile,xmin = xmin,xmax = xmax,
+                                ymin = ymin,ymax = ymax, total_range=total_range)
     if (is.null(dens)) { dens = NA }
     if ((length((raster::unique(dens,na.last=NA)))) <= 0) { dens = NA }
     names(dens) = subspp
@@ -1366,6 +1371,9 @@ databaseToAssignedSubspecies = function(spp,
   names(densityRasters) = subsppNames
   ## remove failed ones
   densityRasters = densityRasters[!(is.na(densityRasters))]
+  
+  
+  
   subsppNames = names(densityRasters)
   #print("start plot1")
   if (plotIt == T) {
@@ -1373,8 +1381,8 @@ databaseToAssignedSubspecies = function(spp,
       #print("plotforloop")
       name = names(densityRasters)[[i]]
       png(paste("DensityRaster_", spp, " ", name, ".png", sep = ""))
-      plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Density, subspp:", name))
-      plot(densityRasters[[i]],add = T,col = viridis::viridis(99))
+      raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Density, subspp:", name))
+      raster::plot(densityRasters[[i]],add = T,col = viridis::viridis(99))
       dev.off()
     }
   }
@@ -1388,6 +1396,14 @@ databaseToAssignedSubspecies = function(spp,
     try({densPol = densityMapToPolygons(densityMap = dens)})
     return(densPol)
   })
+  
+  ## optionally restrict the nominate
+  if(restrictNominate==T){
+    polygons_notnom = densityPolygons[!(names(densityPolygons) %in% c(nominateSubspecies,"unknown"))]
+    fullpoly=raster::bind(polygons_notnom)
+    densityPolygons[[nominateSubspecies]]=rgeos::gDiffexrence(densityPolygons[[nominateSubspecies]], fullpoly)
+  }
+  
   #print(densityPolygons)
   if (plotIt == T) {
     for (i in 1:length(densityPolygons)) {
@@ -1418,6 +1434,8 @@ databaseToAssignedSubspecies = function(spp,
   ## TODO: what about things that are in both?
   ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
   ## will delete that subspecies. no bueno
+  ## TODO: nominate subspecies special case 
+  
   densityPolygons_trim1 = polygonTrimmer(polygonList = densityPolygons, namesList = subsppNames)
   if (plotIt == T) {
     for (i in 1:length(densityPolygons_trim1)) {
