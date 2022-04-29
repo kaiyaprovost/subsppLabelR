@@ -55,7 +55,7 @@ if(!file.exists("~/Cardinalis_sinuatus_subspecies_subspplabelR_loc_good.txt")){
 sinuatus = subsppLabelR::databaseToAssignedSubspecies(spp="Cardinalis sinuatus",
                                                       subsppList = c("sinuatus","fulvescens","peninsulae"),
                                                       pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
-                                                      quantile=0.95, ## works with 0 but does not work well 
+                                                      quantile=0.99, ## works with 0 but does not work well 
                                                       #xmin=-130,xmax=-60,ymin=10,ymax=60,
                                                       plotIt=T,
                                                       datafile = sinuatus_labeledLoc,
@@ -64,6 +64,34 @@ sinuatus = subsppLabelR::databaseToAssignedSubspecies(spp="Cardinalis sinuatus",
 write.table(sinuatus$loc_suspect,"~/Cardinalis_sinuatus_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
 write.table(sinuatus$loc_good,"~/Cardinalis_sinuatus_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
 }
+
+## leucophrys
+if(!(file.exists("~/Zonotrichia_leucophrys_subspplabelR_RAW.txt"))){
+  leucophrys_listFromSubspeciesOcc = subspeciesOccQuery(spp="Zonotrichia leucophrys",
+                                                      subsppList = c("leucophrys","gambelii","nuttalli",
+                                                                     "pugetensis","oriantha"),
+                                                      pointLimit=10000,
+                                                      c("gbif","inat","bison","vertnet"))
+  leucophrys_labeledLoc = labelSubspecies(subsppOccList=leucophrys_listFromSubspeciesOcc)
+  head(leucophrys_labeledLoc)
+  write.table(leucophrys_labeledLoc,"~/Zonotrichia_leucophrys_subspplabelR_RAW.txt",sep="\t",row.names = F)
+} else {
+  leucophrys_labeledLoc = read.table("~/Zonotrichia_leucophrys_subspplabelR_RAW.txt",sep="\t",header=T)
+}
+if(!file.exists("~/Zonotrichia_leucophrys_subspecies_subspplabelR_loc_good.txt")){
+  leucophrys = subsppLabelR::databaseToAssignedSubspecies(spp="Zonotrichia leucophrys",
+                                                        subsppList = c("leucophrys","fulvescens","peninsulae"),
+                                                        pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
+                                                        quantile=0.99, ## works with 0 but does not work well 
+                                                        #xmin=-130,xmax=-60,ymin=10,ymax=60,
+                                                        plotIt=T,
+                                                        datafile = leucophrys_labeledLoc,
+                                                        #bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
+                                                        outputDir="~/")
+  write.table(leucophrys$loc_suspect,"~/Zonotrichia_leucophrys_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
+  write.table(leucophrys$loc_good,"~/Zonotrichia_leucophrys_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
+}
+
 
 ## melodia
 if(!(file.exists("~/Melospiza_melodia_subspplabelR_RAW.txt"))){
