@@ -191,12 +191,12 @@ subspeciesDensityMap = function(localities,
     densRas_trim = densRas
     densRas_trim[densRas_trim <= quan] = NA
     #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
-    total_crs = crs(total_range)
-    total_ext = extent(total_range)
-    total_res = res(total_range)
+    total_crs = raster::crs(total_range)
+    total_ext = raster::extent(total_range)
+    total_res = raster::res(total_range)
     ## crop to the existing layers
     densRas_trim = raster::crop(densRas_trim,total_range)
-    densRas_trim = projectRaster(densRas_trim,total_range)
+    densRas_trim = raster::projectRaster(densRas_trim,total_range)
     raster::values(densRas_trim)[is.na(raster::values(total_range))] = NA
     return(densRas_trim)
   }
@@ -827,9 +827,13 @@ polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=W
         
         ## check overlap between polA and polB
         overlapPol = rgeos::gIntersection(polA,polB)
+
         if(is.null(overlapPol)) {
           overlapArea = 0
         } else {
+          if(class(overlapPol)=="SpatialCollections") {
+            overlapPol = overlapPol@polyobj
+          }
           overlapArea = rgeos::gArea(overlapPol)
         }
         
