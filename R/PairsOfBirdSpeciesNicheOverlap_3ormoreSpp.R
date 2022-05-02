@@ -1401,7 +1401,9 @@ databaseToAssignedSubspecies = function(spp,
   if(restrictNominate==T){
     print("Restricting the nominate")
     polygons_notnom = densityPolygons[!(names(densityPolygons) %in% c(nominateSubspecies,"unknown"))]
+    #polygons_notnom = densityPolygons[!(names(densityPolygons) %in% c(nominateSubspecies))]
     fullpoly=raster::bind(polygons_notnom)
+    if(length(fullpoly)==1){fullpoly=fullpoly[[1]]}
     densityPolygons[[nominateSubspecies]]=rgeos::gDifference(densityPolygons[[nominateSubspecies]], fullpoly)
   }
   
@@ -1442,12 +1444,12 @@ databaseToAssignedSubspecies = function(spp,
     for (i in 1:length(densityPolygons_trim1)) {
       name = names(densityPolygons_trim1)[[i]]
       png(paste("TrimDensityPolygon_", spp, " ", name, ".png", sep = ""))
-      plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
-      plot(densityPolygons_trim1[[i]],add = T,col = viridis::viridis(99))
+      raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
+      raster::plot(densityPolygons_trim1[[i]],add = T,col = viridis::viridis(99))
       dev.off()
     }
     png(paste("TrimDensityPolygon_", spp, " ALL.png", sep = ""))
-    plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
+    raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
     cols = c( "black", "red", "blue", "green", "cyan", "magenta",
               "pink", "white", "purple", "orange", "yellow", "sienna",
               "thistle", "palegreen", "powderblue", "aquamarine", "violet", "mediumslateblue",
@@ -1455,7 +1457,7 @@ databaseToAssignedSubspecies = function(spp,
     for (i in 1:length(densityPolygons_trim1)) {
       print(i)
       name = names(densityPolygons_trim1)[[i]]
-      plot(densityPolygons_trim1[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
+      raster::plot(densityPolygons_trim1[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
     }
     legend("top",legend = names(densityPolygons_trim1),bty = "n",fill = rgb(0, 0, 0, 0),border = cols)
     dev.off()
