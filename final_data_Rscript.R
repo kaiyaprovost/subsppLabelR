@@ -7,7 +7,7 @@ detach("package:subsppLabelR", unload = TRUE)
 devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
 library(subsppLabelR)
 
-EBIRD_KEY = "f49839r87f7g"
+#EBIRD_KEY = "f49839r87f7g"
 
 ## TODO: add support for when too few points are given
 
