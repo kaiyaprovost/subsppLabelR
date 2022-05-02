@@ -831,14 +831,13 @@ polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=W
         if(is.null(overlapPol)) {
           overlapArea = 0
         } else {
-          if(class(overlapPol)=="SpatialCollections") {
-            overlapPol = overlapPol@polyobj
-          }
           overlapArea = rgeos::gArea(overlapPol)
         }
         
         if(overlapArea != 0){
-          
+          if(class(overlapPol)=="SpatialCollections") {
+            overlapPol = overlapPol@polyobj
+          }
           ## check the overlap size relative to the other sizes
           areaPolA = rgeos::gArea(polA)
           areaPolB = rgeos::gArea(polB)
