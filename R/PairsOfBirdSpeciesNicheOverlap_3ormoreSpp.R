@@ -543,6 +543,11 @@ flagPolygonOverlap2 = function(subsppPoly1 = polA,
   }
 }
 ## END
+
+
+
+
+
 #' Check for Subspecies Contiguity
 #'
 #' This function takes multiple subspecies ranges as polygons and checks whether
@@ -778,6 +783,94 @@ polygonTrimmer = function(polygonList, namesList) {
   }
   return(newPolygonList)
 }
+
+
+#' Polygon Trimmer
+#'
+#' This function takes a list of polygons as from densityMapToPolygons() or similar
+#' and removes portions of the polygons as determined by flagPolygonOverlap() and
+#' trimPolygonsByOverlap()
+#'
+#' @param polygonList A list of polygons to check
+#' @param namesList The subspecies (or other) names associated with polygon list
+#'
+#' @export
+#' @examples
+#'
+#' listFromSubspeciesOcc = subspeciesOccQuery(spp="Cardinalis sinuatus",
+#'    subsppList=c("sinuatus","peninsulae","fulvescens"),pointLimit=100,
+#'    dbToQuery="gbif")
+#'
+#' labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
+#' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
+#' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
+#' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+#'    xmin=-125,xmax=-60,ymin=10,ymax=50)
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,
+#'    xmin=-125,xmax=-60,ymin=10,ymax=50)
+#' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
+#' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
+#' densityPolygons = list(sinuatus=densPol_sin,fulvescens=densPol_ful)
+#' densityPolygons_trim = polygonTrimmer(polygonList=densityPolygons,
+#'    namesList=c("sinuatus","fulvescens"))
+#'
+polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=WGS84") {
+  newPolygonList = polygonList
+  for (slotA in 1:length(namesList)) {
+    for (slotB in 1:length(namesList)) {
+      if (namesList[[slotA]] != "unknown" &&
+          namesList[[slotB]] != "unknown" && slotA != slotB) {
+        print(paste(slotA,slotB,sep=" "))
+        polA = newPolygonList[[slotA]]
+        polB = newPolygonList[[slotB]]
+        
+        ## check overlap between polA and polB
+        overlapPol = rgeos::gIntersection(polA,polB)
+        if(is.null(overlapPol)) {
+          overlapArea = 0
+        } else {
+          overlapArea = rgeos::gArea(overlapPol)
+        }
+        
+        if(overlapArea != 0){
+          
+          ## check the overlap size relative to the other sizes
+          areaPolA = rgeos::gArea(polA)
+          areaPolB = rgeos::gArea(polB)
+          
+          ## check if it is smaller than one or the other or both
+          
+          if(overlapArea < areaPolA) {all_of_A = F} else {all_of_A = T}
+          if(overlapArea < areaPolB) {all_of_B = F} else {all_of_B = T}
+          
+          if (all_of_A == F && all_of_B == T) {
+            ## remove from A
+            polA = rgeos::gDifference(polA,overlapPol) ## order matters
+          } else if (all_of_A == T && all_of_B == F) {
+            ## remove from B
+            polB = rgeos::gDifference(polB,overlapPol) ## order matters
+            
+          } else if (all_of_A == F && all_of_B == F) {
+            ## remove from both
+            polA = rgeos::gDifference(polA,overlapPol) ## order matters
+            polB = rgeos::gDifference(polB,overlapPol) ## order matters
+            
+          } ## we don't do anything if both are true 
+          
+          
+        }
+        
+        newPolygonList[[slotA]] = polA
+        newPolygonList[[slotB]] = polB
+      }
+    }
+  }
+  return(newPolygonList)
+}
+
+
+
 #' Point to Polygon Locator
 #'
 #' This function takes a two polygons and a list of points
@@ -1439,7 +1532,7 @@ databaseToAssignedSubspecies = function(spp,
   ## will delete that subspecies. no bueno
   ## TODO: nominate subspecies special case 
   
-  densityPolygons_trim1 = polygonTrimmer(polygonList = densityPolygons, namesList = subsppNames)
+  densityPolygons_trim1 = polygonTrimmer2(polygonList = densityPolygons, namesList = subsppNames)
   if (plotIt == T) {
     for (i in 1:length(densityPolygons_trim1)) {
       name = names(densityPolygons_trim1)[[i]]
