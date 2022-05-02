@@ -102,7 +102,7 @@ if(!(file.exists("~/Melospiza_melodia_subspplabelR_RAW.txt"))){
                                                                     "juddi","kenaiensis","mailliardi","maxillaris","maxima","melodia",
                                                                     "merrilli","mexicana","micronyx","montana","morphna","pectoralis",
                                                                     "pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka",
-                                                                    "santaecrucis","villai","yuriria","zacapu"),
+                                                                    "santaecrucis","villai","yuriria"),
                                                       pointLimit=10000,
                                                       c("gbif","inat","bison","vertnet"))
   melodia_labeledLoc = labelSubspecies(subsppOccList=melodia_listFromSubspeciesOcc)
@@ -162,9 +162,95 @@ californianus = subsppLabelR::databaseToAssignedSubspecies(spp="Geococcyx califo
                                                            #xmin=-180,xmax=-60,ymin=0,ymax=90,
                                                            datafile=californianus_labeledLoc,
                                                            plotIt=T,
+                                                           restrictNominate = F,
                                                            #bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
                                                            outputDir="~/")
 write.table(californianus$loc_suspect,"~/Geococcyx_californianus_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
 write.table(californianus$loc_good,"~/Geococcyx_californianus_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
 }
+
+
+## flaviceps
+if(!(file.exists("~/Auriparus_flaviceps_subspplabelR_RAW.txt"))){
+  flaviceps_listFromSubspeciesOcc = subspeciesOccQuery(spp="Auriparus flaviceps",
+                                                       subsppList = c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
+                                                           pointLimit=10000,
+                                                           dbToQuery=c("gbif","inat","bison","vertnet"))
+  flaviceps_labeledLoc = labelSubspecies(subsppOccList=flaviceps_listFromSubspeciesOcc)
+  head(flaviceps_labeledLoc)
+  write.table(flaviceps_labeledLoc,"~/Auriparus_flaviceps_subspplabelR_RAW.txt",sep="\t",row.names = F)
+} else {
+  flaviceps_labeledLoc = read.table("~/Auriparus_flaviceps_subspplabelR_RAW.txt",sep="\t",header=T)
+}
+if(!file.exists("~/Auriparus_flaviceps_subspecies_subspplabelR_loc_good.txt")){
+  flaviceps = subsppLabelR::databaseToAssignedSubspecies(spp="Auriparus flaviceps",
+                                                         subsppList = c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
+                                                             pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
+                                                             quantile=0.95,
+                                                             #xmin=-180,xmax=-60,ymin=0,ymax=90,
+                                                             datafile=flaviceps_labeledLoc,
+                                                             plotIt=T,
+                                                             restrictNominate = F,
+                                                             #bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
+                                                             outputDir="~/")
+  write.table(flaviceps$loc_suspect,"~/Auriparus_flaviceps_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
+  write.table(flaviceps$loc_good,"~/Auriparus_flaviceps_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
+}
+
+## bilineata
+bangsi
+belvederei
+bilineata
+cana
+carmenae
+deserticola
+grisea
+opuntia
+pacifica
+tortugae
+
+## brunneicapillus
+affinis
+anthonyi
+brunneicapillus
+bryanti
+guttatus
+sandiegensis
+seri
+
+## bellii -- double check
+bellii
+medius
+
+## crissle
+coloradense
+crissale
+dumosum
+trinitatis
+
+## curvirostre 
+celsum
+curvirostre
+insularum
+maculatum
+oberholseri
+occidentale
+palmeri
+
+## fusca
+campoi
+fusca
+intermedia
+jamesi
+mesata
+mesoleuca
+perpallida
+potosina
+texana
+toroi
+
+## melanura
+curtata
+lucida
+melanura
 
