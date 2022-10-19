@@ -935,7 +935,7 @@ overlap_df = pairwiseNicheOverlap(pca_grid_clim=pca_grid_clim)
 
 ## test for niche equvalence pairwise
 ## first need to modify function again to remove NA
-ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "greater", ncores=1) {
+ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "higher", ncores=1) {
   
   R <- length(z1$x)
   l <- list()
@@ -957,7 +957,7 @@ ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "gr
   l$sim <- sim.o  # storage
   l$obs <- obs.o  # storage
   
-  if (alternative == "greater") {
+  if (alternative == "higher") {
     l$p.D <- (sum(sim.o$D >= obs.o$D) + 1)/(length(sim.o$D) + 1)  # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
     l$p.I <- (sum(sim.o$I >= obs.o$I) + 1)/(length(sim.o$I) + 1)  # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
   }
@@ -1130,12 +1130,12 @@ pairwiseNicheEquivalence = function(pca_grid_clim=pca_grid_clim,rep1=10,rep2=100
         spp2 = pca_grid_clim[[j]]
         
         eq.test <- ecospat.niche.equivalency.test_custom(z1=spp1, z2=spp2,
-                                                         rep=rep1, alternative = "greater")
+                                                         rep=rep1, alternative = "higher")
         sim.test <- ecospat.niche.similarity.test(z1=spp1, z2=spp2,
-                                                  rep=rep2, alternative = "greater",
+                                                  rep=rep2, alternative = "higher",
                                                   rand.type=2)
         sim.test2 <- ecospat.niche.similarity.test(z1=spp1, z2=spp2,
-                                                   rep=rep2, alternative = "greater",
+                                                   rep=rep2, alternative = "higher",
                                                    rand.type=2)
         
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
@@ -1161,17 +1161,17 @@ pairwiseNicheEquivalence(pca_grid_clim=pca_grid_clim,rep1=10,rep2=1000)
 # ## greater means you test for niche conservatism
 # ## lower means you test for niche divergence
 # eq.test <- ecospat.niche.equivalency.test(grid.clim1, grid.clim2,
-#                                           rep=10, alternative = "greater") ##rep = 1000 recommended for operational runs
+#                                           rep=10, alternative = "higher") ##rep = 1000 recommended for operational runs
 # ## for 10 takes 1 minute
 #
 # ## then test for niche similarity --
 # ## overlap between spp 1 and overlaps between random spp 2 bg niches
 # ## rand.type 2 means only z2 is randomly shifted
 # sim.test <- ecospat.niche.similarity.test(grid.clim1, grid.clim2,
-#                                           rep=1000, alternative = "greater",
+#                                           rep=1000, alternative = "higher",
 #                                           rand.type=2)
 # sim.test2 <- ecospat.niche.similarity.test(grid.clim2,grid.clim1,
-#                                            rep=1000, alternative = "greater",
+#                                            rep=1000, alternative = "higher",
 #                                            rand.type=2)
 # png(paste("EquivalencyOverlapTests_",species,"_nitens vs lepida",".png",sep=""))
 # par(mfrow=c(2,3))

@@ -19,7 +19,7 @@ library(subsppLabelR)
 
 ## Niche Calculations
 
-Now lets start using these occurence data. First we will download some WorldClim data. For the sake of this example, we will only use bio1 and bio12, which are mean annual temperature and mean annual precipitation. We will also crop the data to match our previous data -- but remember to change your cropping based on your own ENMs you wish to calculate. 
+Now lets start using these occurrence data. First we will download some WorldClim data. For the sake of this example, we will only use bio1 and bio12, which are mean annual temperature and mean annual precipitation. We will also crop the data to match our previous data -- but remember to change your cropping based on your own ENMs you wish to calculate. 
 
 ```{r worldclim}
 wcdata = raster::getData("worldclim",var="bio",res=10)
@@ -29,7 +29,7 @@ plot(wcdata)
 
 ```
 
-Next we will remove any points that do not have associated environmental data and thin the data. We will only thin the data once, but ideally you should thin multiple times. This will take some time. 
+Next we will remove any points that do not have associated environmental data and thin the data. We will only thin the data once, but ideally you should thin multiple times. This will take some time. You will need to have the "loc_good" object from the previous tutorial to run this code. 
 
 ```{r thinpoints}
 
@@ -43,6 +43,7 @@ cleanByEnvironment = function(Env,loc){
   
   return(loc_clean)
 }
+
 
 loc_good_clean = cleanByEnvironment(Env=wcdata,loc=loc_good)
 
@@ -386,12 +387,12 @@ print(overlap_df)
 
 ```
 
-And we test for niche equivalency in the taxa. Note that this requires a few modifications to ecospat code. This involves simulations to approximate a p-value: this process can take quite a while; feel free to reduce the amount of replications it goes through by changing "rep1" or "rep2". 
+And we test for niche equivalency in the taxa. Note that this requires a few modifications to ecospat code. This involves simulations to approximate a p-value: this process can take quite a while; feel free to reduce the amount of replications it goes through by changing "rep1" (default:100) or "rep2" (default:1000). 
 
 ```{r nicheeq}
 ## test for niche equvalence pairwise
 ## first need to modify function again to remove NA
-ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "greater", ncores=1) {
+ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "higher", ncores=1) {
   
   R <- length(z1$x)
   l <- list()
@@ -413,7 +414,7 @@ ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "gr
   l$sim <- sim.o # storage
   l$obs <- obs.o # storage
   
-  if (alternative == "greater") {
+  if (alternative == "higher") {
     l$p.D <- (sum(sim.o$D >= obs.o$D) + 1)/(length(sim.o$D) + 1) # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
     l$p.I <- (sum(sim.o$I >= obs.o$I) + 1)/(length(sim.o$I) + 1) # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
   }
@@ -582,15 +583,13 @@ pairwiseNicheEquivalence = function(pca_grid_clim=pca_grid_clim,rep1=10,rep2=10)
         
         print("Running equivalency test")
         eq.test <- ecospat.niche.equivalency.test_custom(z1=spp1, z2=spp2,
-                                                         rep=rep1, alternative = "greater")
+                                                         rep=rep1, alternative = "higher")
         print(paste("Running niche similarity test for",spp1_name,"-",spp2_name))
         sim.test <- ecospat::ecospat.niche.similarity.test(z1=spp1, z2=spp2,
-                                                           rep=rep2, alternative = "greater",
-                                                           rand.type=2)
+                                                           rep=rep2, rand.type=2)
         print(paste("Running niche similarity test for",spp2_name,"-",spp1_name))
         sim.test2 <- ecospat::ecospat.niche.similarity.test(z1=spp2, z2=spp1,
-                                                            rep=rep2, alternative = "greater",
-                                                            rand.type=2)
+                                                            rep=rep2, rand.type=2)
         
         #pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
         par(mfrow=c(2,3))

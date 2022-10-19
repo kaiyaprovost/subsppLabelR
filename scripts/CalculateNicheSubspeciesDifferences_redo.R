@@ -679,12 +679,12 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000){
         spp2 = pca_grid_clim[[j]]
         
         eq.test <- ecospat.niche.equivalency.test_custom(z1=spp1, z2=spp2,
-                                                         rep=rep1, alternative = "greater")
+                                                         rep=rep1, alternative = "higher")
         sim.test <- ecospat.niche.similarity.test(z1=spp1, z2=spp2,
-                                                  rep=rep2, alternative = "greater",
+                                                  rep=rep2, alternative = "higher",
                                                   rand.type=2)
         sim.test2 <- ecospat.niche.similarity.test(z1=spp1, z2=spp2,
-                                                   rep=rep2, alternative = "greater",
+                                                   rep=rep2, alternative = "higher",
                                                    rand.type=2)
         
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
@@ -910,7 +910,7 @@ ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env =
   
   return(l)
 }
-ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "greater", ncores=1) {
+ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "higher", ncores=1) {
   
   R <- length(z1$x)
   l <- list()
@@ -932,7 +932,7 @@ ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "gr
   l$sim <- sim.o  # storage
   l$obs <- obs.o  # storage
   
-  if (alternative == "greater") {
+  if (alternative == "higher") {
     l$p.D <- (sum(sim.o$D >= obs.o$D) + 1)/(length(sim.o$D) + 1)  # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
     l$p.I <- (sum(sim.o$I >= obs.o$I) + 1)/(length(sim.o$I) + 1)  # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
   }

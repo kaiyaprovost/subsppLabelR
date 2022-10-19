@@ -37,7 +37,7 @@ listFromSubspeciesOcc = subsppLabelR::subspeciesOccQuery(
 
 ```
 
-Now we have returned an object with 2000 occurrences that are not labeled, 1687 that are labeled as lepida, and 66 labeled as nitens. Let's do the labeling procedure. 
+Now we have returned an object with 2000 occurrences that are not labeled, ~1700 that are labeled as lepida, and ~70 labeled as nitens. Let's do the labeling procedure. 
 
 ```{r labelSubspecies}
 ## label the data by subspeces
@@ -124,7 +124,7 @@ head(rows_purged)
 
 ```
 
-We have identified six rows to remove as anomalies for the whole species. Now let us remove them and plot where they are, color coded by subspecies. 
+We have identified some rows to remove as anomalies for the whole species. Now let us remove them and plot where they are, color coded by subspecies. 
 
 ```{r anom2}
 
@@ -215,6 +215,9 @@ ymax = max_lat
 ymin = min_lat
 quantile=0.95
 
+#total_range = bgLayer
+#raster::values(total_range)[!is.na(raster::values(bgLayer))] = NA
+
 print("Building species kernel density maps")
 
 densityRasters = lapply(subsppNames, function(subspp) {
@@ -228,7 +231,8 @@ densityRasters = lapply(subsppNames, function(subspp) {
     xmin = xmin,
     xmax = xmax,
     ymin = ymin,
-    ymax = ymax
+    ymax = ymax,
+    total_range= bgLayer
   )
   if (is.null(dens)) {
     dens = NA
@@ -257,7 +261,7 @@ Lets plot these data.
 par(mfrow=c(1,3))
 for (i in 1:length(densityRasters)) {
   print(i)
-  name = names(densityRasters)[[i]].
+  name = names(densityRasters)[[i]]
   raster::plot(
     bgLayer,
     col = "grey",
@@ -290,7 +294,8 @@ densityRasters_10 = lapply(subsppNames, function(subspp) {
     xmin = xmin,
     xmax = xmax,
     ymin = ymin,
-    ymax = ymax
+    ymax = ymax,
+    total_range= bgLayer
   )
   if (is.null(dens)) {
     dens = NA
@@ -530,7 +535,7 @@ raster::plot(
   main = "Final Polygons by Subspecies"
 )
 lapply(1:length(pol),FUN=function(i){
-  plot(pol[[i]],add=T,border=as.numeric(as.factor(names(pol)))[i])
+  raster::plot(pol[[i]],add=T,border=as.numeric(as.factor(names(pol)))[i])
 })
 
 ```
