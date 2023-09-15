@@ -219,15 +219,19 @@ subspeciesDensityMap = function(localities,
 #' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
-densityMapToPolygons = function(densityMap) {
+densityMapToPolygons = function(densityMap,verbose=T) {
   ## this function converts density maps to polygons
   ## will work on other kinds of polygons as well
   #library(sp)
   #library(raster)
-  polygon = densityMap
-  polygon[!is.na(polygon)] = 1
-  polygon = sf::st_as_sf(polygon) ## added 15 Sep 2023 because rgeos and sp are not compatable?  as(st_as_sf(x), "Spatial")
-  polygon <- sp::disaggregate(raster::rasterToPolygons(polygon,fun = NULL,na.rm = T,dissolve = T))
+  polygonR = densityMap
+  polygonR[!is.na(polygonR)] = 1
+  if(verbose==T){print(class(polygonR))}
+  polygon = raster::rasterToPolygons(polygonR,fun = NULL,na.rm = T,dissolve = T)
+  if(verbose==T){print(class(polygon))}
+  polygon = as(sf::st_as_sf(polygon), "Spatial") ## added 15 Sep 2023 because rgeos and sp are not compatable?  as(st_as_sf(x), "Spatial")
+  polygon <- sp::disaggregate(polygon)
+  if(verbose==T){print("DISAGGREGATE SUCCESSFUL")}
   #plot(polygon)
   return(polygon)
 }
@@ -1574,16 +1578,23 @@ databaseToAssignedSubspecies = function(spp,
   ## this is taking a long time
   ## we are gonna try something else
   ## iterate through each polygon
+  #print(densityPolygons_trim)
+  #print(subsppNames)
   for(polygonSlot in 1:length(subsppNames)){
     if (subsppNames[[polygonSlot]] != "unknown"){
       print(polygonSlot)
+      print(subsppNames[[polygonSlot]])
       polygonA=densityPolygons_trim[[polygonSlot]]
+      polygonA = as(polygonA, "SpatialPolygonsDataFrame")
+      nameA = subsppNames[[polygonSlot]]
+      print(polygonA) ## this needs to be a spatial polygon dataframe
       polyLocations = locatePolygonPoints2(test_points = polyLocations,
-                                           polygonA = densityPolygons_trim[[polygonSlot]],
-                                           nameA = subsppNames[[polygonSlot]],
+                                           polygonA = polygonA,
+                                           nameA = nameA,
                                            setcoord = T)
     }
   }
+  print("DONE XYZ") ## not getting here
   #
   # for (slotA in 1:length(subsppNames)) {
   #   for (slotB in 1:length(subsppNames)) {
