@@ -32,7 +32,7 @@ subspeciesOccQuery = function(spp,
                               pointLimit = 500,
                               dbToQuery = c("gbif", "bison", "inat", "ecoengine", "vertnet"),
                               ...) {
-  ## TODO: support for no subspecies given 
+  ## TODO: support for no subspecies given
   ## this function uses spocc to query for one species and multiple subspecies
   #library(spocc)
   print(paste("Getting Species: ", spp))
@@ -162,7 +162,7 @@ subspeciesDensityMap = function(localities,
                                 total_range) {
   ## this function uses kernel density to make a raster that will then be used to filter
   ## the data to remove all but the 5% (or 1-quantile) most dense cells
-  ## TODO: allow for subspecies-specific quantiles 
+  ## TODO: allow for subspecies-specific quantiles
   #library(MASS)
   #library(raster)
   if(is.null(xmin)) { xmin = min(localities$longitude,na.rm=T) }
@@ -225,6 +225,7 @@ densityMapToPolygons = function(densityMap) {
   #library(raster)
   polygon = densityMap
   polygon[!is.na(polygon)] = 1
+  polygon = st_as_sf(polygon) ## added 15 Sep 2023 because rgeos and sp are not compatable?
   polygon <- sp::disaggregate(raster::rasterToPolygons(polygon,fun = NULL,na.rm = T,dissolve = T))
   #plot(polygon)
   return(polygon)
@@ -685,11 +686,11 @@ trimPolygonsByOverlap = function(polygon,
       #print("removing differences from larger shapefile")
     }
   } else {
-    ## add functionality in case removes the whole polygon? 
+    ## add functionality in case removes the whole polygon?
     if(length(idList)<length(polygon)){
       polytrim = polygon[-idList,]
     } else {
-      ## whole polygon is going to be removed 
+      ## whole polygon is going to be removed
       print("NOT REMOVING WHOLE POLYGON")
     }
     if (is.null(intList)) {
@@ -763,7 +764,7 @@ polygonTrimmer = function(polygonList, namesList) {
         subsppA_densityPolygon_trim = trimPolygonsByOverlap(polygon = polA,
                                                             idList = subsppA_polygonsToRemove,
                                                             intList = overlapToRemove_subsppA)
-        ## THIS IS FAILING 
+        ## THIS IS FAILING
         subsppB_densityPolygon_trim = trimPolygonsByOverlap(polygon = polB,
                                                             idList = subsppB_polygonsToRemove,
                                                             intList = overlapToRemove_subsppB)
@@ -824,7 +825,7 @@ polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=W
         print(paste(slotA,slotB,sep=" "))
         polA = newPolygonList[[slotA]]
         polB = newPolygonList[[slotB]]
-        
+
         ## check overlap between polA and polB
         overlapPol = rgeos::gIntersection(polA,polB)
 
@@ -833,7 +834,7 @@ polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=W
         } else {
           overlapArea = rgeos::gArea(overlapPol)
         }
-        
+
         if(overlapArea != 0){
           if(class(overlapPol)=="SpatialCollections") {
             overlapPol = overlapPol@polyobj
@@ -841,29 +842,29 @@ polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=W
           ## check the overlap size relative to the other sizes
           areaPolA = rgeos::gArea(polA)
           areaPolB = rgeos::gArea(polB)
-          
+
           ## check if it is smaller than one or the other or both
-          
+
           if(overlapArea < areaPolA) {all_of_A = F} else {all_of_A = T}
           if(overlapArea < areaPolB) {all_of_B = F} else {all_of_B = T}
-          
+
           if (all_of_A == F && all_of_B == T) {
             ## remove from A
             polA = rgeos::gDifference(polA,overlapPol) ## order matters
           } else if (all_of_A == T && all_of_B == F) {
             ## remove from B
             polB = rgeos::gDifference(polB,overlapPol) ## order matters
-            
+
           } else if (all_of_A == F && all_of_B == F) {
             ## remove from both
             polA = rgeos::gDifference(polA,overlapPol) ## order matters
             polB = rgeos::gDifference(polB,overlapPol) ## order matters
-            
-          } ## we don't do anything if both are true 
-          
-          
+
+          } ## we don't do anything if both are true
+
+
         }
-        
+
         newPolygonList[[slotA]] = polA
         newPolygonList[[slotB]] = polB
       }
@@ -1046,7 +1047,7 @@ locatePolygonPoints2 = function(test_points,
     polygonA = sp::spTransform(polygonA, crs)
   }
   overpolygon = cbind(sp::over(pts, polygonA))
-  overpolygon[is.na(overpolygon)] = 0 
+  overpolygon[is.na(overpolygon)] = 0
   colnames(overpolygon) = nameA
   test_points = cbind(test_points,overpolygon)
   return(test_points)
@@ -1192,7 +1193,7 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
 detectSpatialOutliers = function(localities = locs,
                                  epsilon = 0.0001) {
   ## use MASS to do linear algebra
-  ## TODO: why is this removing central anomalies? 
+  ## TODO: why is this removing central anomalies?
   m = length(localities[, 1])
   if (m == 1) {
     anomalies = 0
@@ -1318,18 +1319,18 @@ databaseToAssignedSubspecies = function(spp,
       labeledLoc = datafile[, c("name", "longitude", "latitude", "subspecies")]
     }
   }
-  
+
   nominateSubspecies = strsplit(spp," ")[[1]][2]
-  
+
   print("Cleaning bad lat/longs")
   labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),] ## fine
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
   labeledLoc = labeledLoc[labeledLoc$latitude<=90,]
   labeledLoc = labeledLoc[labeledLoc$latitude>=-90,]
   labeledLoc = labeledLoc[labeledLoc$longitude<=180,]
-  labeledLoc = labeledLoc[labeledLoc$longitude>=-180,]  
+  labeledLoc = labeledLoc[labeledLoc$longitude>=-180,]
   print("Check xy maxmin")
-  if(is.null(xmin)) { xmin = as.numeric(min(as.numeric(labeledLoc$longitude),na.rm=T)) } ## fine? 
+  if(is.null(xmin)) { xmin = as.numeric(min(as.numeric(labeledLoc$longitude),na.rm=T)) } ## fine?
   if(is.null(xmax)) { xmax = as.numeric(max(as.numeric(labeledLoc$longitude),na.rm=T)) }
   if(is.null(ymin)) { ymin = as.numeric(min(as.numeric(labeledLoc$latitude),na.rm=T)) }
   if(is.null(ymax)) { ymax = as.numeric(max(as.numeric(labeledLoc$latitude),na.rm=T)) }
@@ -1414,7 +1415,7 @@ databaseToAssignedSubspecies = function(spp,
     }
   }
   subsppNames = unique(labeledLoc$subspecies)
-  ## clean up the bgLayer again in case it needs to be smaller 
+  ## clean up the bgLayer again in case it needs to be smaller
   print("Check xy maxmin 2nd time")
   xmin2 = as.numeric(min(as.numeric(labeledLoc$longitude),na.rm=T))
   xmax2 = as.numeric(max(as.numeric(labeledLoc$longitude),na.rm=T))
@@ -1437,7 +1438,7 @@ databaseToAssignedSubspecies = function(spp,
   ## and account for data being poor
   ## build the density of the points
   ## remove all but 95% (or quantile) most dense cells
-  ## TODO: some subspecies come back with the entire range as their range due to the way the distribution is 
+  ## TODO: some subspecies come back with the entire range as their range due to the way the distribution is
   ## need to generate a raster file to crop the density maps to
   total_range = bgLayer
   raster::values(total_range)[!is.na(raster::values(bgLayer))] = NA
@@ -1450,7 +1451,7 @@ databaseToAssignedSubspecies = function(spp,
     dev.off()
   }
   print("Building species kernel density maps")
-  ## TODO: add something to increase quantiles dynamically here? so if 0.95 does not return all the valid subspecies, reduce to 0.90 etc? 
+  ## TODO: add something to increase quantiles dynamically here? so if 0.95 does not return all the valid subspecies, reduce to 0.90 etc?
   densityRasters = lapply(subsppNames, function(subspp) {
     print(subspp)
     #subspp="relicta"
@@ -1467,9 +1468,9 @@ databaseToAssignedSubspecies = function(spp,
   names(densityRasters) = subsppNames
   ## remove failed ones
   densityRasters = densityRasters[!(is.na(densityRasters))]
-  
-  
-  
+
+
+
   subsppNames = names(densityRasters)
   #print("start plot1")
   if (plotIt == T) {
@@ -1492,7 +1493,7 @@ databaseToAssignedSubspecies = function(spp,
     try({densPol = densityMapToPolygons(densityMap = dens)})
     return(densPol)
   })
-  
+
   ## optionally restrict the nominate
   if(restrictNominate==T){
     print("Restricting the nominate")
@@ -1502,7 +1503,7 @@ databaseToAssignedSubspecies = function(spp,
     if(length(fullpoly)==1){fullpoly=fullpoly[[1]]}
     densityPolygons[[nominateSubspecies]]=rgeos::gDifference(densityPolygons[[nominateSubspecies]], fullpoly)
   }
-  
+
   #print(densityPolygons)
   if (plotIt == T) {
     for (i in 1:length(densityPolygons)) {
@@ -1533,8 +1534,8 @@ databaseToAssignedSubspecies = function(spp,
   ## TODO: what about things that are in both?
   ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
   ## will delete that subspecies. no bueno
-  ## TODO: nominate subspecies special case 
-  
+  ## TODO: nominate subspecies special case
+
   densityPolygons_trim1 = polygonTrimmer2(polygonList = densityPolygons, namesList = subsppNames)
   if (plotIt == T) {
     for (i in 1:length(densityPolygons_trim1)) {
@@ -1567,9 +1568,9 @@ databaseToAssignedSubspecies = function(spp,
   ## if labeled and in wrong polygon, unlabel
   ## label unlabeled points based on polygons
   print("Locating points relative to polygons")
-  ## TODO: this is hanging 
+  ## TODO: this is hanging
   polyLocations = labeledLoc
-  ## this is taking a long time 
+  ## this is taking a long time
   ## we are gonna try something else
   ## iterate through each polygon
   for(polygonSlot in 1:length(subsppNames)){
@@ -1582,7 +1583,7 @@ databaseToAssignedSubspecies = function(spp,
                                            setcoord = T)
     }
   }
-  # 
+  #
   # for (slotA in 1:length(subsppNames)) {
   #   for (slotB in 1:length(subsppNames)) {
   #     if (subsppNames[[slotA]] != "unknown" && subsppNames[[slotB]] != "unknown" && slotA != slotB) {
