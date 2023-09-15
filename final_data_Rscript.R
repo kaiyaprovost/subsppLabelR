@@ -77,6 +77,7 @@ write.table(sinuatus$loc_good,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Card
 }
 
 ## leucophrys
+dir.create("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Zonotrichia_leucophrys_0.95/")
 if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Zonotrichia_leucophrys_0.95/Zonotrichia_leucophrys_subspplabelR_RAW.txt"))){
   leucophrys_listFromSubspeciesOcc = subspeciesOccQuery(spp="Zonotrichia leucophrys",
                                                       subsppList = c("leucophrys","gambelii","nuttalli",
@@ -105,6 +106,7 @@ if(!file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Zonotrichia_leucop
 
 
 ## melodia
+dir.create("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Melospiza_melodia_0.95/")
 if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Melospiza_melodia_0.95/Melospiza_melodia_subspplabelR_RAW.txt"))){
   melodia_listFromSubspeciesOcc = subspeciesOccQuery(spp="Melospiza melodia",
                                                      subsppList = c("adusta","amaka","atlantica","beata","caurina",
@@ -156,6 +158,7 @@ write.table(melodia$loc_good,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Melos
 #          col=as.numeric(as.factor(means_sds[,1])))
 
 ## californianus
+dir.create("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Geococcyx_californianus_0.95/")
 if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Geococcyx_californianus_0.95/Geococcyx_californianus_subspplabelR_RAW.txt"))){
   californianus_listFromSubspeciesOcc = subspeciesOccQuery(spp="Geococcyx californianus",
                                                      pointLimit=pointLimit,
@@ -182,18 +185,19 @@ write.table(californianus$loc_good,"C:/Users/kaiya/Documents/GitHub/subsppLabelR
 
 
 ## flaviceps
-if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_subspplabelR_RAW.txt"))){
+dir.create("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_0.95/")
+if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_0.95/Auriparus_flaviceps_subspplabelR_RAW.txt"))){
   flaviceps_listFromSubspeciesOcc = subspeciesOccQuery(spp="Auriparus flaviceps",
                                                        subsppList = c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
                                                            pointLimit=pointLimit,
                                                            dbToQuery=c("gbif","inat","bison","vertnet"))
   flaviceps_labeledLoc = labelSubspecies(subsppOccList=flaviceps_listFromSubspeciesOcc)
   head(flaviceps_labeledLoc)
-  write.table(flaviceps_labeledLoc,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_subspplabelR_RAW.txt",sep="\t",row.names = F)
+  write.table(flaviceps_labeledLoc,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_0.95/Auriparus_flaviceps_subspplabelR_RAW.txt",sep="\t",row.names = F)
 } else {
-  flaviceps_labeledLoc = read.table("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_subspplabelR_RAW.txt",sep="\t",header=T)
+  flaviceps_labeledLoc = read.table("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_0.95/Auriparus_flaviceps_subspplabelR_RAW.txt",sep="\t",header=T)
 }
-if(!file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_subspecies_subspplabelR_loc_good.txt")){
+if(!file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_0.95/Auriparus_flaviceps_subspecies_subspplabelR_loc_good.txt")){
   flaviceps = subsppLabelR::databaseToAssignedSubspecies(spp="Auriparus flaviceps",
                                                          subsppList = c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
                                                              pointLimit=pointLimit,dbToQuery=dbToQuery,
@@ -204,8 +208,8 @@ if(!file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flavicep
                                                              restrictNominate = F,
                                                              #bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
                                                              outputDir="C:/Users/kaiya/Documents/GitHub/subsppLabelR/")
-  write.table(flaviceps$loc_suspect,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
-  write.table(flaviceps$loc_good,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
+  write.table(flaviceps$loc_suspect,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_0.95/Auriparus_flaviceps_subspecies_subspplabelR_loc_suspect.txt",sep="\t",row.names = F)
+  write.table(flaviceps$loc_good,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_0.95/Auriparus_flaviceps_subspecies_subspplabelR_loc_good.txt",sep="\t",row.names = F)
 }
 
 ## bilineata

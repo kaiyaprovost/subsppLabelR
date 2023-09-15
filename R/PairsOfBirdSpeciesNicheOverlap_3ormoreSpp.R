@@ -1087,10 +1087,11 @@ locatePolygonPoints2 = function(test_points,
 subspeciesMatchChecker = function(locfile, subsppNames) {
   #print("a")
   locWithSubspecies = locfile
+  #View(locfile)
   #print("b")
   #subsppNames = names(locWithSubspecies[5:length(names(locWithSubspecies))])
   #print("c")
-  print(subsppNames)
+  #print(subsppNames)
   if("unknown" %in% subsppNames){
     numSub = length(subsppNames)-1
   } else {
@@ -1101,6 +1102,7 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
     numPoints = length(rownames(locWithSubspecies))
     #print("e")
     lastSubsppCol = length(colnames(locWithSubspecies))
+    #View(locWithSubspecies)
     #print("f")
     ## FAILING HERE BECAUSE HAVE REMOVED SUBSPECIES AS WE WENT ALONG
     #if(lastSubsppCol<numSub) {
@@ -1124,6 +1126,7 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
     #print("g")
     subsppPriorCol = locWithSubspecies$subspecies
     #print("h")
+    subsppAssignCol = as.data.frame(subsppAssignCol)
     locWithSubspecies$numSubsppGroups <-
       rowSums(subsppAssignCol, na.rm = TRUE)
     #print("i")
@@ -1594,7 +1597,6 @@ databaseToAssignedSubspecies = function(spp,
                                            setcoord = T)
     }
   }
-  print("DONE XYZ") ## not getting here
   #
   # for (slotA in 1:length(subsppNames)) {
   #   for (slotB in 1:length(subsppNames)) {
@@ -1647,9 +1649,9 @@ databaseToAssignedSubspecies = function(spp,
   print("Matching subspecies")
   checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
                                      subsppNames)
-  #print("c1")
+  print("c1")
   checked_suspect = checked$suspect
-  #print("c2")
+  print("c2")
   checked_good = checked$good
   #print("done")
   ## return nice clean data
