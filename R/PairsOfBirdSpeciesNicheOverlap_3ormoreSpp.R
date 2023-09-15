@@ -6,6 +6,7 @@
 #' @import sp
 #' @import viridis
 #' @import caret
+#' @import sf
 #' @import rebird
 NULL
 #' Pull Subspecies Occurrences
@@ -225,7 +226,7 @@ densityMapToPolygons = function(densityMap) {
   #library(raster)
   polygon = densityMap
   polygon[!is.na(polygon)] = 1
-  polygon = st_as_sf(polygon) ## added 15 Sep 2023 because rgeos and sp are not compatable?
+  polygon = sf::st_as_sf(polygon) ## added 15 Sep 2023 because rgeos and sp are not compatable?  as(st_as_sf(x), "Spatial")
   polygon <- sp::disaggregate(raster::rasterToPolygons(polygon,fun = NULL,na.rm = T,dissolve = T))
   #plot(polygon)
   return(polygon)
