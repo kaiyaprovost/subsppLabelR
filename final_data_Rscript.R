@@ -4,17 +4,23 @@
 ## TODO: figure out alaska
 
 detach("package:subsppLabelR", unload = TRUE)
-devtools::install_github('kaiyaprovost/subsppLabelR',force=F)
+#devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
+install.packages("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",repos=NULL,type="source",force=T)
 library(subsppLabelR)
 
+## parameters
+pointLimit=10000
+quant=0.95
+dbToQuery=c("gbif","inat","bison","vertnet")
 #EBIRD_KEY = "f49839r87f7g"
 
 ## TODO: add support for when too few points are given
 
 ## phainopepla
+dir.create("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Phainopepla_nitens_0.95/")
 if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Phainopepla_nitens_0.95/Phainopepla_nitens_subspplabelR_RAW.txt"))){
 nitens_listFromSubspeciesOcc = subspeciesOccQuery(spp="Phainopepla nitens",
-  subsppList=c("lepida","nitens"),pointLimit=10000,
+  subsppList=c("lepida","nitens"),pointLimit=pointLimit,
   c("gbif","inat","bison","vertnet"))
 nitens_labeledLoc = labelSubspecies(subsppOccList=nitens_listFromSubspeciesOcc)
 head(nitens_labeledLoc)
@@ -23,10 +29,14 @@ write.table(nitens_labeledLoc,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Phai
   nitens_labeledLoc = read.table("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Phainopepla_nitens_0.95/Phainopepla_nitens_subspplabelR_RAW.txt",sep="\t",header=T)
 }
 if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Phainopepla_nitens_0.95/Phainopepla_nitens_subspplabelR_loc_good.txt"))){
-nitens = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
+  nitens_labeledLoc$longitude = as.numeric(nitens_labeledLoc$longitude)
+  nitens_labeledLoc$latitude = as.numeric(nitens_labeledLoc$latitude)
+  nitens_labeledLoc$subspecies = as.factor(nitens_labeledLoc$subspecies)
+
+  nitens = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                     subsppList = c("lepida","nitens"),
-                                                    pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
-                                                    quantile=0.95,
+                                                    pointLimit=pointLimit,dbToQuery=dbToQuery,
+                                                    quantile=quant,
                                                     #xmin=-125,xmax=-60,ymin=10,ymax=55,
                                                     plotIt=T,
                                                     #bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
@@ -44,7 +54,7 @@ dir.create("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Cardinalis_sinuatus_0.9
 if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Cardinalis_sinuatus_0.95/Cardinalis_sinuatus_subspplabelR_RAW.txt"))){
   sinuatus_listFromSubspeciesOcc = subspeciesOccQuery(spp="Cardinalis sinuatus",
                                                     subsppList = c("sinuatus","fulvescens","peninsulae"),
-                                                    pointLimit=10000,
+                                                    pointLimit=pointLimit,
                                                     c("gbif","inat","bison","vertnet"))
   sinuatus_labeledLoc = labelSubspecies(subsppOccList=sinuatus_listFromSubspeciesOcc)
   head(sinuatus_labeledLoc)
@@ -55,8 +65,8 @@ if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Cardinalis_sinuat
 if(!file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Cardinalis_sinuatus_0.95/Cardinalis_sinuatus_subspecies_subspplabelR_loc_good.txt")){
 sinuatus = subsppLabelR::databaseToAssignedSubspecies(spp="Cardinalis sinuatus",
                                                       subsppList = c("sinuatus","fulvescens","peninsulae"),
-                                                      pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
-                                                      quantile=0.95, ## works with 0 but does not work well
+                                                      pointLimit=pointLimit,dbToQuery=dbToQuery,
+                                                      quantile=quant, ## works with 0 but does not work well
                                                       #xmin=-130,xmax=-60,ymin=10,ymax=60,
                                                       plotIt=T,
                                                       datafile = sinuatus_labeledLoc,
@@ -71,7 +81,7 @@ if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Zonotrichia_leuco
   leucophrys_listFromSubspeciesOcc = subspeciesOccQuery(spp="Zonotrichia leucophrys",
                                                       subsppList = c("leucophrys","gambelii","nuttalli",
                                                                      "pugetensis","oriantha"),
-                                                      pointLimit=10000,
+                                                      pointLimit=pointLimit,
                                                       c("gbif","inat","bison","vertnet"))
   leucophrys_labeledLoc = labelSubspecies(subsppOccList=leucophrys_listFromSubspeciesOcc)
   head(leucophrys_labeledLoc)
@@ -82,8 +92,8 @@ if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Zonotrichia_leuco
 if(!file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Zonotrichia_leucophrys_0.95/Zonotrichia_leucophrys_subspecies_subspplabelR_loc_good.txt")){
   leucophrys = subsppLabelR::databaseToAssignedSubspecies(spp="Zonotrichia leucophrys",
                                                           subsppList = c("leucophrys","gambelii","nuttalli",
-                                                                         "pugetensis","oriantha"),                                                        pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
-                                                        quantile=0.95, ## works with 0 but does not work well
+                                                                         "pugetensis","oriantha"),                                                        pointLimit=10000,dbToQuery=dbToQuery,
+                                                        quantile=quant, ## works with 0 but does not work well
                                                         #xmin=-130,xmax=-60,ymin=10,ymax=60,
                                                         plotIt=T,
                                                         datafile = leucophrys_labeledLoc,
@@ -104,7 +114,7 @@ if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Melospiza_melodia
                                                                     "merrilli","mexicana","micronyx","montana","morphna","pectoralis",
                                                                     "pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka",
                                                                     "santaecrucis","villai","yuriria"),
-                                                      pointLimit=10000,
+                                                      pointLimit=pointLimit,
                                                       c("gbif","inat","bison","vertnet"))
   melodia_labeledLoc = labelSubspecies(subsppOccList=melodia_listFromSubspeciesOcc)
   head(melodia_labeledLoc)
@@ -121,8 +131,8 @@ melodia = subsppLabelR::databaseToAssignedSubspecies(spp="Melospiza melodia",
                                                                     "merrilli","mexicana","micronyx","montana","morphna","pectoralis",
                                                                     "pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka",
                                                                     "santaecrucis","villai","yuriria","zacapu"),
-                                                     pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
-                                                     quantile=0.95,
+                                                     pointLimit=pointLimit,dbToQuery=dbToQuery,
+                                                     quantile=quant,
                                                      #xmin=-180,xmax=-60,ymin=0,ymax=90,
                                                      plotIt=T,
                                                      datafile=melodia_labeledLoc,
@@ -148,7 +158,7 @@ write.table(melodia$loc_good,"C:/Users/kaiya/Documents/GitHub/subsppLabelR/Melos
 ## californianus
 if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Geococcyx_californianus_0.95/Geococcyx_californianus_subspplabelR_RAW.txt"))){
   californianus_listFromSubspeciesOcc = subspeciesOccQuery(spp="Geococcyx californianus",
-                                                     pointLimit=10000,
+                                                     pointLimit=pointLimit,
                                                      dbToQuery=c("gbif","inat","bison","vertnet"))
   californianus_labeledLoc = labelSubspecies(subsppOccList=californianus_listFromSubspeciesOcc)
   head(californianus_labeledLoc)
@@ -158,8 +168,8 @@ if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Geococcyx_califor
 }
 if(!file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Geococcyx_californianus_0.95/Geococcyx_californianus_subspecies_subspplabelR_loc_good.txt")){
 californianus = subsppLabelR::databaseToAssignedSubspecies(spp="Geococcyx californianus",
-                                                           pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
-                                                           quantile=0.95,
+                                                           pointLimit=pointLimit,dbToQuery=dbToQuery,
+                                                           quantile=quant,
                                                            #xmin=-180,xmax=-60,ymin=0,ymax=90,
                                                            datafile=californianus_labeledLoc,
                                                            plotIt=T,
@@ -175,7 +185,7 @@ write.table(californianus$loc_good,"C:/Users/kaiya/Documents/GitHub/subsppLabelR
 if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_subspplabelR_RAW.txt"))){
   flaviceps_listFromSubspeciesOcc = subspeciesOccQuery(spp="Auriparus flaviceps",
                                                        subsppList = c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
-                                                           pointLimit=10000,
+                                                           pointLimit=pointLimit,
                                                            dbToQuery=c("gbif","inat","bison","vertnet"))
   flaviceps_labeledLoc = labelSubspecies(subsppOccList=flaviceps_listFromSubspeciesOcc)
   head(flaviceps_labeledLoc)
@@ -186,8 +196,8 @@ if(!(file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flavice
 if(!file.exists("C:/Users/kaiya/Documents/GitHub/subsppLabelR/Auriparus_flaviceps_subspecies_subspplabelR_loc_good.txt")){
   flaviceps = subsppLabelR::databaseToAssignedSubspecies(spp="Auriparus flaviceps",
                                                          subsppList = c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
-                                                             pointLimit=10000,dbToQuery=c("gbif","inat","bison","vertnet"),
-                                                             quantile=0.95,
+                                                             pointLimit=pointLimit,dbToQuery=dbToQuery,
+                                                             quantile=quant,
                                                              #xmin=-180,xmax=-60,ymin=0,ymax=90,
                                                              datafile=flaviceps_labeledLoc,
                                                              plotIt=T,
