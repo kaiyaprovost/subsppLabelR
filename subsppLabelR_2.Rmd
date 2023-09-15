@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,cache=FALSE)
 ```
 
 ## Setting Up the Package
@@ -16,15 +16,40 @@ library(devtools)
 devtools::install_github('kaiyaprovost/subsppLabelR',force=F)
 library(subsppLabelR)
 ```
+We also need to load the data we are going to use. 
+```{r dataload}
+xmin=-125
+xmax=-60
+ymin=10
+ymax=50
+ext=raster::extent(c(xmin,xmax,ymin,ymax))
+bgLayer=raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
+db = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
+                                                subsppList = c("lepida","nitens"),
+                                                pointLimit=2000,
+                                                dbToQuery=c("gbif"),
+                                                quantile=0.95,
+                                                xmin=xmin,
+                                                xmax=xmax,
+                                                ymin=ymin,
+                                                ymax=ymax,
+                                                plotIt=T, bgLayer=bgLayer,
+                                                outputDir="~/")
+
+loc_good <- db$loc_good
+
+```
 
 ## Niche Calculations
 
 Now lets start using these occurrence data. First we will download some WorldClim data. For the sake of this example, we will only use bio1 and bio12, which are mean annual temperature and mean annual precipitation. We will also crop the data to match our previous data -- but remember to change your cropping based on your own ENMs you wish to calculate. 
 
 ```{r worldclim}
-wcdata = raster::getData("worldclim",var="bio",res=10)
+## also the raster package for plotting
+library(raster)
+wcdata = raster::getData(name="worldclim",download=F,path="~/",var="bio",res=10)
 wcdata = wcdata[[c(1,12)]]
-wcdata = crop(wcdata,extent(bgLayer))
+wcdata = raster::crop(wcdata,raster::extent(bgLayer))
 plot(wcdata)
 
 ```

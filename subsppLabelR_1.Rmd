@@ -557,8 +557,7 @@ db = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                 xmax=-60,
                                                 ymin=10,
                                                 ymax=50,
-                                                plotIt=T,
-                                                bgLayer=raster::raster(ext=extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
+                                                plotIt=T, bgLayer=raster::raster(ext=raster::extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
                                                 outputDir="~/")
 print(head(db$loc_suspect))
 print(head(db$loc_good))
