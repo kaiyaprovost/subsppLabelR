@@ -1,10 +1,336 @@
+#' Print Labeled Points to a PNG
+#'
+#' This function xxx
+#'
+#' @param species xx
+#' @param subspecies xx
+#' @param bg xx
+#' @param loc_good xx
+#'
+#' @export
+#' @examples
+#'
+#' printPointsPng(species,subspecies,bg,loc_good)
+printPointsPng = function(species,subspecies,bg,loc_good){
+  print("PrintPointsPNG")
+  png(paste("Subspecies_assignment_",species,".png",sep=""))
+  #print(length(subspecies))
+  #col = floor(sqrt(length(subspecies)))
+  #row = ceiling((sqrt(length(subspecies))))
+  mf = n2mfrow(length(subspecies))
+  if(mf[[1]] > mf[[2]]){mf = rev(mf)}
+  par(mfrow=mf)
+
+  unkInd = which(levels(loc_good$subspecies)=="unknown")
+  notUnkInd = which(levels(loc_good$subspecies)!="unknown")
+  loc_good$subspecies = factor(loc_good$subspecies,levels(loc_good$subspecies)[c(unkInd,notUnkInd)])
+
+  for(sub in subspecies){
+    print(sub)
+    raster::plot(bg, col="grey",colNA="darkgrey",main=paste("assigned",sub,sep=" "),
+                 legend=F)
+    temp = loc_good[loc_good$assigned==sub,]
+    if (nrow(temp) > 0) {
+
+      for (assignNum in 1:length(levels(temp$subspecies))){
+        #print(assignNum)
+        assignSub = levels(temp$subspecies)[assignNum]
+        mycol = palette()[assignNum]
+
+        points(temp[temp$subspecies==assignSub,2:3],
+               col=mycol,
+               pch=assignNum)
+
+      }
+
+      #points(temp[temp$assigned==sub,2:3],
+      #       col=as.factor(temp$subspecies),
+      #       pch=as.numeric(as.factor(temp$subspecies)))
+      legend("top", legend=as.factor(unique(temp$subspecies)),
+             pch=unique(as.numeric(as.factor(temp$subspecies))),
+             bty="n",
+             col=as.factor(unique(temp$subspecies)))
+    } else {
+      print("NO POINTS")
+    }
+  }
+  dev.off()
+}
+
+#' Print Labeled Good Points to a PDF
+#'
+#' This function xxx
+#'
+#' @param species xx
+#' @param subspecies xx
+#' @param bg xx
+#' @param loc_good xx
+#'
+#' @export
+#' @examples
+#'
+#' printPointsPdfGood(species,subspecies,bg,loc_good)
+printPointsPdfGood = function(species,subspecies,bg,loc_good){
+  print("PrintPointsPdfGood")
+  pdf(paste("Subspecies_assignment_goodSubspp_",species,".pdf",sep=""))
+  #print(length(subspecies))
+  #col = floor(sqrt(length(subspecies)))
+  #row = ceiling((sqrt(length(subspecies))))
+  #mf = n2mfrow(length(subspecies))
+  #if(mf[[1]] > mf[[2]]){mf = rev(mf)}
+  #par(mfrow=mf)
+
+  unkInd = which(levels(loc_good$subspecies)=="unknown")
+  notUnkInd = which(levels(loc_good$subspecies)!="unknown")
+  loc_good$subspecies = factor(loc_good$subspecies,levels(loc_good$subspecies)[c(unkInd,notUnkInd)])
+
+  for(sub in subspecies){
+    print(sub)
+
+    raster::plot(bg, col="grey",colNA="darkgrey",main=paste("assigned",sub,sep=" "),
+                 legend=F)
+    temp = loc_good[loc_good$assigned==sub,]
+    if (nrow(temp) > 0) {
+
+      for (assignNum in 1:length(levels(temp$subspecies))){
+        #print(assignNum)
+        assignSub = levels(temp$subspecies)[assignNum]
+        mycol = palette()[assignNum]
+
+        points(temp[temp$subspecies==assignSub,2:3],
+               col=mycol,
+               pch=assignNum)
+
+      }
+
+      #points(temp[,2:3],
+      #       col=as.factor(temp$subspecies),
+      #       pch=as.numeric(as.factor(temp$subspecies)))
+      legend("top", legend=as.factor(unique(temp$subspecies)),
+             pch=unique(as.numeric(as.factor(temp$subspecies))),
+             bty="n",
+             col=as.factor(unique(temp$subspecies)))
+    } else {
+      print("NO POINTS")
+    }
+  }
+  dev.off()
+}
+
+#' Print Labeled Suspet Points to a PDF
+#'
+#' This function xxx
+#'
+#' @param species xx
+#' @param subspecies xx
+#' @param bg xx
+#' @param loc_suspect xx
+#'
+#' @export
+#' @examples
+#'
+#' printPointsPdfSuspect(species,subspecies,bg,loc_suspect)
+printPointsPdfSuspect = function(species,subspecies,bg,loc_suspect){
+  print("PrintPointsSuspect")
+  pdf(paste("Subspecies_assignment_suspectSubspp_",species,".pdf",sep=""))
+  #print(length(subspecies))
+  #col = floor(sqrt(length(subspecies)))
+  #row = ceiling((sqrt(length(subspecies))))
+  #mf = n2mfrow(length(subspecies))
+  #if(mf[[1]] > mf[[2]]){mf = rev(mf)}
+  #par(mfrow=mf)
+
+  unkInd = which(levels(loc_good$subspecies)=="unknown")
+  notUnkInd = which(levels(loc_good$subspecies)!="unknown")
+  loc_good$subspecies = factor(loc_good$subspecies,levels(loc_good$subspecies)[c(unkInd,notUnkInd)])
+
+  for(sub in subspecies){
+    print(sub)
+    raster::plot(bg, col="grey",colNA="darkgrey",main=paste("assigned",sub,sep=" "),
+                 legend=F)
+    temp = loc_suspect[loc_suspect$assigned==sub,]
+    if(nrow(temp) > 0) {
+
+      for (assignNum in 1:length(levels(temp$subspecies))){
+        #print(assignNum)
+        assignSub = levels(temp$subspecies)[assignNum]
+        mycol = palette()[assignNum]
+
+        points(temp[temp$subspecies==assignSub,2:3],
+               col=mycol,
+               pch=assignNum)
+
+      }
+
+
+      #points(temp[temp$assigned==sub,2:3],
+      #       col=as.factor(temp$subspecies),
+      #       pch=as.numeric(as.factor(temp$subspecies)))
+      legend("top", legend=as.factor(unique(temp$subspecies)),
+             pch=unique(as.numeric(as.factor(temp$subspecies))),
+             bty="n",
+             col=as.factor(unique(temp$subspecies)))
+    } else {
+      print("NO POINTS")
+    }
+  }
+  dev.off()
+}
+
+#' Wrapper function that prints to pdf and png
+#'
+#' This function xxx
+#'
+#' @param processedSpecies xx
+#' @param outputDir xx
+#' @param species xx
+#' @param subspecies xx
+#' @param bg xx
+#'
+#' @export
+#' @examples
+#'
+#' printPointsPdfSuspect(species,subspecies,bg,loc_suspect)
+outputProcessedSpecies = function(processedSpecies,outputDir,species,subspecies,bg) {
+
+  palette(c(adjustcolor(palette()[1],alpha.f=0.5),palette()[2:length(palette())]))
+
+  loc_suspect = processedSpecies$loc_suspect
+  loc_good = processedSpecies$loc_good
+  pol = processedSpecies$pol
+
+  print("Writing Tables")
+  write.table(loc_suspect,paste(paste("SuspectSubspp",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
+              quote=FALSE,sep="\t",row.names=FALSE)
+  write.table(loc_good,paste(paste("GoodSubspp",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
+              quote=FALSE,sep="\t",row.names=FALSE)
+
+  print("Saving polygons")
+  for (i in 1:length(pol)) {
+    obj = pol[[i]]
+    name = names(pol)[i]
+    #print(name)
+    obj2 = sp::SpatialPolygonsDataFrame(obj,data=as.data.frame(rep(1,length(obj))),
+                                        match.ID = FALSE)
+    #print(obj)
+    #print("---")
+    rgdal::writeOGR(obj=obj2,dsn=paste(paste("Polygon",species,name,sep="_"),".shp",sep=""),
+                    layer=name,driver="ESRI Shapefile")
+    #print("end")
+  }
+
+  print("Printing PNG and PDF files")
+  printPointsPng(species=species,subspecies=subspecies,bg=bg,loc_good=loc_good)
+  printPointsPdfGood(species=species,subspecies=subspecies,bg=bg,loc_good=loc_good)
+  printPointsPdfSuspect(species=species,subspecies=subspecies,bg=bg,loc_suspect=loc_suspect)
+
+  palette("default")
+
+}
+
+#' Cleaning points by environmental variables
+#'
+#' This function xxx
+#'
+#' @param Env xx
+#' @param loc xx
+#'
+#' @export
+#' @examples
+#'
+#' printPointsPdfSuspect(species,subspecies,bg,loc_suspect)
+#'
+#'
+#'
+#'
+#' Pull out the model with the mean OR and max AUC
+#'
+#' This function identifies the models from ENMeval that have the minimum OR
+#' and maximum AUC per model as a model selection framework.
+#'
+#' @param res xx
+#' @param or xx
+#' @param auc xx
+#'
+#' @export
+#' @examples
+#'
+#' printPointsPdfSuspect(species,subspecies,bg,loc_suspect)
+minORmaxAUCmodel = function(res,or="Mean.OR10",auc="Mean.AUC"){
+  setsort = res@results[order(res@results[,or]),]
+  setsort2 = setsort[order(setsort[,auc], decreasing=TRUE),]
+  top = setsort2[1,]
+  ## extract out and put in maxent
+  best = which(as.character(res@results[,1]) == as.character(setsort2[1,1]))
+  return(best)
+}
+
+#' Get the best raster
+#'
+#' This function gets the best niche raster for niches calculated.
+#'
+#' @param best The best model.
+#' @param res xx
+#' @param wdToPrint xx
+#' @param prefix xx
+#' @param suffix xx
+#' @param species xx
+#' @param Env xx
+#' @param locs xx
+#'
+#' @export
+#' @examples
+#'
+#' printPointsPdfSuspect(species,subspecies,bg,loc_suspect)
+getBestRaster = function(best,res,wdToPrint=paste(getwd(),"/",sep=""),prefix,suffix,species,Env,locs){
+  setwd(wdToPrint)
+  mod.table<-res@results
+  no.zero.param <- mod.table[mod.table$nparam != 0,]
+  ordered<-no.zero.param[with(no.zero.param, order(delta.AICc)), ]
+  opt.mod<-ordered[1,]
+
+  ## beta multiplier
+  b.m<-opt.mod$rm
+  beta.mulr<- paste('betamultiplier=',b.m,sep='')
+  ## java maxent needs everything to be set false
+  ## anything you want then needs to be true
+  false.args<-c('noautofeature','noproduct','nothreshold','noquadratic','nohinge','nolinear')
+  ## then you set anything as true
+  feat<-strsplit(as.vector(opt.mod[,2]), ',')[[1]]
+  if(feat == 'L'){
+    feats = 'linear'
+  } else if(feat == 'LQ'){
+    feats = c('quadratic', 'linear')
+  } else if(feat == 'H'){
+    feats = 'hinge'
+  } else if(feat == 'P'){
+    feats = 'product'
+  } else if(feat == 'T'){
+    feats = 'threshold'
+  } else if(feat == 'LQH'){
+    feats = c('linear', 'quadratic', 'hinge')
+  } else if(feat == 'LQHP'){
+    feats = c('linear', 'quadratic', 'hinge', 'product')
+  } else if(feat == 'LQHPT'){
+    feats = c('linear', 'quadratic', 'hinge', 'product', 'threshold')
+  }
+  for (j in 1:length(feats)){false.args[which(sub('no','',false.args)==feats[j])] = feats[j]}
+  m <-maxent(Env, locs, args=c(false.args, beta.mulr, 'noremoveduplicates', 'noaddsamplestobackground'))
+  pred.raw  <- predict(object= m, x=Env, na.rm=TRUE, format='GTiff',overwrite=TRUE, progress='text',args='logistic')
+  ## need to extract the features and the reg multiplier for the model and put in the arguments into the maxent call
+  writeRaster(pred.raw,filename=paste(wdToPrint,prefix,"_BestModel_",species," ",suffix,".asc",sep=""),
+              format="ascii",overwrite=T)
+}
+
+
+
 {
   ##TODO: consider lumping?
   ## for now testing with phainopeplaNitens
   ##TODO: change all the lapply to function if possible
   ##TODO: update plotting here (and in other file) so that everything plots iteratively, esp if pairwise
   ##TODO: add in species name not just subspp name
-  
+
 }
 detach("package:subsppLabelR", unload=TRUE)
 devtools::install_github('kaiyaprovost/subsppLabelR')
@@ -14,19 +340,19 @@ library(subsppLabelR,verbose=T)
 ## SETUP
 {
   setwd("~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/")
-  
+
   THIN_BEYOND = FALSE
-  
+
   ## also split these into subspecies assignments with $assigned
   ## this is a list, can access with $x or [[i]]
-  
+
   ## if you want you can check through the points that suck to add in more localities
   ## but for now not doing that
-  
+
   ## now we have groups that are assigned to single areas and don't mismatch
   ## let's split into two different groupings and make some niche models!
   ## then test overlap
-  
+
   # step 1 -- import environmental variables
   ##TODO: add in other data than Worldclim
   ##TODO: water layer, how often water there is at that spot? 30m layer!!!
@@ -37,11 +363,11 @@ library(subsppLabelR,verbose=T)
   ext = raster::extent(c(-125,-60,10,50)) ## make sure this will play nice with your points
   Env = raster::crop(Env, ext)
   bg = Env[[1]] ## just for plotting
-  
+
   ## get locs
   #species = "Phainopepla nitens"
   #subspecies = c("nitens","lepida")
-  
+
   #species = "Cardinalis sinuatus"
   #subspecies = c("sinuatus","fulvescens","peninsulae")
   #species = "Cardinalis cardinalis"
@@ -50,24 +376,24 @@ library(subsppLabelR,verbose=T)
   #                "igneus","littoralis","magnirostris","mariae",
   #                "phillipsi","saturatus","seftoni","sinaloensis",
   #                "superbus","townsendi","yucatanicus")
-  
+
   #subspecies_igne = c("affinis","clintoni","igneus","seftoni","sinaloensis","superbus","townsendi")
   #subspecies_card = c("canicaudus","cardinalis","floridanus","magnirostris")
   #subspecies_cocc = c("coccineus","flammiger","littoralis","phillipsi","yucatanicus")
   #subspecies_rest = c("carneus","mariae","saturatus")
   #test = c("clintoni","affinis")
-  
+
   ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
   ## will delete that subspecies. no bueno
-  
+
   #alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/big_sinuatus_testrun_NOTWORKING/AllSubspp_Cardinalis sinuatus_sinuatus fulvescens peninsulae_clean.txt"
   #labeledLoc = read.csv(alllocs,sep="\t")
   #locs = labeledLoc
   detach("package:subsppLabelR", unload=TRUE)
   library(subsppLabelR,verbose=T)
-  
+
   par(ask=F)
-  
+
 }
 
 ## GENERATE FUNCTIONS
@@ -82,29 +408,29 @@ library(subsppLabelR,verbose=T)
     mf = n2mfrow(length(subspecies))
     if(mf[[1]] > mf[[2]]){mf = rev(mf)}
     par(mfrow=mf)
-    
+
     unkInd = which(levels(loc_good$subspecies)=="unknown")
     notUnkInd = which(levels(loc_good$subspecies)!="unknown")
     loc_good$subspecies = factor(loc_good$subspecies,levels(loc_good$subspecies)[c(unkInd,notUnkInd)])
-    
+
     for(sub in subspecies){
       print(sub)
       raster::plot(bg, col="grey",colNA="darkgrey",main=paste("assigned",sub,sep=" "),
                    legend=F)
       temp = loc_good[loc_good$assigned==sub,]
       if (nrow(temp) > 0) {
-        
+
         for (assignNum in 1:length(levels(temp$subspecies))){
           #print(assignNum)
           assignSub = levels(temp$subspecies)[assignNum]
           mycol = palette()[assignNum]
-          
+
           points(temp[temp$subspecies==assignSub,2:3],
                  col=mycol,
                  pch=assignNum)
-          
+
         }
-        
+
         #points(temp[temp$assigned==sub,2:3],
         #       col=as.factor(temp$subspecies),
         #       pch=as.numeric(as.factor(temp$subspecies)))
@@ -118,7 +444,7 @@ library(subsppLabelR,verbose=T)
     }
     dev.off()
   }
-  
+
   printPointsPdfGood = function(species,subspecies,bg,loc_good){
     print("PrintPointsPdfGood")
     pdf(paste("Subspecies_assignment_goodSubspp_",species,".pdf",sep=""))
@@ -128,30 +454,30 @@ library(subsppLabelR,verbose=T)
     #mf = n2mfrow(length(subspecies))
     #if(mf[[1]] > mf[[2]]){mf = rev(mf)}
     #par(mfrow=mf)
-    
+
     unkInd = which(levels(loc_good$subspecies)=="unknown")
     notUnkInd = which(levels(loc_good$subspecies)!="unknown")
     loc_good$subspecies = factor(loc_good$subspecies,levels(loc_good$subspecies)[c(unkInd,notUnkInd)])
-    
+
     for(sub in subspecies){
       print(sub)
-      
+
       raster::plot(bg, col="grey",colNA="darkgrey",main=paste("assigned",sub,sep=" "),
                    legend=F)
       temp = loc_good[loc_good$assigned==sub,]
       if (nrow(temp) > 0) {
-        
+
         for (assignNum in 1:length(levels(temp$subspecies))){
           #print(assignNum)
           assignSub = levels(temp$subspecies)[assignNum]
           mycol = palette()[assignNum]
-          
+
           points(temp[temp$subspecies==assignSub,2:3],
                  col=mycol,
                  pch=assignNum)
-          
+
         }
-        
+
         #points(temp[,2:3],
         #       col=as.factor(temp$subspecies),
         #       pch=as.numeric(as.factor(temp$subspecies)))
@@ -165,7 +491,7 @@ library(subsppLabelR,verbose=T)
     }
     dev.off()
   }
-  
+
   printPointsPdfSuspect = function(species,subspecies,bg,loc_suspect){
     print("PrintPointsSuspect")
     pdf(paste("Subspecies_assignment_suspectSubspp_",species,".pdf",sep=""))
@@ -175,30 +501,30 @@ library(subsppLabelR,verbose=T)
     #mf = n2mfrow(length(subspecies))
     #if(mf[[1]] > mf[[2]]){mf = rev(mf)}
     #par(mfrow=mf)
-    
+
     unkInd = which(levels(loc_good$subspecies)=="unknown")
     notUnkInd = which(levels(loc_good$subspecies)!="unknown")
     loc_good$subspecies = factor(loc_good$subspecies,levels(loc_good$subspecies)[c(unkInd,notUnkInd)])
-    
+
     for(sub in subspecies){
       print(sub)
       raster::plot(bg, col="grey",colNA="darkgrey",main=paste("assigned",sub,sep=" "),
                    legend=F)
       temp = loc_suspect[loc_suspect$assigned==sub,]
       if(nrow(temp) > 0) {
-        
+
         for (assignNum in 1:length(levels(temp$subspecies))){
           #print(assignNum)
           assignSub = levels(temp$subspecies)[assignNum]
           mycol = palette()[assignNum]
-          
+
           points(temp[temp$subspecies==assignSub,2:3],
                  col=mycol,
                  pch=assignNum)
-          
+
         }
-        
-        
+
+
         #points(temp[temp$assigned==sub,2:3],
         #       col=as.factor(temp$subspecies),
         #       pch=as.numeric(as.factor(temp$subspecies)))
@@ -212,21 +538,21 @@ library(subsppLabelR,verbose=T)
     }
     dev.off()
   }
-  
+
   outputProcessedSpecies = function(processedSpecies,outputDir,species,subspecies,bg) {
-    
+
     palette(c(adjustcolor(palette()[1],alpha.f=0.5),palette()[2:length(palette())]))
-    
+
     loc_suspect = processedSpecies$loc_suspect
     loc_good = processedSpecies$loc_good
     pol = processedSpecies$pol
-    
+
     print("Writing Tables")
     write.table(loc_suspect,paste(paste("SuspectSubspp",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
                 quote=FALSE,sep="\t",row.names=FALSE)
     write.table(loc_good,paste(paste("GoodSubspp",species,paste(subspecies,collapse=" "),sep="_"),".txt",sep=""),
                 quote=FALSE,sep="\t",row.names=FALSE)
-    
+
     print("Saving polygons")
     for (i in 1:length(pol)) {
       obj = pol[[i]]
@@ -240,14 +566,14 @@ library(subsppLabelR,verbose=T)
                       layer=name,driver="ESRI Shapefile")
       #print("end")
     }
-    
+
     print("Printing PNG and PDF files")
     printPointsPng(species=species,subspecies=subspecies,bg=bg,loc_good=loc_good)
     printPointsPdfGood(species=species,subspecies=subspecies,bg=bg,loc_good=loc_good)
     printPointsPdfSuspect(species=species,subspecies=subspecies,bg=bg,loc_suspect=loc_suspect)
-    
+
     palette("default")
-    
+
   }
 }
 
@@ -267,20 +593,20 @@ for (rownum in 2:nrow(unique_species)) {
   spp = paste((unlist(temp[1,1:2])),sep=" ",collapse=" ")
   print(spp)
   print(subspp)
-  
+
   processed = databaseToAssignedSubspecies(spp=spp,
                                            subsppList=subspp,
                                            pointLimit=1000,dbToQuery=c("gbif","bison","ecoengine","vertnet"), ## removed everythign besides gbif and vertnet
                                            quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
                                            outputDir=paste("/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",spp,sep=""),
                                            epsilon=1e-6)
-  
+
   outputProcessedSpecies(processedSpecies=processed,
                          outputDir=paste("/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",spp,sep=""),
                          species=spp,
                          subspecies=subspp,
                          bg=bg)
-  
+
 }
 
 
@@ -339,7 +665,7 @@ outputProcessedSpecies(processedSpecies=processedSpecies,outputDir="~/Documents/
   PredA <- seq(min(twoClass$PredictorA), max(twoClass$PredictorA), length = nbp)
   PredB <- seq(min(twoClass$PredictorB), max(twoClass$PredictorB), length = nbp)
   Grid <- expand.grid(PredictorA = PredA, PredictorB = PredB)
-  
+
   PlotGrid <- function(pred,title) {
     surf <- (ggplot(data = twoClass, aes(x = PredictorA, y = PredictorB,
                                          color = classes)) +
@@ -367,14 +693,14 @@ outputProcessedSpecies(processedSpecies=processedSpecies,outputDir="~/Documents/
   TrControl <- trainControl(method = "repeatedcv",
                             number = V,
                             repeats = T)
-  
+
   Seed <- 345
   ErrsCaret <- function(Model, Name) {
     Errs <- data.frame(t(postResample(predict(Model, newdata = twoClass), twoClass[["classes"]])),
                        Resample = "None", model = Name)
     rbind(Errs, data.frame(Model$resample, model = Name))
   }
-  
+
   Errs <- data.frame()
   CaretLearnAndDisplay <- function (Errs, Name, Formula, Method, ...) {
     set.seed(Seed)
@@ -420,7 +746,7 @@ outputProcessedSpecies(processedSpecies=processedSpecies,outputDir="~/Documents/
 ## step 2 -- remove any locations with no Env data
 
 if (THIN_BEYOND == TRUE) {
-  
+
   cleanByEnvironment = function(Env,loc){
     loc[,2] = as.numeric(loc[,2])
     loc[,3] = as.numeric(loc[,3])
@@ -428,19 +754,19 @@ if (THIN_BEYOND == TRUE) {
     head(extr)
     loc_clean = loc[!is.na(extr[,1]),]
     print(paste("Removed",nrow(loc)-nrow(loc_clean),"rows with no Env data"))
-    
+
     return(loc_clean)
   }
-  
+
   loc_good_clean = cleanByEnvironment(Env=Env,loc=loc_good)
-  
+
   # spThinBySubspecies = function(loc_good_clean,species,overwrite=T){
   #   ## step 3 -- subset data based on subspecies, then run spthin
   #   ## this only gives lat longs, results in a named list with subspp names as names
   #   loc_good_by_subspp = split(loc_good_clean[,2:3], loc_good_clean$assigned)
-  # 
+  #
   #   pathlist <- sapply(names(loc_good_by_subspp),function(x) NULL)
-  # 
+  #
   #   for(i in 1:length(names(loc_good_by_subspp))){
   #     sub = names(loc_good_by_subspp)[[i]]
   #     dir = paste(getwd(),"/Thinned/",sep="")
@@ -453,24 +779,24 @@ if (THIN_BEYOND == TRUE) {
   #       dir.create(file.path(subDir))
   #       #setwd(file.path(subDir))
   #     }
-  # 
+  #
   #     loc_sub = loc_good_by_subspp[[i]]
   #     loc_sub$name = sub
-  # 
+  #
   #     print(sub)
-  # 
+  #
   #     ## select a single subspecies and thin it
-  # 
+  #
   #     if(overwrite==T){
   #       if ((file.exists(paste(subDir,"/thinned_data_thin1.csv",sep="")))){
   #         file.remove(paste(subDir,"/thinned_data_thin1.csv",sep=""))
   #         #setwd(file.path(subDir))
   #       }
   #     }
-  # 
+  #
   #     path = paste(subDir,"/thinned_data_thin1.csv",sep="")
   #     pathlist[[i]] = path
-  # 
+  #
   #     thin<-spThin::thin(loc.data = loc_sub,
   #                        lat.col = "latitude",
   #                        long.col = "longitude",
@@ -483,7 +809,7 @@ if (THIN_BEYOND == TRUE) {
   #                        out.dir = subDir,
   #                        write.log.file = T)
   #   }
-  # 
+  #
   #   ## convert a list of the paths to the thinned stuff, named by subspecies
   #   newThin = data.frame()
   #   for(path in pathList){
@@ -491,17 +817,17 @@ if (THIN_BEYOND == TRUE) {
   #     newThin = rbind(newThin,addThin)
   #   }
   #   return(newThin)
-  # 
+  #
   # }
-  
+
   spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",
                                 long.col="longitude",spec.col="assigned"){
-    
+
     locs_thinned=lapply(unique(loc_good_clean$assigned),FUN=function(subspp){
       print(subspp)
       loc_temp = loc_good_clean[loc_good_clean$assigned==subspp,]
-      
-      ## note: if you do not  change the  "name" column, it will error out and only use  the first subspecies. 
+
+      ## note: if you do not  change the  "name" column, it will error out and only use  the first subspecies.
       loc_thin = spThin::thin(loc.data = loc_temp,
                               lat.col = lat.col,
                               long.col = long.col,
@@ -514,19 +840,19 @@ if (THIN_BEYOND == TRUE) {
                               write.log.file = F)[[1]]
       loc_thin$assigned = subspp
       return(loc_thin)
-    }) 
-    
-    
+    })
+
+
     loc_thin = do.call(rbind,locs_thinned)
   }
-  
-  
+
+
   ## step 3 -- subset data based on subspecies, then run spthin
   ## this only gives lat longs, results in a named list with subspp names as names
   # loc_good_by_subspp = split(loc_good_clean[,c("Longitude","Latitude")], loc_good_clean$assigned)
-  # 
+  #
   # pathlist <- sapply(names(loc_good_by_subspp),function(x) NULL)
-  # 
+  #
   # for(i in 1:length(names(loc_good_by_subspp))){
   #   sub = names(loc_good_by_subspp)[[i]]
   #   dir = paste(getwd(),"/Thinned/",sep="")
@@ -539,24 +865,24 @@ if (THIN_BEYOND == TRUE) {
   #     dir.create(file.path(subDir))
   #     #setwd(file.path(subDir))
   #   }
-  #   
+  #
   #   loc_sub = loc_good_by_subspp[[i]]
   #   loc_sub$name = sub
-  #   
+  #
   #   print(sub)
-  #   
+  #
   #   ## select a single subspecies and thin it
-  #   
+  #
   #   if(overwrite==T){
   #     if ((file.exists(paste(subDir,"/thinned_data_thin1.csv",sep="")))){
   #       file.remove(paste(subDir,"/thinned_data_thin1.csv",sep=""))
   #       #setwd(file.path(subDir))
   #     }
   #   }
-  #   
+  #
   #   path = paste(subDir,"/thinned_data_thin1.csv",sep="")
   #   pathlist[[i]] = path
-  #   
+  #
   #   thin<-spThin::thin(loc.data = loc_sub,
   #                      lat.col = "latitude",
   #                      long.col = "longitude",
@@ -569,7 +895,7 @@ if (THIN_BEYOND == TRUE) {
   #                      out.dir = subDir,
   #                      write.log.file = T)
   # }
-  # 
+  #
   # ## convert a list of the paths to the thinned stuff, named by subspecies
   # newThin = data.frame()
   # for(path in pathList){
@@ -577,7 +903,7 @@ if (THIN_BEYOND == TRUE) {
   #   newThin = rbind(newThin,addThin)
   # }
   # return(newThin)
-  
+
 }
 
 
@@ -619,11 +945,11 @@ bg_bg = loc_thin_bgstuff$bgpoints
 backgroundPerSpecies = function(localities=loc_thin){
   loc_thin_by_subspecies = split(loc_thin, loc_thin$name)
   bgenv_by_subspecies = list()
-  
+
   bgext_by_subspecies = list()
   bgpoints_by_subspecies = list()
   bgextbg_by_subspecies = list()
-  
+
   for(i in 1:length(names(loc_thin_by_subspecies))){
     singleSubspp = loc_thin_by_subspecies[[i]]
     subsppName = names(loc_thin_by_subspecies)[[i]]
@@ -632,13 +958,13 @@ backgroundPerSpecies = function(localities=loc_thin){
     bgext_by_subspecies[[i]] = single_bgstuff$bgext
     bgpoints_by_subspecies[[i]] = single_bgstuff$bgpoints
     bgextbg_by_subspecies[[i]] = single_bgstuff$bgextbg
-    
+
   }
   names(bgenv_by_subspecies) = names(loc_thin_by_subspecies)
   names(bgext_by_subspecies) = names(loc_thin_by_subspecies)
   names(bgpoints_by_subspecies) = names(loc_thin_by_subspecies)
   names(bgextbg_by_subspecies) = names(loc_thin_by_subspecies)
-  
+
   return(list(bgenv_by_subspecies=bgenv_by_subspecies,
               bgext_by_subspecies=bgext_by_subspecies,
               bgpoints_by_subspecies=bgpoints_by_subspecies,
@@ -650,15 +976,15 @@ perspecies_bgstuff = backgroundPerSpecies(localities=loc_thin)
 ## the base ecospat function didn't check for na.rm so I did so
 ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env = 0,
                                          geomask = NULL,removeNA=T) {
-  
+
   glob <- as.matrix(glob)
   glob1 <- as.matrix(glob1)
   sp <- as.matrix(sp)
   l <- list()
-  
+
   if (ncol(glob) > 2)
     stop("cannot calculate overlap with more than two axes")
-  
+
   if (ncol(glob) == 1) {
     # if scores in one dimension (e.g. LDA,SDM predictions,...)
     xmax <- max(glob[, 1])
@@ -680,7 +1006,7 @@ ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env =
     sprm <- which(z < th.sp)
     z[sprm] <- 0  # remove infinitesimally small number generated by kernel density function
     Z[glob1rm] <- 0  # remove infinitesimally small number generated by kernel density function
-    
+
     z.uncor <- z/max(z)  # rescale between [0:1] for comparison with other species
     z.cor <- z/Z  # correct for environment prevalence
     z.cor[is.na(z.cor)] <- 0  # remove n/0 situations
@@ -698,10 +1024,10 @@ ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env =
     l$sp <- sp
     l$w <- w
   }
-  
+
   if (ncol(glob) == 2) {
     # if scores in two dimensions (e.g. PCA)
-    
+
     xmin <- min(glob[, 1])
     xmax <- max(glob[, 1])
     ymin <- min(glob[, 2])
@@ -722,7 +1048,7 @@ ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env =
     glob1.dens <- raster(xmn = xmin, xmx = xmax, ymn = ymin, ymx = ymax,
                          matrix(glob1.dens$ud, nrow = R))
     # glob1.dens$var[glob1.dens$var<1 & glob1.dens$var>0]<-0
-    
+
     x <- seq(from = min(glob[, 1]), to = max(glob[, 1]), length.out = R)  # breaks on score gradient 1
     y <- seq(from = min(glob[, 2]), to = max(glob[, 2]), length.out = R)  # breaks on score gradient 2
     glob1r <- extract(glob1.dens, glob1)
@@ -733,7 +1059,7 @@ ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env =
       glob1.dens <- mask(glob1.dens, geomask, updatevalue = 0)  # Geographical mask in the case if the analysis takes place in the geographical space
     }
     Z <- glob1.dens * nrow(glob1)/cellStats(glob1.dens, "sum")
-    
+
     spr <- extract(sp.dens, sp)
     z.th <- quantile(spr, th.sp)
     sp.dens[Z == 0] <- 0
@@ -758,9 +1084,9 @@ ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env =
     l$glob1 <- glob1
     l$sp <- sp
     l$w <- w
-    
+
   }
-  
+
   return(l)
 }
 
@@ -768,43 +1094,43 @@ ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env =
 createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species) {
   bg_dat = loc_thin_bgstuff$bgenv
   bg_bg = loc_thin_bgstuff$bgpoints
-  
+
   bgext_by_subspecies = perspecies_bgstuff$bgext_by_subspecies
   bgenv_by_subspecies = perspecies_bgstuff$bgenv_by_subspecies
-  
+
   ## pca bg points
   pca.env <- dudi.pca(bg_dat[,3:(ncol(bg_dat)-1)],scannf=F,nf=2)
   #png(paste("PCAcorrelationCircle_",species,".png",sep=""))
   ecospat.plot.contrib(contrib=pca.env$co, eigen=pca.env$eig)
   #dev.off()
-  
+
   ## pca scores whole study area, all points, all subspecies
   scores_globclim<-pca.env$li # PCA scores for the whole study area (all points)
-  
+
   ## now get pca scores per species instead
-  
+
   scores = list()
   scores_clim = list()
   grid_clim = list()
-  
+
   for(i in 1:length(names(bgext_by_subspecies))){
     singleSubspp_bgext = bgext_by_subspecies[[i]]
     singleSubspp_bgenv = bgenv_by_subspecies[[i]]
     subsppName = names(bgext_by_subspecies)[[i]]
-    
+
     scores_subspp = suprow(pca.env,
                            singleSubspp_bgext[which(
                              singleSubspp_bgext[,ncol(singleSubspp_bgext)]==1)
                              ,3:(ncol(singleSubspp_bgext)-1)])$li # PCA scores for the species 1 distribution
-    
-    
+
+
     scores[[i]] = scores_subspp
-    
+
     scores_clim_subspp = suprow(pca.env,
                                 singleSubspp_bgenv[,3:(ncol(singleSubspp_bgenv)-1)])$li # PCA scores for the whole native study area species 1 ## bgenv
-    
+
     scores_clim[[i]] = scores_clim_subspp
-    
+
     ## make a dynamic occurrence densities grid
     ## grid of occ densities along one or two environmental gradients
     ## glob = env variables in background
@@ -820,13 +1146,13 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species) {
                                                      th.env = 0,
                                                      removeNA=T)
     grid_clim[[i]] = grid_clim_subspp
-    
+
   }
-  
+
   names(scores) = names(bgext_by_subspecies)
   names(scores_clim) = names(bgext_by_subspecies)
   names(grid_clim) = names(bgext_by_subspecies)
-  
+
   #pdf(paste("NicheSpaceComparison_",species,".pdf",sep=""))
   par(mfrow=n2mfrow(length(grid_clim)),
       ask=F)
@@ -834,12 +1160,12 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species) {
     plot(grid_clim[[i]]$w,main=names(grid_clim)[[i]])
   }
   #dev.off()
-  
+
   return(list(scores_globclim=scores_globclim,
               scores=scores,
               scores_clim=scores_clim,
               grid_clim=grid_clim))
-  
+
 }
 
 pcaOutput = createPcaToCompare(loc_thin_bgstuff=loc_thin_bgstuff,
@@ -886,12 +1212,12 @@ pca_grid_clim = pcaOutput$grid_clim
 ## get overlaps and test for niche equivalence pairwise
 
 pairwiseNicheOverlap = function(pca_grid_clim=pca_grid_clim){
-  
+
   overlap_df = data.frame(spp1=character(),
                           spp2=character(),
                           SchoenersD=numeric(),
                           modifiedHellingersI=numeric())
-  
+
   for(i in 1:length(pca_grid_clim)){
     for(j in 1:length(pca_grid_clim)){
       if(i<j){
@@ -936,12 +1262,12 @@ overlap_df = pairwiseNicheOverlap(pca_grid_clim=pca_grid_clim)
 ## test for niche equvalence pairwise
 ## first need to modify function again to remove NA
 ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "higher", ncores=1) {
-  
+
   R <- length(z1$x)
   l <- list()
-  
+
   obs.o <- ecospat.niche.overlap(z1, z2, cor = TRUE)  #observed niche overlap
-  
+
   if (ncores == 1){
     sim.o <- as.data.frame(matrix(unlist(lapply(1:rep, overlap.eq.gen_custom, z1, z2)), byrow = TRUE,
                                   ncol = 2))  #simulate random overlap
@@ -956,7 +1282,7 @@ ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "hi
   colnames(sim.o) <- c("D", "I")
   l$sim <- sim.o  # storage
   l$obs <- obs.o  # storage
-  
+
   if (alternative == "higher") {
     l$p.D <- (sum(sim.o$D >= obs.o$D) + 1)/(length(sim.o$D) + 1)  # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
     l$p.I <- (sum(sim.o$I >= obs.o$I) + 1)/(length(sim.o$I) + 1)  # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
@@ -965,7 +1291,7 @@ ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "hi
     l$p.D <- (sum(sim.o$D <= obs.o$D) + 1)/(length(sim.o$D) + 1)  # storage of p-values alternative hypothesis = lower -> test for niche divergence
     l$p.I <- (sum(sim.o$I <= obs.o$I) + 1)/(length(sim.o$I) + 1)  # storage of p-values alternative hypothesis = lower -> test for niche divergence
   }
-  
+
   return(l)
 }
 
@@ -997,11 +1323,11 @@ overlap.sim.gen <- function(repi, z1, z2, rand.type = rand.type) {
       z1.sim$z.uncor <- z1.sim$z/max(z1.sim$z, na.rm = TRUE)
       z1.sim$z.uncor[which(is.na(z1.sim$z.uncor))] <- 0
     }
-    
+
     center.z2 <- which(z2$z.uncor == 1)  # define the centroid of the observed niche
     Z2 <- z2$Z/max(z2$Z)
     rand.center.z2 <- sample(1:R2, size = 1, replace = FALSE, prob = Z2)  # randomly (weighted by environment prevalence) define the new centroid for the niche
-    
+
     xshift.z2 <- rand.center.z2 - center.z2  # shift on x axis
     z2.sim <- z2
     z2.sim$z <- rep(0, R2)  # set intial densities to 0
@@ -1017,7 +1343,7 @@ overlap.sim.gen <- function(repi, z1, z2, rand.type = rand.type) {
     z2.sim$z.uncor <- z2.sim$z/max(z2.sim$z, na.rm = TRUE)
     z2.sim$z.uncor[which(is.na(z2.sim$z.uncor))] <- 0
   }
-  
+
   if (!is.null(z2$y) & !is.null(z1$y)) {
     if (rand.type == 1) {
       # if rand.type = 1, both z1 and z2 are randomly shifted, if rand.type =2, only z2 is randomly
@@ -1076,7 +1402,7 @@ overlap.sim.gen <- function(repi, z1, z2, rand.type = rand.type) {
     z2.sim$z.uncor <- z2.sim$z/max(z2.sim$z, na.rm = TRUE)
     z2.sim$z.uncor[which(is.na(z2.sim$z.uncor))] <- 0
   }
-  
+
   if (rand.type == 1) {
     o.i <- ecospat.niche.overlap(z1.sim, z2.sim, cor = TRUE)
   }
@@ -1091,26 +1417,26 @@ overlap.sim.gen <- function(repi, z1, z2, rand.type = rand.type) {
 overlap.eq.gen_custom <- function(repi, z1, z2) {
   if (is.null(z1$y)) {
     # overlap on one axis
-    
+
     occ.pool <- c(z1$sp, z2$sp)  # pool of random occurrences
     rand.row <- sample(1:length(occ.pool), length(z1$sp))  # random reallocation of occurrences to datasets
     sp1.sim <- occ.pool[rand.row]
     sp2.sim <- occ.pool[-rand.row]
   }
-  
+
   if (!is.null(z1$y)) {
     # overlap on two axes
-    
+
     occ.pool <- rbind(z1$sp, z2$sp)  # pool of random occurrences
     row.names(occ.pool)<-c()  # remove the row names
     rand.row <- sample(1:nrow(occ.pool), nrow(z1$sp))  # random reallocation of occurrences to datasets
     sp1.sim <- occ.pool[rand.row, ]
     sp2.sim <- occ.pool[-rand.row, ]
   }
-  
+
   z1.sim <- ecospat.grid.clim.dyn_custom(z1$glob, z1$glob1, data.frame(sp1.sim), R = length(z1$x))  # gridding
   z2.sim <- ecospat.grid.clim.dyn_custom(z2$glob, z2$glob1, data.frame(sp2.sim), R = length(z2$x))
-  
+
   o.i <- ecospat.niche.overlap(z1.sim, z2.sim, cor = TRUE)  # overlap between random and observed niches
   sim.o.D <- o.i$D  # storage of overlaps
   sim.o.I <- o.i$I
@@ -1128,7 +1454,7 @@ pairwiseNicheEquivalence = function(pca_grid_clim=pca_grid_clim,rep1=10,rep2=100
         spp1 = pca_grid_clim[[i]]
         spp2_name = names(pca_grid_clim)[[j]]
         spp2 = pca_grid_clim[[j]]
-        
+
         eq.test <- ecospat.niche.equivalency.test_custom(z1=spp1, z2=spp2,
                                                          rep=rep1, alternative = "higher")
         sim.test <- ecospat.niche.similarity.test(z1=spp1, z2=spp2,
@@ -1137,7 +1463,7 @@ pairwiseNicheEquivalence = function(pca_grid_clim=pca_grid_clim,rep1=10,rep2=100
         sim.test2 <- ecospat.niche.similarity.test(z1=spp1, z2=spp2,
                                                    rep=rep2, alternative = "higher",
                                                    rand.type=2)
-        
+
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
         par(mfrow=c(2,3))
         ecospat.plot.overlap.test(eq.test, "D", "Equivalency")
@@ -1147,7 +1473,7 @@ pairwiseNicheEquivalence = function(pca_grid_clim=pca_grid_clim,rep1=10,rep2=100
         ecospat.plot.overlap.test(sim.test, "I", paste("Similarity ",spp1_name,"->",spp2_name,sep=""))
         ecospat.plot.overlap.test(sim.test2, "I", paste("Similarity ",spp2_name,"->",spp1_name,sep=""))
         dev.off()
-        
+
       }
     }
   }
@@ -1246,7 +1572,7 @@ getBestRaster = function(best,res,wdToPrint=paste(getwd(),"/",sep=""),prefix,suf
   no.zero.param <- mod.table[mod.table$nparam != 0,]
   ordered<-no.zero.param[with(no.zero.param, order(delta.AICc)), ]
   opt.mod<-ordered[1,]
-  
+
   ## beta multiplier
   b.m<-opt.mod$rm
   beta.mulr<- paste('betamultiplier=',b.m,sep='')
@@ -1313,7 +1639,7 @@ threshRasters = lapply(1:length(bestRasters),function(i){
   p1.preva = pred >= th1$prevalence
   p1.equal = pred >= th1$equal_sens_spec
   p1.sns09 = pred >= th1$sensitivity
-  
+
   png(paste("Thresholds_",species," ",name,".png",sep=""))
   par(mfrow=c(2,3))
   plot(p1.kappa, col=viridis::viridis(99),main=paste(name,"kappa"))#; points(nitens_by_subspp[[i]],col=rgb(0,0,0,0.01))
@@ -1323,14 +1649,14 @@ threshRasters = lapply(1:length(bestRasters),function(i){
   plot(p1.equal, col=viridis::viridis(99),main=paste(name,"equal_sens_spec"))#; points(nitens_by_subspp[[i]],col=rgb(0,0,0,0.01))
   plot(p1.sns09, col=viridis::viridis(99),main=paste(name,"sensitivity0.9"))#; points(nitens_by_subspp[[i]],col=rgb(0,0,0,0.01))
   dev.off()
-  
+
   writeRaster(p1.kappa,filename=paste("Threshold_",species," ",name,"_kappa.asc",sep=""),format="ascii",overwrite=T)
   writeRaster(p1.spsen,filename=paste("Threshold_",species," ",name,"_spec_sens.asc",sep=""),format="ascii",overwrite=T)
   writeRaster(p1.nomit,filename=paste("Threshold_",species," ",name,"_no_omisison.asc",sep=""),format="ascii",overwrite=T)
   writeRaster(p1.preva,filename=paste("Threshold_",species," ",name,"_prevalence.asc",sep=""),format="ascii",overwrite=T)
   writeRaster(p1.equal,filename=paste("Threshold_",species," ",name,"_equal_sens_spec.asc",sep=""),format="ascii",overwrite=T)
   writeRaster(p1.sns09,filename=paste("Threshold_",species," ",name,"_sensitivity0.9.asc",sep=""),format="ascii",overwrite=T)
-  
+
   th1ras = list(kappa=p1.kappa,
                 specSens = p1.spsen,
                 noOmit = p1.nomit,
@@ -1338,7 +1664,7 @@ threshRasters = lapply(1:length(bestRasters),function(i){
                 equalSensSpec = p1.equal,
                 sensitivity_0.9 = p1.sns09)
   return(th1ras)
-  
+
 })
 names(threshRasters) = names(bestRasters)
 

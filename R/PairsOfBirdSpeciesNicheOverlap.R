@@ -219,7 +219,7 @@ subspeciesDensityMap = function(localities,
 #' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
-densityMapToPolygons = function(densityMap,verbose=T) {
+densityMapToPolygons = function(densityMap,verbose=F) {
   ## this function converts density maps to polygons
   ## will work on other kinds of polygons as well
   #library(sp)
@@ -822,56 +822,69 @@ polygonTrimmer = function(polygonList, namesList) {
 #'    namesList=c("sinuatus","fulvescens"))
 #'
 polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=WGS84") {
+  ## if the names list has changed this doesn't work?
   newPolygonList = polygonList
+
+  if(length(namesList)!=length(polygonList)) {
+    namesList = names(polygonList)
+    print(names(polygonList))
+  }
+
+  print(paste(length(newPolygonList),length(namesList)))
+
   for (slotA in 1:length(namesList)) {
     for (slotB in 1:length(namesList)) {
       if (namesList[[slotA]] != "unknown" &&
           namesList[[slotB]] != "unknown" && slotA != slotB) {
-        print(paste(slotA,slotB,sep=" "))
-        polA = newPolygonList[[slotA]]
-        polB = newPolygonList[[slotB]]
+        print(paste(slotA,namesList[[slotA]],slotB,namesList[[slotB]],sep=" "))
 
-        ## check overlap between polA and polB
-        overlapPol = rgeos::gIntersection(polA,polB)
+        try({
+          polA = newPolygonList[[slotA]]
+          polB = newPolygonList[[slotB]]
 
-        if(is.null(overlapPol)) {
-          overlapArea = 0
-        } else {
-          overlapArea = rgeos::gArea(overlapPol)
-        }
+          ## check overlap between polA and polB
+          overlapPol = rgeos::gIntersection(polA,polB)
 
-        if(overlapArea != 0){
-          if(class(overlapPol)=="SpatialCollections") {
-            overlapPol = overlapPol@polyobj
+          if(is.null(overlapPol)) {
+            overlapArea = 0
+          } else {
+            overlapArea = rgeos::gArea(overlapPol)
           }
-          ## check the overlap size relative to the other sizes
-          areaPolA = rgeos::gArea(polA)
-          areaPolB = rgeos::gArea(polB)
 
-          ## check if it is smaller than one or the other or both
+          if(overlapArea != 0){
+            if(class(overlapPol)=="SpatialCollections") {
+              overlapPol = overlapPol@polyobj
+            }
+            ## check the overlap size relative to the other sizes
+            areaPolA = rgeos::gArea(polA)
+            areaPolB = rgeos::gArea(polB)
 
-          if(overlapArea < areaPolA) {all_of_A = F} else {all_of_A = T}
-          if(overlapArea < areaPolB) {all_of_B = F} else {all_of_B = T}
+            ## check if it is smaller than one or the other or both
 
-          if (all_of_A == F && all_of_B == T) {
-            ## remove from A
-            polA = rgeos::gDifference(polA,overlapPol) ## order matters
-          } else if (all_of_A == T && all_of_B == F) {
-            ## remove from B
-            polB = rgeos::gDifference(polB,overlapPol) ## order matters
+            if(overlapArea < areaPolA) {all_of_A = F} else {all_of_A = T}
+            if(overlapArea < areaPolB) {all_of_B = F} else {all_of_B = T}
 
-          } else if (all_of_A == F && all_of_B == F) {
-            ## remove from both
-            polA = rgeos::gDifference(polA,overlapPol) ## order matters
-            polB = rgeos::gDifference(polB,overlapPol) ## order matters
+            if (all_of_A == F && all_of_B == T) {
+              ## remove from A
+              polA = rgeos::gDifference(polA,overlapPol) ## order matters
+            } else if (all_of_A == T && all_of_B == F) {
+              ## remove from B
+              polB = rgeos::gDifference(polB,overlapPol) ## order matters
 
-          } ## we don't do anything if both are true
+            } else if (all_of_A == F && all_of_B == F) {
+              ## remove from both
+              polA = rgeos::gDifference(polA,overlapPol) ## order matters
+              polB = rgeos::gDifference(polB,overlapPol) ## order matters
+
+            } ## we don't do anything if both are true
 
 
-        }
+          }
 
-        newPolygonList[[slotA]] = polA
-        newPolygonList[[slotB]] = polB
+          newPolygonList[[slotA]] = polA
+          newPolygonList[[slotB]] = polB
+        })
+
       }
     }
   }
@@ -1430,16 +1443,16 @@ databaseToAssignedSubspecies = function(spp,
   ymin2 = as.numeric(min(as.numeric(labeledLoc$latitude),na.rm=T))
   ymax2 = as.numeric(max(as.numeric(labeledLoc$latitude),na.rm=T))
   print("Cleaning bgLayer 2nd time")
-  print(paste(xmin2,xmax2,ymin2,ymax2))
+  #print(paste(xmin2,xmax2,ymin2,ymax2))
   ext2 = raster::extent(c(as.numeric(xmin2),as.numeric(xmax2),
                           as.numeric(ymin2),as.numeric(ymax2)))
-  print(ext)
+  #print(ext)
   if(nrow(bgLayer)==100 & ncol(bgLayer)==100) {
     bgLayer = raster::raster(ext=ext2,nrow=100,ncol=100,vals=0)
   } else {
     bgLayer = raster::crop(bgLayer,ext=ext2)
   }
-  print(bgLayer)
+  #print(bgLayer)
   ## to reduce error take only subspecies within main density
   ## clean up the polygons so that if grouping way out in middle of nowhere, get rid of it
   ## remove points that fall within the other subspecies' polygon
@@ -1448,11 +1461,17 @@ databaseToAssignedSubspecies = function(spp,
   ## remove all but 95% (or quantile) most dense cells
   ## TODO: some subspecies come back with the entire range as their range due to the way the distribution is
   ## need to generate a raster file to crop the density maps to
+  #print("x1")
   total_range = bgLayer
+  #print("x2")
   raster::values(total_range)[!is.na(raster::values(bgLayer))] = NA
+  #print("x3")
   cells <- raster::cellFromXY(total_range, as.matrix(labeledLoc[,c("longitude","latitude")]));
+  #print("x4")
   celltable = table(cells)
+  #print("x5")
   total_range[as.numeric(names(celltable))] = celltable
+  #print("x6")
   if (plotIt == T) {
     png(paste("FullDistribution", spp, ".png", sep = ""))
     raster::plot(total_range,colNA = "darkgrey",main = paste("Distribution"))
@@ -1476,9 +1495,6 @@ databaseToAssignedSubspecies = function(spp,
   names(densityRasters) = subsppNames
   ## remove failed ones
   densityRasters = densityRasters[!(is.na(densityRasters))]
-
-
-
   subsppNames = names(densityRasters)
   #print("start plot1")
   if (plotIt == T) {
@@ -1587,6 +1603,7 @@ databaseToAssignedSubspecies = function(spp,
     if (subsppNames[[polygonSlot]] != "unknown"){
       print(polygonSlot)
       print(subsppNames[[polygonSlot]])
+      try({
       polygonA=densityPolygons_trim[[polygonSlot]]
       polygonA = as(polygonA, "SpatialPolygonsDataFrame")
       nameA = subsppNames[[polygonSlot]]
@@ -1595,6 +1612,7 @@ databaseToAssignedSubspecies = function(spp,
                                            polygonA = polygonA,
                                            nameA = nameA,
                                            setcoord = T)
+      })
     }
   }
   #
@@ -1649,9 +1667,9 @@ databaseToAssignedSubspecies = function(spp,
   print("Matching subspecies")
   checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
                                      subsppNames)
-  print("c1")
+  #print("c1")
   checked_suspect = checked$suspect
-  print("c2")
+  #print("c2")
   checked_good = checked$good
   #print("done")
   ## return nice clean data
