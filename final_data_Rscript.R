@@ -463,6 +463,6 @@ occfiles=list.files(path="C:/Users/kaiya/Documents/GitHub/subsppLabelR/",
 wcdata = raster::getData(name="worldclim",download=F,path="~/",var="bio",res=10)
 
 occ=read.table(occfiles[9],header=T)
-occ_clean = localitiesToNicheMath(Env=wcdata,loc=occ,species=basename(occfiles[9]))
+occ_clean = subsppLabelR::localitiesToNicheMath(Env=wcdata,loc=occ,species=basename(occfiles[9]))
 
 

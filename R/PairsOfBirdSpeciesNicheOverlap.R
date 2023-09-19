@@ -566,7 +566,6 @@ flagPolygonOverlap2 = function(subsppPoly1 = polA,
 #' @param listOfPolygons List of subspecies range polygons.
 #'
 #' @export
-#' @examples
 #'
 closestPolygonFunction = function(listOfPolygons) {
   ## TODO: is broken
@@ -1208,7 +1207,6 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
 #' @param epsilon An value with which to flag anomalies with probability less than epsilon
 #'
 #' @export
-#' @examples
 #'
 #'
 detectSpatialOutliers = function(localities = locs,

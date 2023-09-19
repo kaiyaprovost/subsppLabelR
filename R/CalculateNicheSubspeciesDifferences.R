@@ -17,7 +17,6 @@
 #' @import RColorBrewer
 #' @import ENMeval
 NULL
-
 #' Clean points by the environment
 #'
 #' This function removes any localities that do not have environmental data
@@ -41,7 +40,6 @@ cleanByEnvironment = function(Env,loc){
 
   return(loc_clean)
 }
-
 #' Thinning points by subspecies
 #'
 #' This function takes cleaned localities and applies a thinning algorithm so
@@ -81,140 +79,7 @@ spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitud
     loc_thin$assigned = subspp
     return(loc_thin)
   })
-
-
-
-{
-  ##TODO: consider lumping?
-  ## for now testing with phainopeplaNitens
-  ##TODO: change all the lapply to function if possible
-  ##TODO: update plotting here (and in other file) so that everything plots iteratively, esp if pairwise
-  ##TODO: add in species name not just subspp name
-
 }
-detach("package:subsppLabelR", unload=TRUE)
-devtools::install_github('kaiyaprovost/subsppLabelR')
-library(subsppLabelR,verbose=T)
-## need to add a check in here -- remove unknown points with exact same lat/long as a labeled point
-
-## SETUP
-{
-  setwd("~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/")
-
-  THIN_BEYOND = FALSE
-
-  ## also split these into subspecies assignments with $assigned
-  ## this is a list, can access with $x or [[i]]
-
-  ## if you want you can check through the points that suck to add in more localities
-  ## but for now not doing that
-
-  ## now we have groups that are assigned to single areas and don't mismatch
-  ## let's split into two different groupings and make some niche models!
-  ## then test overlap
-
-  # step 1 -- import environmental variables
-  ##TODO: add in other data than Worldclim
-  ##TODO: water layer, how often water there is at that spot? 30m layer!!!
-  Env = raster::stack(list.files(
-    path='/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/spatial_bioinformatics-master/ENM/wc2-5/',
-    pattern="\\.bil$",
-    full.names=T))
-  ext = raster::extent(c(-125,-60,10,50)) ## make sure this will play nice with your points
-  Env = raster::crop(Env, ext)
-  bg = Env[[1]] ## just for plotting
-
-  ## get locs
-  #species = "Phainopepla nitens"
-  #subspecies = c("nitens","lepida")
-
-  #species = "Cardinalis sinuatus"
-  #subspecies = c("sinuatus","fulvescens","peninsulae")
-  #species = "Cardinalis cardinalis"
-  #subspecies = c("affinis","canicaudus","cardinalis","carneus",
-  #                "clintoni","coccineus","flammiger","floridanus",
-  #                "igneus","littoralis","magnirostris","mariae",
-  #                "phillipsi","saturatus","seftoni","sinaloensis",
-  #                "superbus","townsendi","yucatanicus")
-
-  #subspecies_igne = c("affinis","clintoni","igneus","seftoni","sinaloensis","superbus","townsendi")
-  #subspecies_card = c("canicaudus","cardinalis","floridanus","magnirostris")
-  #subspecies_cocc = c("coccineus","flammiger","littoralis","phillipsi","yucatanicus")
-  #subspecies_rest = c("carneus","mariae","saturatus")
-  #test = c("clintoni","affinis")
-
-  ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
-  ## will delete that subspecies. no bueno
-
-  #alllocs = "/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/big_sinuatus_testrun_NOTWORKING/AllSubspp_Cardinalis sinuatus_sinuatus fulvescens peninsulae_clean.txt"
-  #labeledLoc = read.csv(alllocs,sep="\t")
-  #locs = labeledLoc
-  detach("package:subsppLabelR", unload=TRUE)
-  library(subsppLabelR,verbose=T)
-
-  par(ask=F)
-
-}
-
-## GENERATE FUNCTIONS
-## ALL OF THESE FUNCTIONS LAYER UNKNOWN POINTS ON LAST
-
-
-
-list_of_taxa = "/Users/kprovost/Documents/Dissertation/CHAPTER1_REVIEW/southwestern_subspecies.txt"
-taxa = read.csv(list_of_taxa,sep="\t",header=F)
-colnames(taxa) = c("GEN","SPP","SUB")
-
-unique_species = unique(taxa[,1:2])
-
-#for (rownum in 1:1) {
-for (rownum in 2:nrow(unique_species)) {
-  temp = taxa[taxa$GEN==unique_species$GEN[rownum],]
-  temp = temp[temp$SPP==unique_species$SPP[rownum],]
-  subspp = droplevels.factor(unlist(temp$SUB))
-  spp = paste((unlist(temp[1,1:2])),sep=" ",collapse=" ")
-  print(spp)
-  print(subspp)
-
-  processed = databaseToAssignedSubspecies(spp=spp,
-                                           subsppList=subspp,
-                                           pointLimit=1000,dbToQuery=c("gbif","bison","ecoengine","vertnet"), ## removed everythign besides gbif and vertnet
-                                           quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
-                                           outputDir=paste("/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",spp,sep=""),
-                                           epsilon=1e-6)
-
-  outputProcessedSpecies(processedSpecies=processed,
-                         outputDir=paste("/Users/kprovost/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",spp,sep=""),
-                         species=spp,
-                         subspecies=subspp,
-                         bg=bg)
-
-}
-
-
-processedSpecies = databaseToAssignedSubspecies(spp=species,
-                                                subsppList=subspecies,
-                                                pointLimit=10,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
-                                                quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
-                                                outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
-                                                datafile=alllocs,
-                                                epsilon=1e-6)
-
-outputProcessedSpecies(processedSpecies=processedSpecies,outputDir="~/Documents/Classes/Finished Classes/Spatial Bioinformatics/project/",
-                       species=species,subspecies=subspecies,bg=bg)
-
-if (THIN_BEYOND == TRUE) {
-
-
-
-  loc_good_clean = cleanByEnvironment(Env=Env,loc=loc_good)
-
-
-    loc_thin = do.call(rbind,locs_thinned)
-  }
-
-}
-
 #' Generating background points for a pca
 #'
 #' This function generates background points for making a PCA of environment.
@@ -242,7 +107,6 @@ backgroundForPCA = function(localities=loc_good[,c("Longitude","Latitude")],r=20
   dat1 = rbind(extract1, extbg1)
   return(list(bgenv=dat1,bgpoints=bg1,bgext=extract1,bgextbg=extbg1))
 }
-
 #' Generating background points for a species
 #'
 #' This function generates background points for each species.
@@ -284,7 +148,6 @@ backgroundPerSpecies = function(localities=loc_thin){
               bgpoints_by_subspecies=bgpoints_by_subspecies,
               bgextbg_by_subspecies=bgextbg_by_subspecies))
 }
-
 #' Generating a pca for comparison across niches.
 #'
 #' This function uses ecospat to create PCA across Environments to compare
@@ -379,7 +242,6 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species) {
               grid_clim=grid_clim))
 
 }
-
 #' Make pairwise niche overlaps
 #'
 #' This function uses the background PCA grid for climate that was generated to
@@ -424,7 +286,6 @@ pairwiseNicheOverlap = function(pca_grid_clim){
   }
   return(overlap_df)
 }
-
 #' Test for pairwise niche equivalence
 #'
 #' This function uses the background PCA grid for climate that was generated to
@@ -475,8 +336,6 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000){
     }
   }
 }
-
-
 #' Wrapper for calculating niche math
 #'
 #' This function serves as a wrapper for the rest of the functions.
@@ -514,9 +373,6 @@ localitiesToNicheMath = function(Env,loc,species){
   names(listENMresults) = names(loc_thin)
 
 }
-
-## Env <- getData("worldclim",var="bio",res=10)
-
 #' Custom grid.clim.dyn
 #'
 #' Custom ecospat function that accounts for NA values. See ecospat
@@ -572,7 +428,6 @@ ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env =
     l$sp <- sp
     l$w <- w
   }
-
   if (ncol(glob) == 2) {
     # if scores in two dimensions (e.g. PCA)
 
@@ -675,7 +530,6 @@ ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "hi
 
   return(l)
 }
-
 #' Custom overlap.sim.gen
 #'
 #' Custom ENMtools similarity generator
@@ -797,7 +651,6 @@ overlap.sim.gen <- function(repi, z1, z2, rand.type = rand.type) {
   sim.o.I <- o.i$I
   return(c(sim.o.D, sim.o.I))
 }
-
 #' Custom overlap.eq.gen
 #'
 #' Custom ENMtools equivalency generator
@@ -831,3 +684,4 @@ overlap.eq.gen_custom <- function(repi, z1, z2) {
   sim.o.I <- o.i$I
   return(c(sim.o.D, sim.o.I))
 }
+#'
