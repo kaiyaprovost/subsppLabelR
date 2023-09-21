@@ -16,6 +16,7 @@
 #' @import AppliedPredictiveModeling
 #' @import RColorBrewer
 #' @import ENMeval
+#' @import ENMTools
 NULL
 #' Clean points by the environment
 #'
@@ -30,10 +31,12 @@ NULL
 #' @examples
 #'
 #' loc_good_clean = cleanByEnvironment(Env, loc)
-cleanByEnvironment = function(Env,loc){
-  loc[,2] = as.numeric(loc[,2])
-  loc[,3] = as.numeric(loc[,3])
-  extr = raster::extract(Env, loc[,2:3]) ## gets values from Env that are at loc
+cleanByEnvironment = function(Env,loc,latname="latitude",lonname="longitude"){
+  latnum=which(colnames(loc)==latname)
+  lonnum=which(colnames(loc)==lonname)
+  loc[,latnum] = as.numeric(loc[,latnum])
+  loc[,lonnum] = as.numeric(loc[,lonnum])
+  extr = raster::extract(Env, loc[,c(lonnum,latnum)]) ## gets values from Env that are at loc
   head(extr)
   loc_clean = loc[!is.na(extr[,1]),]
   print(paste("Removed",nrow(loc)-nrow(loc_clean),"rows with no Env data"))
@@ -59,7 +62,8 @@ cleanByEnvironment = function(Env,loc){
 #' loc_good_clean = cleanByEnvironment(Env, loc)
 #' locs_thinned = spThinBySubspecies(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",long.col="longitude",spec.col="assigned")
 spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",
-                              long.col="longitude",spec.col="assigned"){
+                              long.col="longitude",spec.col="assigned",verbose=T){
+  if(verbose==T){print("starting spThinBySubspecies")}
 
   locs_thinned=lapply(unique(loc_good_clean$assigned),FUN=function(subspp){
     print(subspp)
@@ -79,6 +83,8 @@ spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitud
     loc_thin$assigned = subspp
     return(loc_thin)
   })
+  locs_thinned_df = do.call(rbind,locs_thinned)
+  return(locs_thinned_df)
 }
 #' Generating background points for a pca
 #'
@@ -95,10 +101,15 @@ spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitud
 #' loc_good_clean = cleanByEnvironment(Env, loc)
 #' locs_thinned = spThinBySubspecies(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",long.col="longitude",spec.col="assigned")
 #' loc_thin_bgstuff = backgroundForPCA(localities=loc_good[,c("Longitude","Latitude")],r=200000,num=(100*nrow(localities)),e=Env)
-backgroundForPCA = function(localities=loc_good[,c("Longitude","Latitude")],r=200000,num=(100*nrow(localities)),e=Env){
-  library(ENMTools)
-  bg1 = ENMTools::background.points.buffer(localities, radius = r,
-                                           n = num, mask = e[[1]])
+backgroundForPCA = function(localities=locs_thinned,r=200000,num=(100*nrow(localities)),e=Env,verbose=T){
+  if(verbose==T){
+    print("starting backgroundForPCA")
+    print(localities)
+  }
+  localities=localities[,c("Longitude","Latitude")]
+  bg1 = ENMTools::background.buffer(points=localities, buffer.width = r,
+                                           n = num, mask = e[[1]],
+                                    buffer.type="circles",return.type="raster")
   extract1 = na.omit(cbind(localities,
                            extract(e, localities), rep(1, nrow(localities))))
   colnames(extract1)[ncol(extract1)] = 'occ'
@@ -120,7 +131,8 @@ backgroundForPCA = function(localities=loc_good[,c("Longitude","Latitude")],r=20
 #' locs_thinned = spThinBySubspecies(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",long.col="longitude",spec.col="assigned")
 #'loc_thin_bgstuff = backgroundForPCA(localities=loc_good[,c("Longitude","Latitude")],r=200000,num=(100*nrow(localities)),e=Env)
 #' perspecies_bgstuff = backgroundPerSpecies(loc_thin)
-backgroundPerSpecies = function(localities=loc_thin){
+backgroundPerSpecies = function(localities=loc_thin,verbose=T){
+  if(verbose==T){print("starting backgroundPerSpecies")}
   loc_thin_by_subspecies = split(loc_thin, loc_thin$name)
   bgenv_by_subspecies = list()
 
@@ -166,7 +178,8 @@ backgroundPerSpecies = function(localities=loc_thin){
 #' perspecies_bgstuff = backgroundPerSpecies(loc_thin)
 #' pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuffspecies)
 #' pca_grid_clim = pcaOutput$grid_clim
-createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species) {
+createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbose=T) {
+  if(verbose==T){print("starting createPcaToCompare")}
   bg_dat = loc_thin_bgstuff$bgenv
   bg_bg = loc_thin_bgstuff$bgpoints
 
@@ -348,9 +361,13 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000){
 #' @examples
 #'
 #' localitiesToNicheMath(Env,loc,species)
-localitiesToNicheMath = function(Env,loc,species){
+localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
+                                 RMvalues=seq(0.5,4,0.5),
+                                 fc=c("L", "LQ", "H"),numCores=4,
+                                 method='block',verbose=T){
   loc_good_clean = cleanByEnvironment(Env,loc)
   loc_thin = spThinBySubspecies(loc_good_clean)
+  if(verbose==T){View(loc_thin)}
   loc_thin_bgstuff = backgroundForPCA(localities = loc_thin[,2:3])
   bg_dat = loc_thin_bgstuff$bgenv
   bg_bg = loc_thin_bgstuff$bgpoints
@@ -358,15 +375,15 @@ localitiesToNicheMath = function(Env,loc,species){
   pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuff,species)
   pca_grid_clim = pcaOutput$grid_clim
   overlap_df = pairwiseNicheOverlap(pca_grid_clim)
-  pairwiseNicheEquivalence(pca_grid_clim,rep1=10,rep2=1000)
+  pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2)
 
   listENMresults = lapply(1:length(loc_thin),function(i){
     ##TODO: add in bg points from above
     subspp = names(loc_thin)[[i]]
     print(paste("Running",subspp))
-    res = ENMevaluate(occ=loc_thin[[i]], env = Env, method='block',
-                      parallel=T, numCores=4, fc=c("L", "LQ", "H"), #c("L", "LQ", "H", "LQH", "LQHP", "LQHPT")
-                      RMvalues=seq(0.5,4,0.5), rasterPreds=F)
+    res = ENMevaluate(occ=loc_thin[[i]], env = Env, method=method,
+                      parallel=T, numCores=numCores, fc=fc,
+                      RMvalues=RMvalues, rasterPreds=F)
     #names(res) = names(nitens_by_subspp)[[i]]
     return(res)
   })
