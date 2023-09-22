@@ -12,7 +12,7 @@ localitiesToNicheMath(
   rep2 = 1000,
   RMvalues = seq(0.5, 4, 0.5),
   fc = c("L", "LQ", "H"),
-  numCores = 4,
+  numCores = 1,
   method = "block",
   verbose = T
 )

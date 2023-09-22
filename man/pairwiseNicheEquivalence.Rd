@@ -4,7 +4,7 @@
 \alias{pairwiseNicheEquivalence}
 \title{Test for pairwise niche equivalence}
 \usage{
-pairwiseNicheEquivalence(pca_grid_clim, rep1 = 10, rep2 = 1000)
+pairwiseNicheEquivalence(pca_grid_clim, rep1 = 10, rep2 = 1000, species)
 }
 \arguments{
 \item{pca_grid_clim}{The grid for the climate PCA}

@@ -11,7 +11,8 @@ spThinBySubspecies(
   lat.col = "latitude",
   long.col = "longitude",
   spec.col = "assigned",
-  verbose = T
+  verbose = T,
+  write.files = T
 )
 }
 \arguments{
