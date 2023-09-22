@@ -9,7 +9,7 @@ databaseToAssignedSubspecies(
   subsppList,
   pointLimit,
   dbToQuery,
-  quantile = 0.95,
+  quant = 0.95,
   xmin = NULL,
   xmax = NULL,
   ymin = NULL,
@@ -32,7 +32,7 @@ databaseToAssignedSubspecies(
 
 \item{dbToQuery}{List of databases to search through -- see spocc::occ}
 
-\item{quantile}{Quantile for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.}
+\item{quant}{quant for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.}
 
 \item{xmin}{Minimum longitude extent to clip rasters to}
 
@@ -67,7 +67,7 @@ bg = Env[[1]]
 phainopeplaNitens = databaseToAssignedSubspecies(spp="Phainopepla nitens",
    subsppList=c("nitens","lepida"),
    pointLimit=500,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
-   quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
+   quant=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
    outputDir="~/project/")
 suspect_occurrences = phainopeplaNitens$loc_suspect,
 good_occurrences = phainopeplaNitens$loc_good,

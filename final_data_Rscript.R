@@ -5,33 +5,33 @@ install.packages("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",repos=NULL,type
 library(subsppLabelR)
 ## parameters
 pointLimit=10000
-quant=0.9
-dbToQuery=c("gbif","inat","bison","vertnet")
-#EBIRD_KEY = "f49839r87f7g"
+quant=0.95
+dbToQuery=c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
+xmin = -180; xmax = -50; ymin = 0; ymax = 75;
 if(redo==T) {
   species_list = c("Phainopepla nitens",
-                   "Campylorhynchus brunneicapillus","Amphispiza bilineata",
-                   "Vireo bellii","Toxostoma crissale","Toxostoma curvirostre","Polioptila melanura",
-                   "Cardinalis sinuatus",
-                   "Melospiza melodia","Zonotrichia leucophrys","Geococcyx californianus","Geococcyx",
-                   "Melozone fusca","Auriparus flaviceps",
+                   #"Cardinalis sinuatus",
+                   #"Campylorhynchus brunneicapillus","Amphispiza bilineata",
+                   #"Vireo bellii","Toxostoma crissale","Toxostoma curvirostre","Polioptila melanura",
+                   #"Melospiza melodia","Zonotrichia leucophrys","Geococcyx californianus","Geococcyx",
+                   #"Melozone fusca","Auriparus flaviceps",
                    NULL
   )
 
   subspp_list = list(c("lepida","nitens"),
-                     c("affinis","brunneicapillus","anthonyi","bryanti","guttatus","sandiegensis","seri"),
-                     c("bangsi","bilineata","belvederei","cana","deserticola","carmenae","grisea","opuntia","pacifica","tortugae"),
-                     c("medius","bellii","arizonae","pusillus"),
-                     c("coloradense","crissale","dumosum","trinitatis"),
-                     c("celsum","curvirostre","insularum","maculatum","oberholseri","occidentale","palmeri"),
-                     c("curtata","melanura","lucida"),
-                     c("sinuatus","fulvescens","peninsulae"),
-                     c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia","fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis","mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis","pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
-                     c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
-                     NULL,
-                     c("californianus","velox"),
-                     c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
-                     c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
+                     #c("sinuatus","fulvescens","peninsulae"),
+                     #c("affinis","brunneicapillus","anthonyi","bryanti","guttatus","sandiegensis","seri"),
+                     #c("bangsi","bilineata","belvederei","cana","deserticola","carmenae","grisea","opuntia","pacifica","tortugae"),
+                     #c("medius","bellii","arizonae","pusillus"),
+                     #c("coloradense","crissale","dumosum","trinitatis"),
+                     #c("celsum","curvirostre","insularum","maculatum","oberholseri","occidentale","palmeri"),
+                     #c("curtata","melanura","lucida"),
+                     #c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia","fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis","mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis","pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
+                     #c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
+                     #NULL,
+                     #c("californianus","velox"),
+                     #c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
+                     #c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
                      NULL
   )
 
@@ -44,7 +44,8 @@ if(redo==T) {
     dir.create(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",sep=""))
     if(!(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep="")))){
       listFromSubspeciesOcc = subspeciesOccQuery(spp=spp,subsppList=subspp,pointLimit=pointLimit,dbToQuery=dbToQuery)
-      labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
+      labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc,
+                                   spp=spp,subsppList=subspp,cleanup_nominate=T)
       head(labeledLoc)
       write.table(labeledLoc,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep=""),sep="\t",row.names = F)
     } else {
@@ -63,6 +64,7 @@ if(redo==T) {
                                                          quantile=quant,
                                                          plotIt=T,
                                                          datafile = labeledLoc,
+                                                         xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax,
                                                          outputDir="C:/Users/kaiya/Documents/GitHub/subsppLabelR/")
       final$loc_suspect
       final$loc_good
@@ -74,6 +76,7 @@ if(redo==T) {
   }
 }
 ## now get the files
+setwd("C:/Users/kaiya/Documents/GitHub/subsppLabelR/")
 occfiles=list.files(path="C:/Users/kaiya/Documents/GitHub/subsppLabelR/",
                     pattern="_subspplabelR_loc_good",recursive=T,full.names = T)
 wcdata = geodata::worldclim_global("bio",res=10,path="~/",download=F) #wcdata = raster::getData(name="worldclim",download=F,path="~/",var="bio",res=10)

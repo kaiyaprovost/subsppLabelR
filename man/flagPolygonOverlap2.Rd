@@ -40,9 +40,9 @@ labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
 locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,
    xmin=-125,xmax=-60,ymin=10,ymax=50)
-dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,
+dens_ful = subspeciesDensityMap(localities=locs_ful,quant=0.95,
    xmin=-125,xmax=-60,ymin=10,ymax=50)
 densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 densPol_ful = densityMapToPolygons(densityMap=dens_ful)

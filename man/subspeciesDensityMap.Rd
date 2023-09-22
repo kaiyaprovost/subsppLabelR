@@ -6,7 +6,7 @@
 \usage{
 subspeciesDensityMap(
   localities,
-  quantile = 0.95,
+  quant = 0.95,
   xmin = NULL,
   xmax = NULL,
   ymin = NULL,
@@ -17,7 +17,7 @@ subspeciesDensityMap(
 \arguments{
 \item{localities}{Labeled localities as generated from labelSubspecies() or subspeciesOccQuery()}
 
-\item{quantile}{Quantile for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.}
+\item{quant}{quant for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.}
 
 \item{xmin}{Minimum longitude extent to clip to}
 
@@ -30,7 +30,7 @@ subspeciesDensityMap(
 \description{
 This function uses 2D kernel density estimation to make a density raster
 of points for each subspecies. It then removes all but the most
-dense cells as definied by quantile.
+dense cells as definied by quant.
 }
 \examples{
 
@@ -39,6 +39,6 @@ listFromSubspeciesOcc = subspeciesOccQuery(spp="Cardinalis sinuatus",
    dbToQuery="gbif")
 labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
 locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
-dens = subspeciesDensityMap(localities=locs,quantile=0.95,
+dens = subspeciesDensityMap(localities=locs,quant=0.95,
    xmin=-125,xmax=-60,ymin=10,ymax=50)
 }

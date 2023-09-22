@@ -44,8 +44,9 @@ subspeciesOccQuery = function(spp,
   } else {
     subSppListOcc = lapply(subsppList, function(x) {
       print(paste("     Getting Subspecies: ", x))
-      return(spocc::occ(query = paste(spp, x, sep = " "),
-                        limit = pointLimit,has_coords = T,from = dbToQuery))
+      to_return = spocc::occ(query = paste(spp, x, sep = " "),
+                        limit = pointLimit,has_coords = T,from = dbToQuery)
+      return(to_return)
     })
     names(subSppListOcc) = subsppList
     print(sppOcc)
@@ -107,7 +108,7 @@ occ2df_subspeciesLabels = function(subsppOccList_object,
 #'    dbToQuery="gbif")
 #' labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
 #' subsppNames = unique(labeledLoc$subspecies)
-labelSubspecies = function(subsppOccList) {
+labelSubspecies = function(subsppOccList,spp,subsppList,cleanup_nominate=T) {
   ## this function takes a list of three taxa and labels them with subspecies information
   ## TODO: turn this into a function to give multiple subspecies and return it
   ## TODO: doesn't work if one subspp has zero records
@@ -128,6 +129,17 @@ labelSubspecies = function(subsppOccList) {
       sppLocLab = rbind(sppLocLab, subsppLoc)
       #print("check2")
     }
+    if(cleanup_nominate==T){
+      print("CLEANING NOMINATE")
+      genus = strsplit(spp," ")[[1]][1]
+      species_name = strsplit(spp," ")[[1]][2]
+      nominate = subsppList[subsppList == species_name]
+      nominate_rows =
+      good_rows = which(grepl(paste(nominate,nominate,sep=" "),sppLocLab$name,ignore.case = T))
+      ## anything with the nominate needs to have the format "nominate nominate"
+    }
+
+
   }
   return(sppLocLab)
 }
@@ -188,7 +200,7 @@ subspeciesDensityMap = function(localities,
     ## convert to raster
     densRas = raster::raster(density)
     ## take the top percentile of the points, only the densest areas
-    quan = quant(densRas[densRas], quant)
+    quan = quantile(densRas[densRas], quant)
     densRas_trim = densRas
     densRas_trim[densRas_trim <= quan] = NA
     #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
@@ -1602,14 +1614,15 @@ databaseToAssignedSubspecies = function(spp,
       print(polygonSlot)
       print(subsppNames[[polygonSlot]])
       try({
-      polygonA=densityPolygons_trim[[polygonSlot]]
-      polygonA = as(polygonA, "SpatialPolygonsDataFrame")
-      nameA = subsppNames[[polygonSlot]]
-      print(polygonA) ## this needs to be a spatial polygon dataframe
-      polyLocations = locatePolygonPoints2(test_points = polyLocations,
-                                           polygonA = polygonA,
-                                           nameA = nameA,
-                                           setcoord = T)
+        print(densityPolygons_trim[[polygonSlot]])
+        polygonA=densityPolygons_trim[[polygonSlot]]
+        polygonA = as(polygonA, "SpatialPolygonsDataFrame")
+        nameA = subsppNames[[polygonSlot]]
+        print(polygonA) ## this needs to be a spatial polygon dataframe
+        polyLocations = locatePolygonPoints2(test_points = polyLocations,
+                                             polygonA = polygonA,
+                                             nameA = nameA,
+                                             setcoord = T)
       })
     }
   }

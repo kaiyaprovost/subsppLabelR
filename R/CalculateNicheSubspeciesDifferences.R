@@ -86,7 +86,8 @@ spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitud
                             locs.thinned.list.return = T,
                             write.files = write.files,
                             max.files = 1,
-                            write.log.file = F)[[1]]
+                            write.log.file = F,
+                            out.dir=getwd())[[1]]
     loc_thin$assigned = subspp
     return(loc_thin)
   })
