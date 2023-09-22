@@ -4,7 +4,7 @@
 \alias{createPcaToCompare}
 \title{Generating a pca for comparison across niches.}
 \usage{
-createPcaToCompare(loc_thin_bgstuff, perspecies_bgstuff, species)
+createPcaToCompare(loc_thin_bgstuff, perspecies_bgstuff, species, verbose = T)
 }
 \arguments{
 \item{loc_thin_bgstuff}{Background points for all species.}

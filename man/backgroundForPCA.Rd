@@ -5,10 +5,11 @@
 \title{Generating background points for a pca}
 \usage{
 backgroundForPCA(
-  localities = loc_good[, c("Longitude", "Latitude")],
-  r = 2e+05,
+  localities = locs_thinned,
+  r = 1,
   num = (100 * nrow(localities)),
-  e = Env
+  e = Env,
+  verbose = T
 )
 }
 \arguments{

@@ -19,7 +19,7 @@ databaseToAssignedSubspecies(
   outputDir,
   datafile = NULL,
   epsilon = 1e-06,
-  restrictNominate = T,
+  restrictNominate = F,
   ...
 )
 }

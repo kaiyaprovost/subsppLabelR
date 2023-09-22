@@ -1299,7 +1299,7 @@ databaseToAssignedSubspecies = function(spp,
                                         outputDir,
                                         datafile = NULL,
                                         epsilon = 1e-6,
-                                        restrictNominate=T,
+                                        restrictNominate=F,
                                         ...) {
   ## TODO: allow to begin from any step?
   setwd(outputDir)
@@ -1364,7 +1364,7 @@ databaseToAssignedSubspecies = function(spp,
   }
   subsppNames = unique(labeledLoc$subspecies)
   if (plotIt == T) {
-    png(paste("Labeled occurences", spp, ".png"))
+    png(paste("Labeled occurences", spp,quantile, ".png"))
     #print("Plotting")
     ## TODO: make this work again it doesn't
     raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = spp)
@@ -1408,7 +1408,7 @@ databaseToAssignedSubspecies = function(spp,
     removed = labeledLoc[(rows_purged),]
     labeledLoc = labeledLoc[-(rows_purged),]
     if (plotIt == T) {
-      png(paste("AnomaliesRemoved_", spp, ".png", sep = ""))
+      png(paste("AnomaliesRemoved_", spp,quantile,".png", sep = ""))
       raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Anomalies"))
       points(labeledLoc$longitude,labeledLoc$latitude,
              col = "lightgrey",pch = 0)
@@ -1471,7 +1471,7 @@ databaseToAssignedSubspecies = function(spp,
   total_range[as.numeric(names(celltable))] = celltable
   #print("x6")
   if (plotIt == T) {
-    png(paste("FullDistribution", spp, ".png", sep = ""))
+    png(paste("FullDistribution", spp,quantile,".png", sep = ""))
     raster::plot(total_range,colNA = "darkgrey",main = paste("Distribution"))
     dev.off()
   }

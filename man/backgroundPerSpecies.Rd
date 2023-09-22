@@ -4,7 +4,12 @@
 \alias{backgroundPerSpecies}
 \title{Generating background points for a species}
 \usage{
-backgroundPerSpecies(localities = loc_thin)
+backgroundPerSpecies(
+  localities = loc_thin,
+  verbose = T,
+  name = "assigned",
+  e = Env
+)
 }
 \arguments{
 \item{localities}{Thinned cleaned localities.}

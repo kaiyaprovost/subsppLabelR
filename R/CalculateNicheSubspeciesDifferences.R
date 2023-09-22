@@ -17,6 +17,10 @@
 #' @import RColorBrewer
 #' @import ENMeval
 #' @import ENMTools
+#' @import ecospat
+#' @import ade4
+#' @import adehabitatMA
+#' @import adehabitatHR
 NULL
 #' Clean points by the environment
 #'
@@ -62,8 +66,11 @@ cleanByEnvironment = function(Env,loc,latname="latitude",lonname="longitude"){
 #' loc_good_clean = cleanByEnvironment(Env, loc)
 #' locs_thinned = spThinBySubspecies(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",long.col="longitude",spec.col="assigned")
 spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",
-                              long.col="longitude",spec.col="assigned",verbose=T){
-  if(verbose==T){print("starting spThinBySubspecies")}
+                              long.col="longitude",spec.col="assigned",verbose=T,write.files=T){
+  if(verbose==T){
+    print("starting spThinBySubspecies")
+    print(unique(loc_good_clean$assigned))
+    }
 
   locs_thinned=lapply(unique(loc_good_clean$assigned),FUN=function(subspp){
     print(subspp)
@@ -77,7 +84,7 @@ spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitud
                             thin.par = thin.par, ## km distance that records need to be separated by
                             reps = reps, ## number of times to repeat thinning process
                             locs.thinned.list.return = T,
-                            write.files = F,
+                            write.files = write.files,
                             max.files = 1,
                             write.log.file = F)[[1]]
     loc_thin$assigned = subspp
@@ -101,20 +108,19 @@ spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitud
 #' loc_good_clean = cleanByEnvironment(Env, loc)
 #' locs_thinned = spThinBySubspecies(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",long.col="longitude",spec.col="assigned")
 #' loc_thin_bgstuff = backgroundForPCA(localities=loc_good[,c("Longitude","Latitude")],r=200000,num=(100*nrow(localities)),e=Env)
-backgroundForPCA = function(localities=locs_thinned,r=200000,num=(100*nrow(localities)),e=Env,verbose=T){
-  if(verbose==T){
-    print("starting backgroundForPCA")
-    print(localities)
-  }
+backgroundForPCA = function(localities=locs_thinned,r=1,num=(100*nrow(localities)),e=Env,verbose=T){
   localities=localities[,c("Longitude","Latitude")]
-  bg1 = ENMTools::background.buffer(points=localities, buffer.width = r,
-                                           n = num, mask = e[[1]],
-                                    buffer.type="circles",return.type="raster")
+  localities_pol = terra::vect(as.matrix(localities),"points")
+  bg1 = ENMTools::background.buffer(points=localities_pol, buffer.width = r,
+                                           n = num, mask = as(e[[1]],"SpatRaster"),
+                                    buffer.type="circles",return.type="points")
+  bg1 = terra::as.data.frame(bg1,geom="XY")
   extract1 = na.omit(cbind(localities,
-                           extract(e, localities), rep(1, nrow(localities))))
+                           raster::extract(e, localities), rep(1, nrow(localities))))
   colnames(extract1)[ncol(extract1)] = 'occ'
-  extbg1 = na.omit(cbind(bg1, extract(e, bg1), rep(0, nrow(bg1))))
+  extbg1 = na.omit(cbind(bg1, raster::extract(e, bg1), rep(0, nrow(bg1))))
   colnames(extbg1)[ncol(extbg1)] = 'occ'
+  colnames(extbg1)[1:2] = colnames(extract1)[1:2]
   dat1 = rbind(extract1, extbg1)
   return(list(bgenv=dat1,bgpoints=bg1,bgext=extract1,bgextbg=extbg1))
 }
@@ -131,9 +137,10 @@ backgroundForPCA = function(localities=locs_thinned,r=200000,num=(100*nrow(local
 #' locs_thinned = spThinBySubspecies(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",long.col="longitude",spec.col="assigned")
 #'loc_thin_bgstuff = backgroundForPCA(localities=loc_good[,c("Longitude","Latitude")],r=200000,num=(100*nrow(localities)),e=Env)
 #' perspecies_bgstuff = backgroundPerSpecies(loc_thin)
-backgroundPerSpecies = function(localities=loc_thin,verbose=T){
+backgroundPerSpecies = function(localities=loc_thin,verbose=T,name="assigned",e=Env){
   if(verbose==T){print("starting backgroundPerSpecies")}
-  loc_thin_by_subspecies = split(loc_thin, loc_thin$name)
+  name_col = which(colnames(localities) == name)
+  loc_thin_by_subspecies = split(localities, localities[,name_col])
   bgenv_by_subspecies = list()
 
   bgext_by_subspecies = list()
@@ -143,7 +150,7 @@ backgroundPerSpecies = function(localities=loc_thin,verbose=T){
   for(i in 1:length(names(loc_thin_by_subspecies))){
     singleSubspp = loc_thin_by_subspecies[[i]]
     subsppName = names(loc_thin_by_subspecies)[[i]]
-    single_bgstuff = backgroundForPCA(singleSubspp[,c("Longitude","Latitude")])
+    single_bgstuff = backgroundForPCA(singleSubspp,e=e)
     bgenv_by_subspecies[[i]] = single_bgstuff$bgenv
     bgext_by_subspecies[[i]] = single_bgstuff$bgext
     bgpoints_by_subspecies[[i]] = single_bgstuff$bgpoints
@@ -187,9 +194,9 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
   bgenv_by_subspecies = perspecies_bgstuff$bgenv_by_subspecies
 
   ## pca bg points
-  pca.env <- dudi.pca(bg_dat[,3:(ncol(bg_dat)-1)],scannf=F,nf=2)
+  pca.env <- ade4::dudi.pca(bg_dat[,3:(ncol(bg_dat)-1)],scannf=F,nf=2)
   #png(paste("PCAcorrelationCircle_",species,".png",sep=""))
-  ecospat.plot.contrib(contrib=pca.env$co, eigen=pca.env$eig)
+  ecospat::ecospat.plot.contrib(contrib=pca.env$co, eigen=pca.env$eig)
   #dev.off()
 
   ## pca scores whole study area, all points, all subspecies
@@ -206,7 +213,7 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
     singleSubspp_bgenv = bgenv_by_subspecies[[i]]
     subsppName = names(bgext_by_subspecies)[[i]]
 
-    scores_subspp = suprow(pca.env,
+    scores_subspp = ade4::suprow(pca.env,
                            singleSubspp_bgext[which(
                              singleSubspp_bgext[,ncol(singleSubspp_bgext)]==1)
                              ,3:(ncol(singleSubspp_bgext)-1)])$li # PCA scores for the species 1 distribution
@@ -214,7 +221,7 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
 
     scores[[i]] = scores_subspp
 
-    scores_clim_subspp = suprow(pca.env,
+    scores_clim_subspp = ade4::suprow(pca.env,
                                 singleSubspp_bgenv[,3:(ncol(singleSubspp_bgenv)-1)])$li # PCA scores for the whole native study area species 1 ## bgenv
 
     scores_clim[[i]] = scores_clim_subspp
@@ -226,13 +233,21 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
     ## sp = occurrences of species
     ## R = resolution
     ## th.sp = a threshhold to elimite low density values of species occurrences
-    grid_clim_subspp <- ecospat.grid.clim.dyn_custom(glob = scores_globclim,
+    # grid_clim_subspp <- ecospat.grid.clim.dyn_custom(glob = scores_globclim,
+    #                                                  glob1 = scores_clim_subspp,
+    #                                                  sp = scores_subspp,
+    #                                                  R = 100,
+    #                                                  th.sp = 0,
+    #                                                  th.env = 0,
+    #                                                  removeNA=T)
+    grid_clim_subspp <- ecospat::ecospat.grid.clim.dyn(glob = scores_globclim,
                                                      glob1 = scores_clim_subspp,
                                                      sp = scores_subspp,
                                                      R = 100,
                                                      th.sp = 0,
-                                                     th.env = 0,
-                                                     removeNA=T)
+                                                     th.env = 0)
+
+
     grid_clim[[i]] = grid_clim_subspp
 
   }
@@ -287,7 +302,7 @@ pairwiseNicheOverlap = function(pca_grid_clim){
         spp1 = pca_grid_clim[[i]]
         spp2_name = names(pca_grid_clim)[[j]]
         spp2 = pca_grid_clim[[j]]
-        overlap <- ecospat.niche.overlap(spp1, spp2, cor=T)
+        overlap <- ecospat::ecospat.niche.overlap(spp1, spp2, cor=T)
         rowToAdd = cbind(as.character(spp1_name),
                          as.character(spp2_name),
                          as.numeric(overlap$D),
@@ -314,7 +329,7 @@ pairwiseNicheOverlap = function(pca_grid_clim){
 #' @examples
 #'
 #' printPointsPdfSuspect(species,subspecies,bg,loc_suspect)
-pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000){
+pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species){
   for(i in 1:length(pca_grid_clim)){
     for(j in 1:length(pca_grid_clim)){
       if(i<j){
@@ -324,15 +339,40 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000){
         spp2_name = names(pca_grid_clim)[[j]]
         spp2 = pca_grid_clim[[j]]
 
-        eq.test <- ecospat.niche.equivalency.test_custom(z1=spp1, z2=spp2,
-                                                         rep=rep1, alternative = "higher")
+        #eq.test <- ecospat.niche.equivalency.test_custom(z1=spp1, z2=spp2,
+        #                                                 rep=rep1, alternative = "higher"
+        #                                                 )
+        eq.test = ecospat::ecospat.niche.equivalency.test(z1=spp1, z2=spp2,rep=rep1,
+                                                          overlap.alternative = "higher", ## testing for niche conservatism
+                                                          expansion.alternative = "lower",
+                                                          stability.alternative = "higher",
+                                                          unfilling.alternative = "lower"
+                                                          )
+        pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
+        par(mfrow=c(2,1))
+        ecospat.plot.overlap.test(eq.test, "D", "Equivalency")
+        ecospat.plot.overlap.test(eq.test, "I", "Equivalency")
+        dev.off()
         print(paste("Running niche similarity test for",spp1_name,"-",spp2_name))
-        sim.test <- ecospat.niche.similarity.test(z1=spp1, z2=spp2,
-                                                  rep=rep2, alternative = "higher",
+        sim.test <- ecospat::ecospat.niche.similarity.test(z1=spp1, z2=spp2,
+                                                  rep=rep2, overlap.alternative = "higher", ## testing for niche conservatism
+                                                  expansion.alternative = "lower",
+                                                  stability.alternative = "higher",
+                                                  unfilling.alternative = "lower",
                                                   rand.type=2)
+        pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
+        par(mfrow=c(2,2))
+        ecospat.plot.overlap.test(eq.test, "D", "Equivalency")
+        ecospat.plot.overlap.test(sim.test, "D", paste("Similarity ",spp1_name,"->",spp2_name,sep=""))
+        ecospat.plot.overlap.test(eq.test, "I", "Equivalency")
+        ecospat.plot.overlap.test(sim.test, "I", paste("Similarity ",spp1_name,"->",spp2_name,sep=""))
+        dev.off()
         print(paste("Running niche similarity test for",spp2_name,"-",spp1_name))
-        sim.test2 <- ecospat.niche.similarity.test(z1=spp2, z2=spp1,
-                                                   rep=rep2, alternative = "higher",
+        sim.test2 <- ecospat::ecospat.niche.similarity.test(z1=spp2, z2=spp1,
+                                                   rep=rep2, overlap.alternative = "higher", ## testing for niche conservatism
+                                                   expansion.alternative = "lower",
+                                                   stability.alternative = "higher",
+                                                   unfilling.alternative = "lower",
                                                    rand.type=2)
 
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
@@ -363,342 +403,32 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000){
 #' localitiesToNicheMath(Env,loc,species)
 localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
                                  RMvalues=seq(0.5,4,0.5),
-                                 fc=c("L", "LQ", "H"),numCores=4,
-                                 method='block',verbose=T){
+                                 fc=c("L", "LQ", "H"),numCores=1,
+                                 method='block',verbose=T ){
   loc_good_clean = cleanByEnvironment(Env,loc)
   loc_thin = spThinBySubspecies(loc_good_clean)
-  if(verbose==T){View(loc_thin)}
-  loc_thin_bgstuff = backgroundForPCA(localities = loc_thin[,2:3])
+  #if(verbose==T){View(loc_thin)}
+  loc_thin_bgstuff = backgroundForPCA(localities = loc_thin,e=Env)
   bg_dat = loc_thin_bgstuff$bgenv
   bg_bg = loc_thin_bgstuff$bgpoints
-  perspecies_bgstuff = backgroundPerSpecies(localities = loc_thin)
+  perspecies_bgstuff = backgroundPerSpecies(localities = loc_thin,e=Env)
   pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuff,species)
   pca_grid_clim = pcaOutput$grid_clim
   overlap_df = pairwiseNicheOverlap(pca_grid_clim)
-  pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2)
+  write.table(overlap_df,paste(species,"_overlap.txt",sep=""))
+  pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2,species=species)
 
-  listENMresults = lapply(1:length(loc_thin),function(i){
+  listENMresults = lapply(1:length(perspecies_bgstuff$bgpoints_by_subspecies),function(i){
     ##TODO: add in bg points from above
-    subspp = names(loc_thin)[[i]]
+    subspp = names(perspecies_bgstuff$bgpoints_by_subspecies)[[i]]
     print(paste("Running",subspp))
-    res = ENMevaluate(occ=loc_thin[[i]], env = Env, method=method,
-                      parallel=T, numCores=numCores, fc=fc,
-                      RMvalues=RMvalues, rasterPreds=F)
+    res = ENMevaluate(occs=perspecies_bgstuff$bgpoints_by_subspecies[[i]], envs = Env, partitions=method,
+                      algorithm="maxnet",tune.args=list(fc=fc,rm=RMvalues),
+                      parallel=T, numCores=numCores)
     #names(res) = names(nitens_by_subspp)[[i]]
     return(res)
   })
-  names(listENMresults) = names(loc_thin)
+  names(listENMresults) = names(perspecies_bgstuff$bgpoints_by_subspecies)
 
-}
-#' Custom grid.clim.dyn
-#'
-#' Custom ecospat function that accounts for NA values. See ecospat
-#'
-#' @export
-ecospat.grid.clim.dyn_custom <- function(glob, glob1, sp, R, th.sp = 0, th.env = 0,
-                                         geomask = NULL,removeNA=T) {
-
-  glob <- as.matrix(glob)
-  glob1 <- as.matrix(glob1)
-  sp <- as.matrix(sp)
-  l <- list()
-
-  if (ncol(glob) > 2)
-    stop("cannot calculate overlap with more than two axes")
-
-  if (ncol(glob) == 1) {
-    # if scores in one dimension (e.g. LDA,SDM predictions,...)
-    xmax <- max(glob[, 1])
-    xmin <- min(glob[, 1])
-    x <- seq(from = min(glob[, 1]), to = max(glob[, 1]), length.out = R)  # breaks on score gradient 1
-    sp.dens <- density(sp[, 1], kernel = "gaussian", from = xmin, to = xmax,
-                       n = R, cut = 0)  # calculate the density of occurrences in a vector of R pixels along the score gradient
-    # using a gaussian kernel density function, with R bins.
-    glob1.dens <- density(glob1[, 1], kernel = "gaussian", from = xmin,
-                          to = xmax, n = R, cut = 0)  # calculate the density of environments in glob1
-    z <- sp.dens$y * nrow(sp)/sum(sp.dens$y)  # rescale density to the number of occurrences in sp
-    # number of occurrence/pixel
-    Z <- glob1.dens$y * nrow(glob)/sum(glob1.dens$y)  # rescale density to the number of sites in glob1
-    glob1r <- sapply(glob1, findInterval, glob1.dens$x)
-    th.env <- quantile(glob1.dens$y[glob1r], th.env)
-    glob1rm <- which(Z < th.env)
-    spr <- sapply(sp, findInterval, sp.dens$x)
-    th.sp <- quantile(sp.dens$y[spr], th.sp)
-    sprm <- which(z < th.sp)
-    z[sprm] <- 0  # remove infinitesimally small number generated by kernel density function
-    Z[glob1rm] <- 0  # remove infinitesimally small number generated by kernel density function
-
-    z.uncor <- z/max(z)  # rescale between [0:1] for comparison with other species
-    z.cor <- z/Z  # correct for environment prevalence
-    z.cor[is.na(z.cor)] <- 0  # remove n/0 situations
-    z.cor[z.cor == "Inf"] <- 0  # remove 0/0 situations
-    z.cor <- z.cor/max(z.cor)  # rescale between [0:1] for comparison with other species
-    w <- z.uncor
-    w[w > 0] <- 1
-    l$x <- x
-    l$z <- z
-    l$z.uncor <- z.uncor
-    l$z.cor <- z.cor
-    l$Z <- Z
-    l$glob <- glob
-    l$glob1 <- glob1
-    l$sp <- sp
-    l$w <- w
-  }
-  if (ncol(glob) == 2) {
-    # if scores in two dimensions (e.g. PCA)
-
-    xmin <- min(glob[, 1])
-    xmax <- max(glob[, 1])
-    ymin <- min(glob[, 2])
-    ymax <- max(glob[, 2])  # data preparation
-    glob1r <- data.frame(cbind((glob1[, 1] - xmin)/abs(xmax - xmin), (glob1[,
-                                                                            2] - ymin)/abs(ymax - ymin)))  # data preparation
-    spr <- data.frame(cbind((sp[, 1] - xmin)/abs(xmax - xmin), (sp[, 2] -
-                                                                  ymin)/abs(ymax - ymin)))  # data preparation
-    mask <- ascgen(SpatialPoints(cbind((0:(R))/R, (0:(R)/R))),
-                   nrcol = R-2, count = FALSE) # data preparation
-    sp.dens <- kernelUD(SpatialPoints(spr[, 1:2]), h = "href", grid = mask,
-                        kern = "bivnorm")  # calculate the density of occurrences in a grid of RxR pixels along the score gradients
-    sp.dens <- raster(xmn = xmin, xmx = xmax, ymn = ymin, ymx = ymax, matrix(sp.dens$ud,
-                                                                             nrow = R))
-    # using a gaussian kernel density function, with RxR bins.
-    # sp.dens$var[sp.dens$var>0 & sp.dens$var<1]<-0
-    glob1.dens <- kernelUD(SpatialPoints(glob1r[, 1:2]), grid = mask, kern = "bivnorm")
-    glob1.dens <- raster(xmn = xmin, xmx = xmax, ymn = ymin, ymx = ymax,
-                         matrix(glob1.dens$ud, nrow = R))
-    # glob1.dens$var[glob1.dens$var<1 & glob1.dens$var>0]<-0
-
-    x <- seq(from = min(glob[, 1]), to = max(glob[, 1]), length.out = R)  # breaks on score gradient 1
-    y <- seq(from = min(glob[, 2]), to = max(glob[, 2]), length.out = R)  # breaks on score gradient 2
-    glob1r <- extract(glob1.dens, glob1)
-    Z.th <- quantile(glob1r, th.env,na.rm=removeNA)
-    glob1.dens[glob1.dens < Z.th] <- 0
-    if (!is.null(geomask)) {
-      proj4string(geomask) <- NA
-      glob1.dens <- mask(glob1.dens, geomask, updatevalue = 0)  # Geographical mask in the case if the analysis takes place in the geographical space
-    }
-    Z <- glob1.dens * nrow(glob1)/cellStats(glob1.dens, "sum")
-
-    spr <- extract(sp.dens, sp)
-    z.th <- quantile(spr, th.sp)
-    sp.dens[Z == 0] <- 0
-    sp.dens[sp.dens < z.th] <- 0
-    if (!is.null(geomask)) {
-      sp.dens <- mask(sp.dens, geomask, updatevalue = 0)  # Geographical mask in the case if the analysis takes place in the geographical space
-    }
-    z <- sp.dens * nrow(sp)/cellStats(sp.dens, "sum")
-    z.uncor <- z/cellStats(z, "max")
-    w <- z.uncor  # remove infinitesimally small number generated by kernel density function
-    w[w > 0] <- 1
-    z.cor <- z/Z  # correct for environment prevalence
-    z.cor[is.na(z.cor)] <- 0  # remove n/0 situations
-    z.cor <- z.cor/cellStats(z.cor, "max")
-    l$x <- x
-    l$y <- y
-    l$z <- z
-    l$z.uncor <- z.uncor
-    l$z.cor <- z.cor
-    l$Z <- Z
-    l$glob <- glob
-    l$glob1 <- glob1
-    l$sp <- sp
-    l$w <- w
-
-  }
-
-  return(l)
-}
-#' Custom niche.equivalency.test
-#'
-#' Custom ecospat equivalency that accounts for NA values. See ecospat
-#'
-#' @export
-ecospat.niche.equivalency.test_custom <- function(z1, z2, rep, alternative = "higher", ncores=1) {
-
-  R <- length(z1$x)
-  l <- list()
-
-  obs.o <- ecospat.niche.overlap(z1, z2, cor = TRUE)  #observed niche overlap
-
-  if (ncores == 1){
-    sim.o <- as.data.frame(matrix(unlist(lapply(1:rep, overlap.eq.gen_custom, z1, z2)), byrow = TRUE,
-                                  ncol = 2))  #simulate random overlap
-  }else{
-    #number of cores attributed for the permutation test
-    cl <- makeCluster(ncores)  #open a cluster for parallelization
-    invisible(clusterEvalQ(cl))  #import the internal function into the cluster
-    sim.o <- as.data.frame(matrix(unlist(parLapply(cl, 1:rep, overlap.eq.gen_custom, z1, z2)), byrow = TRUE,
-                                  ncol = 2))  #simulate random overlap
-    stopCluster(cl)  #shutdown the cluster
-  }
-  colnames(sim.o) <- c("D", "I")
-  l$sim <- sim.o  # storage
-  l$obs <- obs.o  # storage
-
-  if (alternative == "higher") {
-    l$p.D <- (sum(sim.o$D >= obs.o$D) + 1)/(length(sim.o$D) + 1)  # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
-    l$p.I <- (sum(sim.o$I >= obs.o$I) + 1)/(length(sim.o$I) + 1)  # storage of p-values alternative hypothesis = greater -> test for niche conservatism/convergence
-  }
-  if (alternative == "lower") {
-    l$p.D <- (sum(sim.o$D <= obs.o$D) + 1)/(length(sim.o$D) + 1)  # storage of p-values alternative hypothesis = lower -> test for niche divergence
-    l$p.I <- (sum(sim.o$I <= obs.o$I) + 1)/(length(sim.o$I) + 1)  # storage of p-values alternative hypothesis = lower -> test for niche divergence
-  }
-
-  return(l)
-}
-#' Custom overlap.sim.gen
-#'
-#' Custom ENMtools similarity generator
-#'
-#' @export
-overlap.sim.gen <- function(repi, z1, z2, rand.type = rand.type) {
-  R1 <- length(z1$x)
-  R2 <- length(z2$x)
-  if (is.null(z1$y) & is.null(z2$y)) {
-    if (rand.type == 1) {
-      # if rand.type = 1, both z1 and z2 are randomly shifted, if rand.type =2, only z2 is randomly
-      # shifted
-      center.z1 <- which(z1$z.uncor == 1)  # define the centroid of the observed niche
-      Z1 <- z1$Z/max(z1$Z)
-      rand.center.z1 <- sample(1:R1, size = 1, replace = FALSE, prob = Z1)  # randomly (weighted by environment prevalence) define the new centroid for the niche
-      xshift.z1 <- rand.center.z1 - center.z1  # shift on x axis
-      z1.sim <- z1
-      z1.sim$z <- rep(0, R1)  # set intial densities to 0
-      for (i in 1:length(z1$x)) {
-        i.trans.z1 <- i + xshift.z1
-        if (i.trans.z1 > R1 | i.trans.z1 < 0)
-          (next)()  # densities falling out of the env space are not considered
-        z1.sim$z[i.trans.z1] <- z1$z[i]  # shift of pixels
-      }
-      z1.sim$z <- (z1$Z != 0) * 1 * z1.sim$z  # remove densities out of existing environments
-      z1.sim$z.cor <- (z1.sim$z/z1$Z)/max((z1.sim$z/z1$Z), na.rm = TRUE)  #transform densities into occupancies
-      z1.sim$z.cor[which(is.na(z1.sim$z.cor))] <- 0
-      z1.sim$z.uncor <- z1.sim$z/max(z1.sim$z, na.rm = TRUE)
-      z1.sim$z.uncor[which(is.na(z1.sim$z.uncor))] <- 0
-    }
-
-    center.z2 <- which(z2$z.uncor == 1)  # define the centroid of the observed niche
-    Z2 <- z2$Z/max(z2$Z)
-    rand.center.z2 <- sample(1:R2, size = 1, replace = FALSE, prob = Z2)  # randomly (weighted by environment prevalence) define the new centroid for the niche
-
-    xshift.z2 <- rand.center.z2 - center.z2  # shift on x axis
-    z2.sim <- z2
-    z2.sim$z <- rep(0, R2)  # set intial densities to 0
-    for (i in 1:length(z2$x)) {
-      i.trans.z2 <- i + xshift.z2
-      if (i.trans.z2 > R2 | i.trans.z2 < 0)
-        (next)()  # densities falling out of the env space are not considered
-      z2.sim$z[i.trans.z2] <- z2$z[i]  # shift of pixels
-    }
-    z2.sim$z <- (z2$Z != 0) * 1 * z2.sim$z  # remove densities out of existing environments
-    z2.sim$z.cor <- (z2.sim$z/z2$Z)/max((z2.sim$z/z2$Z), na.rm = TRUE)  #transform densities into occupancies
-    z2.sim$z.cor[which(is.na(z2.sim$z.cor))] <- 0
-    z2.sim$z.uncor <- z2.sim$z/max(z2.sim$z, na.rm = TRUE)
-    z2.sim$z.uncor[which(is.na(z2.sim$z.uncor))] <- 0
-  }
-
-  if (!is.null(z2$y) & !is.null(z1$y)) {
-    if (rand.type == 1) {
-      # if rand.type = 1, both z1 and z2 are randomly shifted, if rand.type =2, only z2 is randomly
-      # shifted
-      centroid.z1 <- which(z1$z.uncor == 1, arr.ind = TRUE)[1, ]  # define the centroid of the observed niche
-      Z1 <- z1$Z/max(z1$Z)
-      rand.centroids.z1 <- which(Z1 > 0, arr.ind = TRUE)  # all pixels with existing environments in the study area
-      weight.z1 <- Z1[Z1 > 0]
-      rand.centroid.z1 <- rand.centroids.z1[sample(1:nrow(rand.centroids.z1), size = 1, replace = FALSE,
-                                                   prob = weight.z1), ]  # randomly (weighted by environment prevalence) define the new centroid for the niche
-      xshift.z1 <- rand.centroid.z1[1] - centroid.z1[1]  # shift on x axis
-      yshift.z1 <- rand.centroid.z1[2] - centroid.z1[2]  # shift on y axis
-      z1.sim <- z1
-      z1.sim$z <- matrix(rep(0, R1 * R1), ncol = R1, nrow = R1)  # set intial densities to 0
-      for (i in 1:R1) {
-        for (j in 1:R1) {
-          i.trans.z1 <- i + xshift.z1
-          j.trans.z1 <- j + yshift.z1
-          if (i.trans.z1 > R1 | i.trans.z1 < 0)
-            (next)()  # densities falling out of the env space are not considered
-          if (j.trans.z1 > R1 | j.trans.z1 < 0)
-            (next)()
-          z1.sim$z[i.trans.z1, j.trans.z1] <- z1$z[i, j]  # shift of pixels
-        }
-      }
-      z1.sim$z <- (z1$Z != 0) * 1 * z1.sim$z  # remove densities out of existing environments
-      z1.sim$z.cor <- (z1.sim$z/z1$Z)/max((z1.sim$z/z1$Z), na.rm = TRUE)  #transform densities into occupancies
-      z1.sim$z.cor[which(is.na(z1.sim$z.cor))] <- 0
-      z1.sim$z.uncor <- z1.sim$z/max(z1.sim$z, na.rm = TRUE)
-      z1.sim$z.uncor[which(is.na(z1.sim$z.uncor))] <- 0
-    }
-    centroid.z2 <- which(z2$z.uncor == 1, arr.ind = TRUE)[1, ]  # define the centroid of the observed niche
-    Z2 <- z2$Z/max(z2$Z)
-    rand.centroids.z2 <- which(Z2 > 0, arr.ind = TRUE)  # all pixels with existing environments in the study area
-    weight.z2 <- Z2[Z2 > 0]
-    rand.centroid.z2 <- rand.centroids.z2[sample(1:nrow(rand.centroids.z2), size = 1, replace = FALSE,
-                                                 prob = weight.z2), ]  # randomly (weighted by environment prevalence) define the new centroid for the niche
-    xshift.z2 <- rand.centroid.z2[1] - centroid.z2[1]  # shift on x axis
-    yshift.z2 <- rand.centroid.z2[2] - centroid.z2[2]  # shift on y axis
-    z2.sim <- z2
-    z2.sim$z <- matrix(rep(0, R2 * R2), ncol = R2, nrow = R2)  # set intial densities to 0
-    for (i in 1:R2) {
-      for (j in 1:R2) {
-        i.trans.z2 <- i + xshift.z2
-        j.trans.z2 <- j + yshift.z2
-        if (i.trans.z2 > R2 | i.trans.z2 < 0)
-          (next)()  # densities falling out of the env space are not considered
-        if (j.trans.z2 > R2 | j.trans.z2 < 0)
-          (next)()
-        z2.sim$z[i.trans.z2, j.trans.z2] <- z2$z[i, j]  # shift of pixels
-      }
-    }
-    z2.sim$z <- (z2$Z != 0) * 1 * z2.sim$z  # remove densities out of existing environments
-    z2.sim$z.cor <- (z2.sim$z/z2$Z)/max((z2.sim$z/z2$Z), na.rm = TRUE)  #transform densities into occupancies
-    z2.sim$z.cor[which(is.na(z2.sim$z.cor))] <- 0
-    z2.sim$z.uncor <- z2.sim$z/max(z2.sim$z, na.rm = TRUE)
-    z2.sim$z.uncor[which(is.na(z2.sim$z.uncor))] <- 0
-  }
-
-  if (rand.type == 1) {
-    o.i <- ecospat.niche.overlap(z1.sim, z2.sim, cor = TRUE)
-  }
-  if (rand.type == 2)
-  {
-    o.i <- ecospat.niche.overlap(z1, z2.sim, cor = TRUE)
-  }  # overlap between random and observed niches
-  sim.o.D <- o.i$D  # storage of overlaps
-  sim.o.I <- o.i$I
-  return(c(sim.o.D, sim.o.I))
-}
-#' Custom overlap.eq.gen
-#'
-#' Custom ENMtools equivalency generator
-#'
-#' @export
-overlap.eq.gen_custom <- function(repi, z1, z2) {
-  if (is.null(z1$y)) {
-    # overlap on one axis
-
-    occ.pool <- c(z1$sp, z2$sp)  # pool of random occurrences
-    rand.row <- sample(1:length(occ.pool), length(z1$sp))  # random reallocation of occurrences to datasets
-    sp1.sim <- occ.pool[rand.row]
-    sp2.sim <- occ.pool[-rand.row]
-  }
-
-  if (!is.null(z1$y)) {
-    # overlap on two axes
-
-    occ.pool <- rbind(z1$sp, z2$sp)  # pool of random occurrences
-    row.names(occ.pool)<-c()  # remove the row names
-    rand.row <- sample(1:nrow(occ.pool), nrow(z1$sp))  # random reallocation of occurrences to datasets
-    sp1.sim <- occ.pool[rand.row, ]
-    sp2.sim <- occ.pool[-rand.row, ]
-  }
-
-  z1.sim <- ecospat.grid.clim.dyn_custom(z1$glob, z1$glob1, data.frame(sp1.sim), R = length(z1$x))  # gridding
-  z2.sim <- ecospat.grid.clim.dyn_custom(z2$glob, z2$glob1, data.frame(sp2.sim), R = length(z2$x))
-
-  o.i <- ecospat.niche.overlap(z1.sim, z2.sim, cor = TRUE)  # overlap between random and observed niches
-  sim.o.D <- o.i$D  # storage of overlaps
-  sim.o.I <- o.i$I
-  return(c(sim.o.D, sim.o.I))
 }
 #'

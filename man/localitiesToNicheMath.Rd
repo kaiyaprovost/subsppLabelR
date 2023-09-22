@@ -4,7 +4,18 @@
 \alias{localitiesToNicheMath}
 \title{Wrapper for calculating niche math}
 \usage{
-localitiesToNicheMath(Env, loc, species)
+localitiesToNicheMath(
+  Env,
+  loc,
+  species,
+  rep1 = 10,
+  rep2 = 1000,
+  RMvalues = seq(0.5, 4, 0.5),
+  fc = c("L", "LQ", "H"),
+  numCores = 4,
+  method = "block",
+  verbose = T
+)
 }
 \arguments{
 \item{Env}{The environmental variables to compare.}

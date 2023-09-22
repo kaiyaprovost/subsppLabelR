@@ -4,7 +4,7 @@
 \alias{cleanByEnvironment}
 \title{Clean points by the environment}
 \usage{
-cleanByEnvironment(Env, loc)
+cleanByEnvironment(Env, loc, latname = "latitude", lonname = "longitude")
 }
 \arguments{
 \item{Env}{The environmental variables to calculate niche from}
