@@ -135,10 +135,10 @@ labelSubspecies = function(subsppOccList) {
 #'
 #' This function uses 2D kernel density estimation to make a density raster
 #' of points for each subspecies. It then removes all but the most
-#' dense cells as definied by quantile.
+#' dense cells as definied by quant.
 #'
 #' @param localities Labeled localities as generated from labelSubspecies() or subspeciesOccQuery()
-#' @param quantile Quantile for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.
+#' @param quant quant for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.
 #' @param xmin Minimum longitude extent to clip to
 #' @param xmax Maximum longitude extent to clip to
 #' @param ymin Minimum latitute extent to clip to
@@ -152,18 +152,18 @@ labelSubspecies = function(subsppOccList) {
 #'    dbToQuery="gbif")
 #' labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
-#' dens = subspeciesDensityMap(localities=locs,quantile=0.95,
+#' dens = subspeciesDensityMap(localities=locs,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 subspeciesDensityMap = function(localities,
-                                quantile = 0.95,
+                                quant = 0.95,
                                 xmin = NULL,
                                 xmax = NULL,
                                 ymin = NULL,
                                 ymax = NULL,
                                 total_range) {
   ## this function uses kernel density to make a raster that will then be used to filter
-  ## the data to remove all but the 5% (or 1-quantile) most dense cells
-  ## TODO: allow for subspecies-specific quantiles
+  ## the data to remove all but the 5% (or 1-quant) most dense cells
+  ## TODO: allow for subspecies-specific quants
   #library(MASS)
   #library(raster)
   if(is.null(xmin)) { xmin = min(localities$longitude,na.rm=T) }
@@ -188,7 +188,7 @@ subspeciesDensityMap = function(localities,
     ## convert to raster
     densRas = raster::raster(density)
     ## take the top percentile of the points, only the densest areas
-    quan = quantile(densRas[densRas], quantile)
+    quan = quant(densRas[densRas], quant)
     densRas_trim = densRas
     densRas_trim[densRas_trim <= quan] = NA
     #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
@@ -216,7 +216,7 @@ subspeciesDensityMap = function(localities,
 #'    dbToQuery="gbif")
 #' labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
 #' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 densityMapToPolygons = function(densityMap,verbose=F) {
@@ -264,9 +264,9 @@ densityMapToPolygons = function(densityMap,verbose=F) {
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 #' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
@@ -397,9 +397,9 @@ flagPolygonOverlap = function(subsppPoly1 = polA,
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 #' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
@@ -655,9 +655,9 @@ closestPolygonFunction = function(listOfPolygons) {
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 #' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
@@ -729,9 +729,9 @@ trimPolygonsByOverlap = function(polygon,
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 #' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
@@ -810,9 +810,9 @@ polygonTrimmer = function(polygonList, namesList) {
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 #' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
@@ -916,9 +916,9 @@ polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=W
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 #' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
@@ -1041,9 +1041,9 @@ locatePolygonPoints = function(test_points,
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quant=0.95,
 #'    xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 #' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
@@ -1087,8 +1087,8 @@ locatePolygonPoints2 = function(test_points,
 #' locs = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_sin = labeledLoc[labeledLoc$subspecies=="sinuatus",]
 #' locs_ful = labeledLoc[labeledLoc$subspecies=="fulvescens",]
-#' dens_sin = subspeciesDensityMap(localities=locs_sin,quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50)
-#' dens_ful = subspeciesDensityMap(localities=locs_ful,quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50)
+#' dens_sin = subspeciesDensityMap(localities=locs_sin,quant=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50)
+#' dens_ful = subspeciesDensityMap(localities=locs_ful,quant=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50)
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 #' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
 #' polyLocations = labeledLoc
@@ -1259,7 +1259,7 @@ detectSpatialOutliers = function(localities = locs,
 #' @param subsppList Strings of subspecies to query
 #' @param pointLimit Maximum point limit to return for each database -- see spocc::occ
 #' @param dbToQuery List of databases to search through -- see spocc::occ
-#' @param quantile Quantile for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.
+#' @param quant quant for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.
 #' @param xmin Minimum longitude extent to clip rasters to
 #' @param xmax Maximum longitude extent to clip rasters to
 #' @param ymin Minimum latitute extent to clip rasters to
@@ -1280,7 +1280,7 @@ detectSpatialOutliers = function(localities = locs,
 #' phainopeplaNitens = databaseToAssignedSubspecies(spp="Phainopepla nitens",
 #'    subsppList=c("nitens","lepida"),
 #'    pointLimit=500,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
-#'    quantile=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
+#'    quant=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
 #'    outputDir="~/project/")
 #' suspect_occurrences = phainopeplaNitens$loc_suspect,
 #' good_occurrences = phainopeplaNitens$loc_good,
@@ -1289,7 +1289,7 @@ databaseToAssignedSubspecies = function(spp,
                                         subsppList,
                                         pointLimit,
                                         dbToQuery,
-                                        quantile = 0.95,
+                                        quant = 0.95,
                                         xmin = NULL,
                                         xmax = NULL,
                                         ymin = NULL,
@@ -1364,7 +1364,7 @@ databaseToAssignedSubspecies = function(spp,
   }
   subsppNames = unique(labeledLoc$subspecies)
   if (plotIt == T) {
-    png(paste("Labeled occurences", spp,quantile, ".png"))
+    png(paste("Labeled occurences", spp,quant, ".png"))
     #print("Plotting")
     ## TODO: make this work again it doesn't
     raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = spp)
@@ -1408,7 +1408,7 @@ databaseToAssignedSubspecies = function(spp,
     removed = labeledLoc[(rows_purged),]
     labeledLoc = labeledLoc[-(rows_purged),]
     if (plotIt == T) {
-      png(paste("AnomaliesRemoved_", spp,quantile,".png", sep = ""))
+      png(paste("AnomaliesRemoved_", spp,quant,".png", sep = ""))
       raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Anomalies"))
       points(labeledLoc$longitude,labeledLoc$latitude,
              col = "lightgrey",pch = 0)
@@ -1456,7 +1456,7 @@ databaseToAssignedSubspecies = function(spp,
   ## remove points that fall within the other subspecies' polygon
   ## and account for data being poor
   ## build the density of the points
-  ## remove all but 95% (or quantile) most dense cells
+  ## remove all but 95% (or quant) most dense cells
   ## TODO: some subspecies come back with the entire range as their range due to the way the distribution is
   ## need to generate a raster file to crop the density maps to
   #print("x1")
@@ -1471,18 +1471,18 @@ databaseToAssignedSubspecies = function(spp,
   total_range[as.numeric(names(celltable))] = celltable
   #print("x6")
   if (plotIt == T) {
-    png(paste("FullDistribution", spp,quantile,".png", sep = ""))
+    png(paste("FullDistribution", spp,quant,".png", sep = ""))
     raster::plot(total_range,colNA = "darkgrey",main = paste("Distribution"))
     dev.off()
   }
   print("Building species kernel density maps")
-  ## TODO: add something to increase quantiles dynamically here? so if 0.95 does not return all the valid subspecies, reduce to 0.90 etc?
+  ## TODO: add something to increase quants dynamically here? so if 0.95 does not return all the valid subspecies, reduce to 0.90 etc?
   densityRasters = lapply(subsppNames, function(subspp) {
     print(subspp)
     #subspp="relicta"
     locs = labeledLoc[labeledLoc$subspecies == subspp,]
     #print(head(locs))
-    dens = subspeciesDensityMap(localities = locs,quantile = quantile,xmin = xmin,xmax = xmax,
+    dens = subspeciesDensityMap(localities = locs,quant = quant,xmin = xmin,xmax = xmax,
                                 ymin = ymin,ymax = ymax, total_range=total_range)
     if (is.null(dens)) { dens = NA }
     if ((length((raster::unique(dens,na.last=NA)))) <= 0) { dens = NA }
@@ -1499,7 +1499,7 @@ databaseToAssignedSubspecies = function(spp,
     for (i in 1:length(densityRasters)) {
       #print("plotforloop")
       name = names(densityRasters)[[i]]
-      png(paste("DensityRaster_", spp, " ", name, ".png", sep = ""))
+      png(paste("DensityRaster_", spp, " ", name,quant, ".png", sep = ""))
       raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Density, subspp:", name))
       raster::plot(densityRasters[[i]],add = T,col = viridis::viridis(99))
       dev.off()
@@ -1530,7 +1530,7 @@ databaseToAssignedSubspecies = function(spp,
   if (plotIt == T) {
     for (i in 1:length(densityPolygons)) {
       name = names(densityPolygons)[[i]]
-      png(paste("RawDensityPolygon_", spp, " ", name, ".png", sep = ""))
+      png(paste("RawDensityPolygon_", spp, " ", name,quant, ".png", sep = ""))
       raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
       sp::spplot(densityPolygons[[i]],add = T,col = viridis::viridis(99))
       dev.off()
@@ -1562,7 +1562,7 @@ databaseToAssignedSubspecies = function(spp,
   if (plotIt == T) {
     for (i in 1:length(densityPolygons_trim1)) {
       name = names(densityPolygons_trim1)[[i]]
-      png(paste("TrimDensityPolygon_", spp, " ", name, ".png", sep = ""))
+      png(paste("TrimDensityPolygon_", spp, " ", name,quant, ".png", sep = ""))
       raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
       raster::plot(densityPolygons_trim1[[i]],add = T,col = viridis::viridis(99))
       dev.off()
@@ -1685,7 +1685,7 @@ databaseToAssignedSubspecies = function(spp,
 #     subsppList=c("nitens","lepida"),
 #     pointLimit=500,
 #     dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
-#    quantile=0.95,
+#    quant=0.95,
 #    xmin=-125,
 #    xmax=-60,
 #    ymin=10,
@@ -1698,7 +1698,7 @@ databaseToAssignedSubspecies = function(spp,
 # subsppList = c("sinuatus","fulvescens","peninsulae"),
 #    pointLimit=500,
 #    dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
-#    quantile=0.95,
+#    quant=0.95,
 #    xmin=-125,
 #    xmax=-60,
 #    ymin=10,

@@ -5,7 +5,7 @@ install.packages("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",repos=NULL,type
 library(subsppLabelR)
 ## parameters
 pointLimit=10000
-quant=0.95
+quant=0.9
 dbToQuery=c("gbif","inat","bison","vertnet")
 #EBIRD_KEY = "f49839r87f7g"
 if(redo==T) {
@@ -41,45 +41,37 @@ if(redo==T) {
     subspp = subspp_list[[i]]
     print(spp)
     print(subspp)
-
     dir.create(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",sep=""))
-    # if(!(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep="")))){
-    #   listFromSubspeciesOcc = subspeciesOccQuery(spp=spp,subsppList=subspp,pointLimit=pointLimit,dbToQuery=dbToQuery)
-    #   labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
-    #   head(labeledLoc)
-    #   write.table(labeledLoc,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep=""),sep="\t",row.names = F)
-    # } else {
-    #   labeledLoc = read.table(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep=""),sep="\t",header=T)
-    # }
+    if(!(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep="")))){
+      listFromSubspeciesOcc = subspeciesOccQuery(spp=spp,subsppList=subspp,pointLimit=pointLimit,dbToQuery=dbToQuery)
+      labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
+      head(labeledLoc)
+      write.table(labeledLoc,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep=""),sep="\t",row.names = F)
+    } else {
+      labeledLoc = read.table(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep=""),sep="\t",header=T)
+    }
+    subspp_new = unique(labeledLoc$subspecies)
+    subspp_new = subspp_new[subspp_new!="unknown"]
+    if(!(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_loc_good.txt",sep="")))){
+      labeledLoc$longitude = as.numeric(labeledLoc$longitude)
+      labeledLoc$latitude = as.numeric(labeledLoc$latitude)
+      labeledLoc$subspecies = as.factor(labeledLoc$subspecies)
 
+      final = subsppLabelR::databaseToAssignedSubspecies(spp=spp,
+                                                         subsppList = subspp_new,
+                                                         pointLimit=pointLimit,dbToQuery=dbToQuery,
+                                                         quantile=quant,
+                                                         plotIt=T,
+                                                         datafile = labeledLoc,
+                                                         outputDir="C:/Users/kaiya/Documents/GitHub/subsppLabelR/")
+      final$loc_suspect
+      final$loc_good
+      final$pol
+      write.table(final$loc_suspect,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_loc_suspect.txt",sep=""),sep="\t",row.names = F)
+      write.table(final$loc_good,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_loc_good.txt",sep=""),sep="\t",row.names = F)
+    }
     print(i)
   }
-  # for (i in 1:length(species_list)){
-  #   print(i)
-  #   spp = species_list[i]
-  #   subspp = subspp_list[[i]]
-  #   print(spp)
-  #   print(subspp)
-  #   if(!(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_loc_good.txt",sep="")))){
-  #     labeledLoc$longitude = as.numeric(labeledLoc$longitude)
-  #     labeledLoc$latitude = as.numeric(labeledLoc$latitude)
-  #     labeledLoc$subspecies = as.factor(labeledLoc$subspecies)
-  #
-  #     final = subsppLabelR::databaseToAssignedSubspecies(spp=spp,
-  #                                                        subsppList = subspp,
-  #                                                        pointLimit=pointLimit,dbToQuery=dbToQuery,
-  #                                                        quantile=quant,
-  #                                                        plotIt=T,
-  #                                                        datafile = labeledLoc,
-  #                                                        outputDir="C:/Users/kaiya/Documents/GitHub/subsppLabelR/")
-  #     final$loc_suspect
-  #     final$loc_good
-  #     final$pol
-  #     write.table(final$loc_suspect,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_loc_suspect.txt",sep=""),sep="\t",row.names = F)
-  #     write.table(final$loc_good,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_loc_good.txt",sep=""),sep="\t",row.names = F)
-  #   }
-  #   print(i)
-  # }
 }
 ## now get the files
 occfiles=list.files(path="C:/Users/kaiya/Documents/GitHub/subsppLabelR/",
