@@ -1,4 +1,4 @@
-redo=T
+redo=T; overwrite=T
 detach("package:subsppLabelR", unload = TRUE)
 #devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
 install.packages("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",repos=NULL,type="source",force=T)
@@ -42,7 +42,7 @@ if(redo==T) {
     print(spp)
     print(subspp)
     dir.create(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",sep=""))
-    if(!(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep="")))){
+    if(overwrite==T | !(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_RAW.txt",sep="")))){
       listFromSubspeciesOcc = subspeciesOccQuery(spp=spp,subsppList=subspp,pointLimit=pointLimit,dbToQuery=dbToQuery)
       labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc,
                                    spp=spp,subsppList=subspp,cleanup_nominate=T)
@@ -53,7 +53,7 @@ if(redo==T) {
     }
     subspp_new = unique(labeledLoc$subspecies)
     subspp_new = subspp_new[subspp_new!="unknown"]
-    if(!(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_loc_good.txt",sep="")))){
+    if(overwrite==T | !(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"_",quant,"/",spp,"_",quant,"_subspplabelR_loc_good.txt",sep="")))){
       labeledLoc$longitude = as.numeric(labeledLoc$longitude)
       labeledLoc$latitude = as.numeric(labeledLoc$latitude)
       labeledLoc$subspecies = as.factor(labeledLoc$subspecies)

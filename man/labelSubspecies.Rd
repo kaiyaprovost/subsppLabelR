@@ -4,7 +4,7 @@
 \alias{labelSubspecies}
 \title{Convert Occurence List to Labeled Dataframe}
 \usage{
-labelSubspecies(subsppOccList)
+labelSubspecies(subsppOccList, spp, subsppList)
 }
 \arguments{
 \item{subsppOccList}{A list of subspecies occurences from subspeciesOccQuery() or similar}

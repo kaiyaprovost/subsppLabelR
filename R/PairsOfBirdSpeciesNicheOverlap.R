@@ -45,7 +45,7 @@ subspeciesOccQuery = function(spp,
     subSppListOcc = lapply(subsppList, function(x) {
       print(paste("     Getting Subspecies: ", x))
       to_return = spocc::occ(query = paste(spp, x, sep = " "),
-                        limit = pointLimit,has_coords = T,from = dbToQuery)
+                             limit = pointLimit,has_coords = T,from = dbToQuery)
       return(to_return)
     })
     names(subSppListOcc) = subsppList
@@ -108,7 +108,7 @@ occ2df_subspeciesLabels = function(subsppOccList_object,
 #'    dbToQuery="gbif")
 #' labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc)
 #' subsppNames = unique(labeledLoc$subspecies)
-labelSubspecies = function(subsppOccList,spp,subsppList,cleanup_nominate=T) {
+labelSubspecies = function(subsppOccList,spp,subsppList) {
   ## this function takes a list of three taxa and labels them with subspecies information
   ## TODO: turn this into a function to give multiple subspecies and return it
   ## TODO: doesn't work if one subspp has zero records
@@ -129,17 +129,6 @@ labelSubspecies = function(subsppOccList,spp,subsppList,cleanup_nominate=T) {
       sppLocLab = rbind(sppLocLab, subsppLoc)
       #print("check2")
     }
-    if(cleanup_nominate==T){
-      print("CLEANING NOMINATE")
-      genus = strsplit(spp," ")[[1]][1]
-      species_name = strsplit(spp," ")[[1]][2]
-      nominate = subsppList[subsppList == species_name]
-      nominate_rows =
-      good_rows = which(grepl(paste(nominate,nominate,sep=" "),sppLocLab$name,ignore.case = T))
-      ## anything with the nominate needs to have the format "nominate nominate"
-    }
-
-
   }
   return(sppLocLab)
 }
@@ -1312,6 +1301,8 @@ databaseToAssignedSubspecies = function(spp,
                                         datafile = NULL,
                                         epsilon = 1e-6,
                                         restrictNominate=F,
+                                        cleanup_nominate=T,
+                                        num_digits_latlong=2,
                                         ...) {
   ## TODO: allow to begin from any step?
   setwd(outputDir)
@@ -1360,6 +1351,21 @@ databaseToAssignedSubspecies = function(spp,
   labeledLoc = labeledLoc[labeledLoc$latitude>=-90,]
   labeledLoc = labeledLoc[labeledLoc$longitude<=180,]
   labeledLoc = labeledLoc[labeledLoc$longitude>=-180,]
+print(paste("Rounding lat/longs to",num_digits_latlong,"decimal places",sep=" "))
+labeledLoc$latitude = round(labeledLoc$latitude,num_digits_latlong)
+labeledLoc$longitude = round(labeledLoc$longitude,num_digits_latlong)
+labeledLoc = unique(labeledLoc)
+
+  if(cleanup_nominate==T){
+    print("RELABELING NOMINATE AFTER CLEANUP")
+    good_nominate_rows=which(grepl(paste(nominateSubspecies,nominateSubspecies,sep=" "),labeledLoc$name))
+    labeled_nominate_rows = which(labeledLoc$subspecies==nominateSubspecies)
+    nominate_rows_to_keep = intersect(good_nominate_rows,labeled_nominate_rows)
+    to_relabel=labeled_nominate_rows[!(labeled_nominate_rows %in% nominate_rows_to_keep)]
+    labeledLoc$subspecies[to_relabel] = "unknown"
+    labeledLoc = unique(labeledLoc)
+  }
+
   print("Check xy maxmin")
   if(is.null(xmin)) { xmin = as.numeric(min(as.numeric(labeledLoc$longitude),na.rm=T)) } ## fine?
   if(is.null(xmax)) { xmax = as.numeric(max(as.numeric(labeledLoc$longitude),na.rm=T)) }
@@ -1452,6 +1458,18 @@ databaseToAssignedSubspecies = function(spp,
   xmax2 = as.numeric(max(as.numeric(labeledLoc$longitude),na.rm=T))
   ymin2 = as.numeric(min(as.numeric(labeledLoc$latitude),na.rm=T))
   ymax2 = as.numeric(max(as.numeric(labeledLoc$latitude),na.rm=T))
+  ## make sure the new boundaries aren't outside your given boundaries
+  xmin2 = max(xmin,xmin2)
+  xmax2 = min(xmax,xmax2)
+  ymin2 = max(ymin,ymin2)
+  ymax2 = min(ymax,ymax2)
+  print("Removing points outside of bounds")
+  labeledLoc = labeledLoc[labeledLoc$latitude<=ymax2,]
+  labeledLoc = labeledLoc[labeledLoc$latitude>=ymin2,]
+  labeledLoc = labeledLoc[labeledLoc$longitude<=xmax2,]
+  labeledLoc = labeledLoc[labeledLoc$longitude>=xmin2,]
+
+
   print("Cleaning bgLayer 2nd time")
   #print(paste(xmin2,xmax2,ymin2,ymax2))
   ext2 = raster::extent(c(as.numeric(xmin2),as.numeric(xmax2),
