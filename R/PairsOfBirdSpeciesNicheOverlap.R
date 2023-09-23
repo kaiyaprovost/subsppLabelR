@@ -161,7 +161,12 @@ subspeciesDensityMap = function(localities,
                                 xmax = NULL,
                                 ymin = NULL,
                                 ymax = NULL,
-                                total_range) {
+                                total_range,
+                                relative=T,
+                                raw_raster=T,
+                                subspp,
+                                spp,
+                                outputDir) {
   ## this function uses kernel density to make a raster that will then be used to filter
   ## the data to remove all but the 5% (or 1-quant) most dense cells
   ## TODO: allow for subspecies-specific quants
@@ -188,11 +193,24 @@ subspeciesDensityMap = function(localities,
   } else {
     ## convert to raster
     densRas = raster::raster(density)
+    if(raw_raster==T){
+    writeRaster(densRas,paste(outputDir,spp," ",subspp,"_raw_raster.tif",sep=""),
+                format="GTiff",overwrite=F)
+    }
+
+    if(relative==T){
+      print("rescaling")
+      values(densRas) = scales::rescale(values(densRas),c(0,1))
+      values(densRas) = round(values(densRas),digits=10)
+    }
+    ## we want to print these out before they are clipped
+
     ## take the top percentile of the points, only the densest areas
     quan = quantile(densRas[densRas], quant)
     densRas_trim = densRas
     densRas_trim[densRas_trim <= quan] = NA
-    #plot(densRas_trim,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
+    plot(densRas_trim,colNA="black")
+    #,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
     total_crs = raster::crs(total_range)
     total_ext = raster::extent(total_range)
     total_res = raster::res(total_range)
@@ -200,6 +218,7 @@ subspeciesDensityMap = function(localities,
     densRas_trim = raster::crop(densRas_trim,total_range)
     densRas_trim = raster::projectRaster(densRas_trim,total_range)
     raster::values(densRas_trim)[is.na(raster::values(total_range))] = NA
+
     return(densRas_trim)
   }
 }
@@ -1303,6 +1322,7 @@ databaseToAssignedSubspecies = function(spp,
                                         restrictNominate=F,
                                         cleanup_nominate=T,
                                         num_digits_latlong=2,
+                                        cells_per_bgLayer=50,
                                         ...) {
   ## TODO: allow to begin from any step?
   setwd(outputDir)
@@ -1377,7 +1397,7 @@ labeledLoc = unique(labeledLoc)
     ext = raster::extent(c(as.numeric(xmin),as.numeric(xmax),
                            as.numeric(ymin),as.numeric(ymax)))
     print(ext)
-    bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
+    bgLayer = raster::raster(ext=ext,nrow=cells_per_bgLayer,ncol=cells_per_bgLayer,vals=0)
     print(bgLayer)
   }
   subsppNames = unique(labeledLoc$subspecies)
@@ -1475,8 +1495,8 @@ labeledLoc = unique(labeledLoc)
   ext2 = raster::extent(c(as.numeric(xmin2),as.numeric(xmax2),
                           as.numeric(ymin2),as.numeric(ymax2)))
   #print(ext)
-  if(nrow(bgLayer)==100 & ncol(bgLayer)==100) {
-    bgLayer = raster::raster(ext=ext2,nrow=100,ncol=100,vals=0)
+  if(nrow(bgLayer)==cells_per_bgLayer & ncol(bgLayer)==cells_per_bgLayer) {
+    bgLayer = raster::raster(ext=ext2,nrow=cells_per_bgLayer,ncol=cells_per_bgLayer,vals=0)
   } else {
     bgLayer = raster::crop(bgLayer,ext=ext2)
   }
@@ -1513,7 +1533,8 @@ labeledLoc = unique(labeledLoc)
     locs = labeledLoc[labeledLoc$subspecies == subspp,]
     #print(head(locs))
     dens = subspeciesDensityMap(localities = locs,quant = quant,xmin = xmin,xmax = xmax,
-                                ymin = ymin,ymax = ymax, total_range=total_range)
+                                ymin = ymin,ymax = ymax, total_range=total_range,subspp=subspp,
+                                spp=spp,outputDir=outputDir,raw_raster=T)
     if (is.null(dens)) { dens = NA }
     if ((length((raster::unique(dens,na.last=NA)))) <= 0) { dens = NA }
     names(dens) = subspp
@@ -1561,12 +1582,15 @@ labeledLoc = unique(labeledLoc)
     for (i in 1:length(densityPolygons)) {
       name = names(densityPolygons)[[i]]
       png(paste("RawDensityPolygon_", spp, " ", name,quant, ".png", sep = ""))
+      #pdf(paste("RawDensityPolygon_", spp, " ", name,quant, ".pdf", sep = ""))
       raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
-      sp::spplot(densityPolygons[[i]],add = T,col = viridis::viridis(99))
+      #sp::spplot(densityPolygons[[i]],add = T,col = "red")
+      plot(densityPolygons[[i]],add=T,col="red")
       dev.off()
     }
-    png(paste("RawDensityPolygon_", spp, " ALL.png", sep = ""))
-    raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
+    png(paste("RawDensityPolygon_", spp, quant," ALL.png", sep = ""))
+    #pdf(paste("RawDensityPolygon_", spp, quant," ALL.pdf", sep = ""))
+    raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = "Polygon, ALL")
     cols = c("black","red", "blue", "green",
              "cyan", "magenta", "pink", "white",
              "purple", "orange", "yellow", "sienna",
@@ -1574,7 +1598,8 @@ labeledLoc = unique(labeledLoc)
              "violet", "mediumslateblue", "lightsalmon", "lightblue")
     for (i in 1:length(densityPolygons)) {
       name = names(densityPolygons)[[i]]
-      sp::spplot(densityPolygons[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
+      #sp::spplot(densityPolygons[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
+      plot(densityPolygons[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
     }
     legend("top",legend = names(densityPolygons),bty = "n",fill = rgb(0, 0, 0, 0),border = cols)
     dev.off()
@@ -1597,7 +1622,7 @@ labeledLoc = unique(labeledLoc)
       raster::plot(densityPolygons_trim1[[i]],add = T,col = viridis::viridis(99))
       dev.off()
     }
-    png(paste("TrimDensityPolygon_", spp, " ALL.png", sep = ""))
+    png(paste("TrimDensityPolygon_", spp, quant," ALL.png", sep = ""))
     raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Polygon, subspp:", name))
     cols = c( "black", "red", "blue", "green", "cyan", "magenta",
               "pink", "white", "purple", "orange", "yellow", "sienna",
