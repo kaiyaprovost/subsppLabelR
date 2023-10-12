@@ -3,6 +3,7 @@
 #' @import dplyr
 #' @import ggplot2
 #' @import grid
+#' @import gtools
 #' @import gridExtra
 #' @import h2o
 #' @import MASS
@@ -66,32 +67,59 @@ cleanByEnvironment = function(Env,loc,latname="latitude",lonname="longitude"){
 #' loc_good_clean = cleanByEnvironment(Env, loc)
 #' locs_thinned = spThinBySubspecies(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",long.col="longitude",spec.col="assigned")
 spThinBySubspecies = function(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",
-                              long.col="longitude",spec.col="assigned",verbose=T,write.files=T){
+                              long.col="longitude",spec.col="assigned",verbose=T,write.files=T,
+                              overwrite=F,species){
   if(verbose==T){
     print("starting spThinBySubspecies")
     print(unique(loc_good_clean$assigned))
-    }
+  }
 
   locs_thinned=lapply(unique(loc_good_clean$assigned),FUN=function(subspp){
     print(subspp)
     loc_temp = loc_good_clean[loc_good_clean$assigned==subspp,]
+    this_base= paste("thinned_data_",species,"_",subspp,sep="")
+    this_file = paste(this_base,"_thin1.csv",sep="")
 
-    ## note: if you do not  change the  "name" column, it will error out and only use  the first subspecies.
-    loc_thin = spThin::thin(loc.data = loc_temp,
-                            lat.col = lat.col,
-                            long.col = long.col,
-                            spec.col = spec.col,
-                            thin.par = thin.par, ## km distance that records need to be separated by
-                            reps = reps, ## number of times to repeat thinning process
-                            locs.thinned.list.return = T,
-                            write.files = write.files,
-                            max.files = 1,
-                            write.log.file = F,
-                            out.dir=getwd())[[1]]
-    loc_thin$assigned = subspp
+    if(overwrite==T){
+      loc_thin = spThin::thin(loc.data = loc_temp,
+                              lat.col = lat.col,
+                              long.col = long.col,
+                              spec.col = spec.col,
+                              thin.par = thin.par, ## km distance that records need to be separated by
+                              reps = reps, ## number of times to repeat thinning process
+                              locs.thinned.list.return = T,
+                              write.files = write.files,
+                              max.files = 1,
+                              write.log.file = F,
+                              out.dir=getwd(),
+                              out.base = this_base)[[1]]
+      loc_thin$assigned = subspp
+    } else {
+      if(file.exists(this_file)){
+        print("SKIPPING THINNING, FILE EXISTS")
+        loc_thin = read.table(this_file,header=T,sep=",")
+      } else {
+        ## note: if you do not  change the  "name" column, it will error out and only use  the first subspecies.
+        loc_thin = spThin::thin(loc.data = loc_temp,
+                                lat.col = lat.col,
+                                long.col = long.col,
+                                spec.col = spec.col,
+                                thin.par = thin.par, ## km distance that records need to be separated by
+                                reps = reps, ## number of times to repeat thinning process
+                                locs.thinned.list.return = T,
+                                write.files = write.files,
+                                max.files = 1,
+                                write.log.file = F,
+                                out.dir=getwd(),
+                                out.base = this_base)[[1]]
+        loc_thin$assigned = subspp
+      }
+    }
+    colnames(loc_thin)[colnames(loc_thin)=="longitude"] = "Longitude"
+    colnames(loc_thin)[colnames(loc_thin)=="latitude"] = "Latitude"
     return(loc_thin)
   })
-  locs_thinned_df = do.call(rbind,locs_thinned)
+  locs_thinned_df = do.call(gtools::smartbind,locs_thinned)
   return(locs_thinned_df)
 }
 #' Generating background points for a pca
@@ -113,7 +141,7 @@ backgroundForPCA = function(localities=locs_thinned,r=1,num=(100*nrow(localities
   localities=localities[,c("Longitude","Latitude")]
   localities_pol = terra::vect(as.matrix(localities),"points")
   bg1 = ENMTools::background.buffer(points=localities_pol, buffer.width = r,
-                                           n = num, mask = as(e[[1]],"SpatRaster"),
+                                    n = num, mask = as(e[[1]],"SpatRaster"),
                                     buffer.type="circles",return.type="points")
   bg1 = terra::as.data.frame(bg1,geom="XY")
   extract1 = na.omit(cbind(localities,
@@ -196,9 +224,9 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
 
   ## pca bg points
   pca.env <- ade4::dudi.pca(bg_dat[,3:(ncol(bg_dat)-1)],scannf=F,nf=2)
-  #png(paste("PCAcorrelationCircle_",species,".png",sep=""))
+  png(paste("PCAcorrelationCircle_",species,".png",sep=""))
   ecospat::ecospat.plot.contrib(contrib=pca.env$co, eigen=pca.env$eig)
-  #dev.off()
+  dev.off()
 
   ## pca scores whole study area, all points, all subspecies
   scores_globclim<-pca.env$li # PCA scores for the whole study area (all points)
@@ -215,15 +243,15 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
     subsppName = names(bgext_by_subspecies)[[i]]
 
     scores_subspp = ade4::suprow(pca.env,
-                           singleSubspp_bgext[which(
-                             singleSubspp_bgext[,ncol(singleSubspp_bgext)]==1)
-                             ,3:(ncol(singleSubspp_bgext)-1)])$li # PCA scores for the species 1 distribution
+                                 singleSubspp_bgext[which(
+                                   singleSubspp_bgext[,ncol(singleSubspp_bgext)]==1)
+                                   ,3:(ncol(singleSubspp_bgext)-1)])$li # PCA scores for the species 1 distribution
 
 
     scores[[i]] = scores_subspp
 
     scores_clim_subspp = ade4::suprow(pca.env,
-                                singleSubspp_bgenv[,3:(ncol(singleSubspp_bgenv)-1)])$li # PCA scores for the whole native study area species 1 ## bgenv
+                                      singleSubspp_bgenv[,3:(ncol(singleSubspp_bgenv)-1)])$li # PCA scores for the whole native study area species 1 ## bgenv
 
     scores_clim[[i]] = scores_clim_subspp
 
@@ -242,11 +270,11 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
     #                                                  th.env = 0,
     #                                                  removeNA=T)
     grid_clim_subspp <- ecospat::ecospat.grid.clim.dyn(glob = scores_globclim,
-                                                     glob1 = scores_clim_subspp,
-                                                     sp = scores_subspp,
-                                                     R = 100,
-                                                     th.sp = 0,
-                                                     th.env = 0)
+                                                       glob1 = scores_clim_subspp,
+                                                       sp = scores_subspp,
+                                                       R = 100,
+                                                       th.sp = 0,
+                                                       th.env = 0)
 
 
     grid_clim[[i]] = grid_clim_subspp
@@ -257,13 +285,13 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
   names(scores_clim) = names(bgext_by_subspecies)
   names(grid_clim) = names(bgext_by_subspecies)
 
-  #pdf(paste("NicheSpaceComparison_",species,".pdf",sep=""))
+  pdf(paste("NicheSpaceComparison_",species,".pdf",sep=""))
   par(mfrow=n2mfrow(length(grid_clim)),
       ask=F)
   for(i in 1:length(grid_clim)){
     plot(grid_clim[[i]]$w,main=names(grid_clim)[[i]])
   }
-  #dev.off()
+  dev.off()
 
   return(list(scores_globclim=scores_globclim,
               scores=scores,
@@ -288,8 +316,8 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
 #' pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuffspecies)
 #' pca_grid_clim = pcaOutput$grid_clim
 #' overlap_df  = pairwiseNicheOverlap(pca_grid_clim)
-pairwiseNicheOverlap = function(pca_grid_clim){
-
+pairwiseNicheOverlap = function(pca_grid_clim,verbose=T){
+if(verbose==T){print("starting pairwiseNicheOverlap")}
   overlap_df = data.frame(spp1=character(),
                           spp2=character(),
                           SchoenersD=numeric(),
@@ -298,7 +326,7 @@ pairwiseNicheOverlap = function(pca_grid_clim){
   for(i in 1:length(pca_grid_clim)){
     for(j in 1:length(pca_grid_clim)){
       if(i<j){
-        #print(paste(i,j))
+        if(verbose==T){print(paste(i,j))}
         spp1_name = names(pca_grid_clim)[[i]]
         spp1 = pca_grid_clim[[i]]
         spp2_name = names(pca_grid_clim)[[j]]
@@ -330,7 +358,8 @@ pairwiseNicheOverlap = function(pca_grid_clim){
 #' @examples
 #'
 #' printPointsPdfSuspect(species,subspecies,bg,loc_suspect)
-pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species){
+pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verbose=T){
+  if(verbose==T){print("starting pairwiseNicheEquivalence")}
   for(i in 1:length(pca_grid_clim)){
     for(j in 1:length(pca_grid_clim)){
       if(i<j){
@@ -348,7 +377,7 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species){
                                                           expansion.alternative = "lower",
                                                           stability.alternative = "higher",
                                                           unfilling.alternative = "lower"
-                                                          )
+        )
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
         par(mfrow=c(2,1))
         ecospat.plot.overlap.test(eq.test, "D", "Equivalency")
@@ -356,11 +385,11 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species){
         dev.off()
         print(paste("Running niche similarity test for",spp1_name,"-",spp2_name))
         sim.test <- ecospat::ecospat.niche.similarity.test(z1=spp1, z2=spp2,
-                                                  rep=rep2, overlap.alternative = "higher", ## testing for niche conservatism
-                                                  expansion.alternative = "lower",
-                                                  stability.alternative = "higher",
-                                                  unfilling.alternative = "lower",
-                                                  rand.type=2)
+                                                           rep=rep2, overlap.alternative = "higher", ## testing for niche conservatism
+                                                           expansion.alternative = "lower",
+                                                           stability.alternative = "higher",
+                                                           unfilling.alternative = "lower",
+                                                           rand.type=2)
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
         par(mfrow=c(2,2))
         ecospat.plot.overlap.test(eq.test, "D", "Equivalency")
@@ -370,11 +399,11 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species){
         dev.off()
         print(paste("Running niche similarity test for",spp2_name,"-",spp1_name))
         sim.test2 <- ecospat::ecospat.niche.similarity.test(z1=spp2, z2=spp1,
-                                                   rep=rep2, overlap.alternative = "higher", ## testing for niche conservatism
-                                                   expansion.alternative = "lower",
-                                                   stability.alternative = "higher",
-                                                   unfilling.alternative = "lower",
-                                                   rand.type=2)
+                                                            rep=rep2, overlap.alternative = "higher", ## testing for niche conservatism
+                                                            expansion.alternative = "lower",
+                                                            stability.alternative = "higher",
+                                                            unfilling.alternative = "lower",
+                                                            rand.type=2)
 
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
         par(mfrow=c(2,3))
@@ -405,19 +434,24 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species){
 localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
                                  RMvalues=seq(0.5,4,0.5),
                                  fc=c("L", "LQ", "H"),numCores=1,
-                                 method='block',verbose=T ){
+                                 method='block',verbose=T,
+                                 runNicheModels=T){
   loc_good_clean = cleanByEnvironment(Env,loc)
-  loc_thin = spThinBySubspecies(loc_good_clean)
-  #if(verbose==T){View(loc_thin)}
+  loc_thin = spThinBySubspecies(loc_good_clean,species=occ_name)
+  if(verbose==T){View(loc_thin)}
   loc_thin_bgstuff = backgroundForPCA(localities = loc_thin,e=Env)
   bg_dat = loc_thin_bgstuff$bgenv
   bg_bg = loc_thin_bgstuff$bgpoints
   perspecies_bgstuff = backgroundPerSpecies(localities = loc_thin,e=Env)
   pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuff,species)
+  if(verbose==T){print("finished createPcaToCompare")}
   pca_grid_clim = pcaOutput$grid_clim
   overlap_df = pairwiseNicheOverlap(pca_grid_clim)
   write.table(overlap_df,paste(species,"_overlap.txt",sep=""))
   pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2,species=species)
+  if(verbose==T){print("finished pairwiseNicheEquivalence")}
+if(runNicheModels==T){
+
 
   listENMresults = lapply(1:length(perspecies_bgstuff$bgpoints_by_subspecies),function(i){
     ##TODO: add in bg points from above
@@ -430,6 +464,12 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
     return(res)
   })
   names(listENMresults) = names(perspecies_bgstuff$bgpoints_by_subspecies)
-
+  if(verbose==T){View(listENMresults)}
+  return(listENMresults)
+}
+  else {
+    print("SKIPPING NICHE MODELING")
+    return(NULL)
+  }
 }
 #'

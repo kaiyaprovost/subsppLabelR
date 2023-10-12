@@ -1,0 +1,7 @@
+"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
+"1" "acaciarum" "flaviceps" "0.553323295676771" "0.662216548066721"
+"2" "acaciarum" "lamprocephalus" "0.0761987072368803" "0.144767930021248"
+"3" "acaciarum" "ornatus" "0.486387383556055" "0.654412305930168"
+"4" "flaviceps" "lamprocephalus" "0.265900417894087" "0.466760512269205"
+"5" "flaviceps" "ornatus" "0.547723166804545" "0.733207755351095"
+"6" "lamprocephalus" "ornatus" "0.14054090062925" "0.263771637970332"

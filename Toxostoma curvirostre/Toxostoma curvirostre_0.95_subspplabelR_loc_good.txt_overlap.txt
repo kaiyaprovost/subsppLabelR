@@ -1,0 +1,2 @@
+"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
+"1" "maculatum" "oberholseri" "0.0618824623317948" "0.0907052621944217"

@@ -194,8 +194,12 @@ subspeciesDensityMap = function(localities,
     ## convert to raster
     densRas = raster::raster(density)
     if(raw_raster==T){
-    writeRaster(densRas,paste(outputDir,spp," ",subspp,"_raw_raster.tif",sep=""),
-                format="GTiff",overwrite=F)
+      raw_file = paste(outputDir,spp," ",subspp,"_raw_raster.tif",sep="")
+      if(!file.exists(raw_file)){
+        writeRaster(densRas,paste(outputDir,spp," ",subspp,"_raw_raster.tif",sep=""),
+                    format="GTiff",overwrite=F)
+      }
+
     }
 
     if(relative==T){
@@ -1371,10 +1375,10 @@ databaseToAssignedSubspecies = function(spp,
   labeledLoc = labeledLoc[labeledLoc$latitude>=-90,]
   labeledLoc = labeledLoc[labeledLoc$longitude<=180,]
   labeledLoc = labeledLoc[labeledLoc$longitude>=-180,]
-print(paste("Rounding lat/longs to",num_digits_latlong,"decimal places",sep=" "))
-labeledLoc$latitude = round(labeledLoc$latitude,num_digits_latlong)
-labeledLoc$longitude = round(labeledLoc$longitude,num_digits_latlong)
-labeledLoc = unique(labeledLoc)
+  print(paste("Rounding lat/longs to",num_digits_latlong,"decimal places",sep=" "))
+  labeledLoc$latitude = round(labeledLoc$latitude,num_digits_latlong)
+  labeledLoc$longitude = round(labeledLoc$longitude,num_digits_latlong)
+  labeledLoc = unique(labeledLoc)
 
   if(cleanup_nominate==T){
     print("RELABELING NOMINATE AFTER CLEANUP")

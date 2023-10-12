@@ -1,1 +1,1 @@
-"name"	"longitude"	"latitude"	"subspecies"	"medius"	"bellii"	"numSubsppGroups"	"assigned"
+"name"	"longitude"	"latitude"	"subspecies"	"medius"	"numSubsppGroups"	"assigned"

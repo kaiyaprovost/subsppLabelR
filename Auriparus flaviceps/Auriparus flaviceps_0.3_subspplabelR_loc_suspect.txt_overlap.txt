@@ -1,0 +1,4 @@
+"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
+"1" "flaviceps" "lamprocephalus" "0.343242026316421" "0.591712672459684"
+"2" "flaviceps" "ornatus" "0.38308128363758" "0.531224877015738"
+"3" "lamprocephalus" "ornatus" "0.19903443573897" "0.339593008448454"

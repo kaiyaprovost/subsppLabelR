@@ -1,1 +1,1 @@
-"name"	"longitude"	"latitude"	"subspecies"	"sinuatus"	"fulvescens"	"numSubsppGroups"	"assigned"
+"name"	"longitude"	"latitude"	"subspecies"	"sinuatus"	"numSubsppGroups"	"assigned"

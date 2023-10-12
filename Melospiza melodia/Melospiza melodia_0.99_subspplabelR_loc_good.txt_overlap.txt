@@ -1,0 +1,4 @@
+"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
+"1" "juddi" "merrilli" "0.0653427179645457" "0.196146523214437"
+"2" "juddi" "pectoralis" "0.0702114604707643" "0.256713926668511"
+"3" "merrilli" "pectoralis" "0.164799696163964" "0.308485707701658"
