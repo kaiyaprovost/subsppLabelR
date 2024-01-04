@@ -464,7 +464,7 @@ if(runNicheModels==T){
     return(res)
   })
   names(listENMresults) = names(perspecies_bgstuff$bgpoints_by_subspecies)
-  if(verbose==T){View(listENMresults)}
+  #if(verbose==T){View(listENMresults)}
   return(listENMresults)
 }
   else {
