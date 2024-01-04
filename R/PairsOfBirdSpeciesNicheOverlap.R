@@ -1239,31 +1239,38 @@ detectSpatialOutliers = function(localities = locs,
   ## use MASS to do linear algebra
   ## TODO: why is this removing central anomalies?
   # Multivariate Gaussian Distribution anomaly detection
-  m = length(localities[, 1])
+  m = length(localities[, 1]) ## the number of rows, aka the number of points
   if (m == 1) {
     anomalies = 0
     purged = c()
     kept = localities
     return(list(purged, anomalies, kept))
   }
-  lat = as.numeric(localities$latitude)
-  lon = as.numeric(localities$longitude)
-  space = cbind(lat, lon)
-  n = length(space[1,])
-  mu = colMeans(space)
-  Sigma = cov(space) ## this does the above but faster
+  lat = as.numeric(localities$latitude) ## converting to numeric
+  lon = as.numeric(localities$longitude) ## converting to numeric
+  space = cbind(lat, lon) ## creating a dataframe of latitude and longitude
+  ## need to remove any rows of space that are NA
+  space = space[complete.cases(space),]
+  n = length(space[1,]) ## the number of columns, aka dimensions
+  mu = colMeans(space,na.rm=T) ## takes the mean of both lat and long
+  ## this does the above but faster
+  Sigma = cov(space) ## get the covariance matrix
+
   ## SOURCE: https://datascience-enthusiast.com/R/anomaly_detection_R.html
   ## wayback machine: http://web.archive.org/web/20161126195138/https://datascience-enthusiast.com/R/anomaly_detection_R.html
   ## And also the Coursera course Machine Learning by A. Ng
   ## this uses a somewhat different probability density function
-  centered <- caret::preProcess(space, method = "center")
-  space_mu <- as.matrix(predict(centered, space))
+  centered <- caret::preProcess(space, method = "center") ## generates a scaling with which to center the values
+  space_mu <- as.matrix(predict(centered, space)) ## converts the data to the centered values
   #sigma2=diag(var(X2))
   #sigma2
   #sigma2=diag(sigma2)
   #sigma2 ## this is the same as Sigma on the diagonals, but different on the off-diags
   ## it doesn't matter which you use here you get the same answer
   A = (2 * pi) ^ (-n / 2) * det(Sigma) ^ (-0.5)
+  ## det() is the determinant of the matrix
+  ## %*% is matrix multiplication
+  ## ginv() takes the inverse of the matrix
   B = exp(-0.5 * rowSums((space_mu %*% MASS::ginv(Sigma)) * space_mu))
   p_x = A * B ## this is the probability of each value coming from the same normal distribution
   #P_x = (1 /( ((2*pi)^(n/2) * (norm(Sigma) ^ (1/2))))) * exp (-1/2*(space-mu) %*% MASS::ginv(Sigma) %*% t(space-mu))
