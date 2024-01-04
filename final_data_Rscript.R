@@ -9,32 +9,39 @@ library(subsppLabelR)
 ## parameters
 redo=T; overwrite=T
 pointLimit=10000
-quant_list=c(seq(0.05,0.95,0.05),0.99,0.33,0.67)
+quant_list=sort(c(seq(0.05,0.95,0.05),0.99,0.33,0.67))
 dbToQuery=c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
 xmin = -180; xmax = -50; ymin = 0; ymax = 75;
 if(redo==T) {
-  species_list = c("Phainopepla nitens",
-    "Cardinalis sinuatus",
-    "Campylorhynchus brunneicapillus","Amphispiza bilineata",
-    "Vireo bellii","Toxostoma crissale","Toxostoma curvirostre","Polioptila melanura",
-    "Melospiza melodia","Zonotrichia leucophrys","Geococcyx californianus","Geococcyx",
-    "Melozone fusca","Auriparus flaviceps",
+  species_list = c(
+    "Cardinalis cardinalis",
+    #"Phainopepla nitens",
+    #"Cardinalis sinuatus",
+    #"Campylorhynchus brunneicapillus","Amphispiza bilineata",
+    #"Vireo bellii","Toxostoma crissale","Toxostoma curvirostre","Polioptila melanura",
+    #"Melospiza melodia","Zonotrichia leucophrys","Geococcyx californianus","Geococcyx",
+    #"Melozone fusca","Auriparus flaviceps",
     NULL
   )
 
-  subspp_list = list(#c("lepida","nitens"),
-    c("fulvescens","peninsulae","sinuatus"),
-    c("affinis","brunneicapillus","anthonyi","bryanti","guttatus","sandiegensis","seri"),
-    c("bangsi","bilineata","belvederei","cana","deserticola","carmenae","grisea","opuntia","pacifica","tortugae"),
-    c("arizonae","bellii","medius","pusillus"),
-    c("coloradense","crissale","dumosum","trinitatis"),
-    c("celsum","curvirostre","insularum","maculatum","oberholseri","occidentale","palmeri"),
-    c("curtata","melanura","lucida"),
-    c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia",
-       "fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis",
-      "mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis",
-       "pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
-     c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
+  subspp_list = list(c("affinis","canicaudus","cardinalis","carneus","clintoni",
+                       "coccineus","flammiger","floridanus","igneus","littoralis",
+                       "magnirostris","mariae",
+                       "phillipsi","saturatus","seftoni","sinaloensis","superbus",
+                       "townsendi","yucatanicus"),
+    #c("lepida","nitens"),
+    #c("fulvescens","peninsulae","sinuatus"),
+    #c("affinis","brunneicapillus","anthonyi","bryanti","guttatus","sandiegensis","seri"),
+    #c("bangsi","bilineata","belvederei","cana","deserticola","carmenae","grisea","opuntia","pacifica","tortugae"),
+    #c("arizonae","bellii","medius","pusillus"),
+    #c("coloradense","crissale","dumosum","trinitatis"),
+    #c("celsum","curvirostre","insularum","maculatum","oberholseri","occidentale","palmeri"),
+    #c("curtata","melanura","lucida"),
+    #c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia",
+    #   "fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis",
+    #  "mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis",
+    #   "pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
+    # c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
      NULL,
      c("californianus","velox"),
      c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
