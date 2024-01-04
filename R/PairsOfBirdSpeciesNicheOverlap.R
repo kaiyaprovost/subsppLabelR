@@ -1225,7 +1225,8 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
 }
 #' Outlier Detection
 #'
-#' This does outlier detection on points.
+#' This does outlier detection on points using Multivariate Gaussian
+#' Distribution anomaly detection. Based off of
 #'
 #' @param localities A list of localities to check for anomalies
 #' @param epsilon An value with which to flag anomalies with probability less than epsilon
@@ -1237,6 +1238,7 @@ detectSpatialOutliers = function(localities = locs,
                                  epsilon = 0.0001) {
   ## use MASS to do linear algebra
   ## TODO: why is this removing central anomalies?
+  # Multivariate Gaussian Distribution anomaly detection
   m = length(localities[, 1])
   if (m == 1) {
     anomalies = 0
@@ -1251,7 +1253,8 @@ detectSpatialOutliers = function(localities = locs,
   mu = colMeans(space)
   Sigma = cov(space) ## this does the above but faster
   ## SOURCE: https://datascience-enthusiast.com/R/anomaly_detection_R.html
-  ## And also the Corusera course Machine Learning by A. Ng
+  ## wayback machine: http://web.archive.org/web/20161126195138/https://datascience-enthusiast.com/R/anomaly_detection_R.html
+  ## And also the Coursera course Machine Learning by A. Ng
   ## this uses a somewhat different probability density function
   centered <- caret::preProcess(space, method = "center")
   space_mu <- as.matrix(predict(centered, space))
@@ -1262,12 +1265,12 @@ detectSpatialOutliers = function(localities = locs,
   ## it doesn't matter which you use here you get the same answer
   A = (2 * pi) ^ (-n / 2) * det(Sigma) ^ (-0.5)
   B = exp(-0.5 * rowSums((space_mu %*% MASS::ginv(Sigma)) * space_mu))
-  p_x = A * B
+  p_x = A * B ## this is the probability of each value coming from the same normal distribution
   #P_x = (1 /( ((2*pi)^(n/2) * (norm(Sigma) ^ (1/2))))) * exp (-1/2*(space-mu) %*% MASS::ginv(Sigma) %*% t(space-mu))
   p_x = cbind(p_x)
   colnames(p_x) = "anomaly"
   locs_2 = cbind(localities, p_x)
-  anomalies = which(locs_2$anomaly < epsilon)
+  anomalies = which(locs_2$anomaly < epsilon) ## anything where the probability is less than epsilon is considered too improbable
   purged = localities[anomalies,]
   kept = localities[-(anomalies),]
   return(list(purged, anomalies, kept))
