@@ -59,7 +59,7 @@ if(redo==T) {
     if(!(file.exists(paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"/",spp,"_subspplabelR_RAW.txt",sep="")))){
       listFromSubspeciesOcc = subspeciesOccQuery(spp=spp,subsppList=subspp,pointLimit=pointLimit,dbToQuery=dbToQuery)
       labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc,
-                                   spp=spp,subsppList=subspp,cleanup_nominate=T)
+                                   spp=spp,subsppList=subspp)
       head(labeledLoc)
       write.table(labeledLoc,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"/",spp,"_subspplabelR_RAW.txt",sep=""),sep="\t",row.names = F)
     } else {
