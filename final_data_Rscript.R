@@ -100,7 +100,7 @@ wcdata = geodata::worldclim_global("bio",res=10,path="~/",download=F) #wcdata = 
 wcdata = raster::stack(wcdata)
 x = file.info(occfiles)
 occfiles = occfiles[order(x$size)]
-#occfiles = occfiles[grepl("0.99",occfiles)]
+occfiles = occfiles[grepl("0.9",occfiles)]
 #occfiles = occfiles[grepl("leucophrys",occfiles)]
 
 for(i in sample(1:length(occfiles))){
