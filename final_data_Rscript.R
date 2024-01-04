@@ -7,7 +7,7 @@ detach("package:subsppLabelR", unload = TRUE)
 install.packages("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",repos=NULL,type="source",force=T)
 library(subsppLabelR)
 ## parameters
-redo=F; overwrite=T
+redo=T; overwrite=T
 pointLimit=10000
 quant_list=c(seq(0.05,0.95,0.05),0.99,0.33,0.67)
 dbToQuery=c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
