@@ -317,7 +317,7 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
 #' pca_grid_clim = pcaOutput$grid_clim
 #' overlap_df  = pairwiseNicheOverlap(pca_grid_clim)
 pairwiseNicheOverlap = function(pca_grid_clim,verbose=T){
-if(verbose==T){print("starting pairwiseNicheOverlap")}
+  if(verbose==T){print("starting pairwiseNicheOverlap")}
   overlap_df = data.frame(spp1=character(),
                           spp2=character(),
                           SchoenersD=numeric(),
@@ -435,38 +435,45 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
                                  RMvalues=seq(0.5,4,0.5),
                                  fc=c("L", "LQ", "H"),numCores=1,
                                  method='block',verbose=T,
-                                 runNicheModels=T){
-  loc_good_clean = cleanByEnvironment(Env,loc)
-  loc_thin = spThinBySubspecies(loc_good_clean,species=occ_name)
-  #if(verbose==T){View(loc_thin)}
-  loc_thin_bgstuff = backgroundForPCA(localities = loc_thin,e=Env)
-  bg_dat = loc_thin_bgstuff$bgenv
-  bg_bg = loc_thin_bgstuff$bgpoints
-  perspecies_bgstuff = backgroundPerSpecies(localities = loc_thin,e=Env)
-  pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuff,species)
-  if(verbose==T){print("finished createPcaToCompare")}
-  pca_grid_clim = pcaOutput$grid_clim
-  overlap_df = pairwiseNicheOverlap(pca_grid_clim)
-  write.table(overlap_df,paste(species,"_overlap.txt",sep=""))
-  pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2,species=species)
-  if(verbose==T){print("finished pairwiseNicheEquivalence")}
-if(runNicheModels==T){
+                                 runNicheModels=T,overwrite=F){
+  overlap_filename = paste(species,"_overlap.txt",sep="")
+  if(!file.exists(overlap_filename) | overwrite==T) {
+    loc_good_clean = cleanByEnvironment(Env,loc)
+    loc_thin = spThinBySubspecies(loc_good_clean,species=occ_name,overwrite=overwrite)
+    #if(verbose==T){View(loc_thin)}
+    loc_thin_bgstuff = backgroundForPCA(localities = loc_thin,e=Env)
+    bg_dat = loc_thin_bgstuff$bgenv
+    bg_bg = loc_thin_bgstuff$bgpoints
+    perspecies_bgstuff = backgroundPerSpecies(localities = loc_thin,e=Env)
+    pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuff,species)
+    if(verbose==T){print("finished createPcaToCompare")}
+    pca_grid_clim = pcaOutput$grid_clim
+    pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2,species=species)
+    if(verbose==T){print("finished pairwiseNicheEquivalence")}
+
+    overlap_df = pairwiseNicheOverlap(pca_grid_clim)
+    write.table(overlap_df,overlap_filename)
+    if(verbose==T){print("finished pairwiseNicheOverlap")}
+  } else {
+    print("Overlap file already exists! Not running")
+  }
+  if(runNicheModels==T){
 
 
-  listENMresults = lapply(1:length(perspecies_bgstuff$bgpoints_by_subspecies),function(i){
-    ##TODO: add in bg points from above
-    subspp = names(perspecies_bgstuff$bgpoints_by_subspecies)[[i]]
-    print(paste("Running",subspp))
-    res = ENMevaluate(occs=perspecies_bgstuff$bgpoints_by_subspecies[[i]], envs = Env, partitions=method,
-                      algorithm="maxnet",tune.args=list(fc=fc,rm=RMvalues),
-                      parallel=T, numCores=numCores)
-    #names(res) = names(nitens_by_subspp)[[i]]
-    return(res)
-  })
-  names(listENMresults) = names(perspecies_bgstuff$bgpoints_by_subspecies)
-  #if(verbose==T){View(listENMresults)}
-  return(listENMresults)
-}
+    listENMresults = lapply(1:length(perspecies_bgstuff$bgpoints_by_subspecies),function(i){
+      ##TODO: add in bg points from above
+      subspp = names(perspecies_bgstuff$bgpoints_by_subspecies)[[i]]
+      print(paste("Running",subspp))
+      res = ENMevaluate(occs=perspecies_bgstuff$bgpoints_by_subspecies[[i]], envs = Env, partitions=method,
+                        algorithm="maxnet",tune.args=list(fc=fc,rm=RMvalues),
+                        parallel=T, numCores=numCores)
+      #names(res) = names(nitens_by_subspp)[[i]]
+      return(res)
+    })
+    names(listENMresults) = names(perspecies_bgstuff$bgpoints_by_subspecies)
+    #if(verbose==T){View(listENMresults)}
+    return(listENMresults)
+  }
   else {
     print("SKIPPING NICHE MODELING")
     return(NULL)
