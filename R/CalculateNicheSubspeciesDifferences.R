@@ -436,17 +436,18 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
                                  fc=c("L", "LQ", "H"),numCores=1,
                                  method='block',verbose=T,
                                  runNicheModels=T,overwrite=F){
+
+  loc_good_clean = cleanByEnvironment(Env,loc)
+  loc_thin = spThinBySubspecies(loc_good_clean,species=occ_name,overwrite=overwrite)
+  #if(verbose==T){View(loc_thin)}
+  loc_thin_bgstuff = backgroundForPCA(localities = loc_thin,e=Env)
+  bg_dat = loc_thin_bgstuff$bgenv
+  bg_bg = loc_thin_bgstuff$bgpoints
+  perspecies_bgstuff = backgroundPerSpecies(localities = loc_thin,e=Env)
+  pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuff,species)
+  if(verbose==T){print("finished createPcaToCompare")}
   overlap_filename = paste(species,"_overlap.txt",sep="")
   if(!file.exists(overlap_filename) | overwrite==T) {
-    loc_good_clean = cleanByEnvironment(Env,loc)
-    loc_thin = spThinBySubspecies(loc_good_clean,species=occ_name,overwrite=overwrite)
-    #if(verbose==T){View(loc_thin)}
-    loc_thin_bgstuff = backgroundForPCA(localities = loc_thin,e=Env)
-    bg_dat = loc_thin_bgstuff$bgenv
-    bg_bg = loc_thin_bgstuff$bgpoints
-    perspecies_bgstuff = backgroundPerSpecies(localities = loc_thin,e=Env)
-    pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuff,species)
-    if(verbose==T){print("finished createPcaToCompare")}
     pca_grid_clim = pcaOutput$grid_clim
     pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2,species=species)
     if(verbose==T){print("finished pairwiseNicheEquivalence")}
@@ -458,8 +459,6 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
     print("Overlap file already exists! Not running")
   }
   if(runNicheModels==T){
-
-
     listENMresults = lapply(1:length(perspecies_bgstuff$bgpoints_by_subspecies),function(i){
       ##TODO: add in bg points from above
       subspp = names(perspecies_bgstuff$bgpoints_by_subspecies)[[i]]
@@ -478,5 +477,6 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
     print("SKIPPING NICHE MODELING")
     return(NULL)
   }
+
 }
 #'
