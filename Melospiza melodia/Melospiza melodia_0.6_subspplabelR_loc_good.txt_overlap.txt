@@ -1,0 +1,2 @@
+"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
+"1" "amaka" "maxima" "0.0494294011688658" "0.0919301021238994"

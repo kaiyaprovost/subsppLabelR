@@ -1,0 +1,2 @@
+"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
+"1" "adusta" "mailliardi" "0" "-2.22044604925031e-16"

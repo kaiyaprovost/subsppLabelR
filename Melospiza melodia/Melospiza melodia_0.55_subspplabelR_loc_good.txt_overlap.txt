@@ -1,4 +1,4 @@
 "spp1" "spp2" "SchoenersD" "modifiedHellingersI"
-"1" "amaka" "inexspectata" "0.0186894228953373" "0.0259909491845307"
+"1" "amaka" "inexspectata" "0.0179630129436043" "0.0263939899955038"
 "2" "amaka" "mailliardi" "0" "-2.22044604925031e-16"
 "3" "inexspectata" "mailliardi" "0" "-2.22044604925031e-16"

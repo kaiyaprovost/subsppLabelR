@@ -438,7 +438,7 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
                                  runNicheModels=T){
   loc_good_clean = cleanByEnvironment(Env,loc)
   loc_thin = spThinBySubspecies(loc_good_clean,species=occ_name)
-  if(verbose==T){View(loc_thin)}
+  #if(verbose==T){View(loc_thin)}
   loc_thin_bgstuff = backgroundForPCA(localities = loc_thin,e=Env)
   bg_dat = loc_thin_bgstuff$bgenv
   bg_bg = loc_thin_bgstuff$bgpoints
