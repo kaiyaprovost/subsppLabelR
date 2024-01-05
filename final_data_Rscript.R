@@ -121,8 +121,9 @@ for(i in (1:length(occfiles))){
         Env=wcdata
         loc=occ
         species=occ_name
-        runNicheModels=T
-        occ_clean = subsppLabelR::localitiesToNicheMath(Env=Env,loc=loc,species=species,runNicheModels=runNicheModels,overwrite=overwrite)
+        runNicheModels=F ## turning this on makes it lengthy but runs the other stuff
+        occ_clean = subsppLabelR::localitiesToNicheMath(Env=Env,loc=loc,species=species,runNicheModels=runNicheModels,overwrite=overwrite,numCores=4)
+        print(occ_clean)
       })
     } else {
       print("ONLY ONE SUBSPECIES!")
