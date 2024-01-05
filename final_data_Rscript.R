@@ -7,7 +7,7 @@ detach("package:subsppLabelR", unload = TRUE)
 install.packages("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",repos=NULL,type="source",force=T)
 library(subsppLabelR)
 ## parameters
-redo=T; overwrite=T
+redo=F; overwrite=F
 pointLimit=10000
 quant_list=sort(c(seq(0.05,0.95,0.05),0.99,0.33,0.67))
 dbToQuery=c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
@@ -101,9 +101,9 @@ wcdata = raster::stack(wcdata)
 x = file.info(occfiles)
 occfiles = occfiles[order(x$size)]
 occfiles = occfiles[grepl("0.9",occfiles)]
-#occfiles = occfiles[grepl("leucophrys",occfiles)]
+occfiles = occfiles[grepl("Geococcyx",occfiles)]
 
-for(i in sample(1:length(occfiles))){
+for(i in (1:length(occfiles))){
   occ_name = basename(occfiles[i])
   occ_dir = dirname(occfiles[i])
   setwd(occ_dir)
@@ -122,7 +122,7 @@ for(i in sample(1:length(occfiles))){
         loc=occ
         species=occ_name
         runNicheModels=T
-        occ_clean = subsppLabelR::localitiesToNicheMath(Env=Env,loc=loc,species=species,runNicheModels=runNicheModels)
+        occ_clean = subsppLabelR::localitiesToNicheMath(Env=Env,loc=loc,species=species,runNicheModels=runNicheModels,overwrite=overwrite)
       })
     } else {
       print("ONLY ONE SUBSPECIES!")
