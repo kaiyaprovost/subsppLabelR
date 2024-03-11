@@ -5,20 +5,25 @@ library(e1071)
 
 ## import data I already have
 
-detectSpatialOutliers_w = function(localities,
-                                 epsilon = 0.0001) {
-
-
-}
 
 df2 <- read.delim("~/Work/GitHub/subsppLabelR/Phainopepla nitens/LOCALITIES/Phainopepla nitens_0.9_subspplabelR_RAW.txt")
 df2 = df2[complete.cases(df2),]
 df2 = unique(df2)
-anomalies=detectSpatialOutliers_w(df2[,c("longitude","latitude")])
-plot(df2$longitude,df2$latitude)
+anomalies=detectSpatialOutliers(df2[,c("longitude","latitude")])
+plot(df2$longitude,df2$latitude,col="grey")
 points(df2$longitude[as.numeric(anomalies)],
-       df2$latitude[as.numeric(anomalies)],col="blue")
+       df2$latitude[as.numeric(anomalies)],col="black")
 
+df2_n = df2[df2$subspecies=="nitens",c("longitude","latitude")]
+anomalies2=detectSpatialOutliers(df2_n)
+plot(df2_n$longitude,df2_n$latitude,col="grey")
+points(df2_n$longitude[as.numeric(anomalies2)],
+       df2_n$latitude[as.numeric(anomalies2)],col="blue")
+
+df2_l = df2[df2$subspecies=="nitens",c("longitude","latitude")]
+anomalies3=detectSpatialOutliers(df2_l)
+points(df2_l$longitude[as.numeric(anomalies3)],
+       df2_l$latitude[as.numeric(anomalies3)],col="red")
 
 df = df2[,c("longitude","latitude","subspecies")]
 #df = unique(df) -- NO

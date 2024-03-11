@@ -1234,7 +1234,8 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
 #' @export
 #'
 #'
-detectSpatialOutliers = function(localities = locs,
+detectSpatialOutliers = function(localities,
+                                 fulldataset = localities,
                                  epsilon = 0.0001) {
   ## TODO: why is this removing central anomalies?
   ## TODO: fix the code, taking the unique data is what is causing the issue, need to match
@@ -1257,7 +1258,7 @@ detectSpatialOutliers = function(localities = locs,
   space = localities[,c("longitude","latitude")]
   space_anomalies=mgdad(localities=space,epsilon=epsilon)
   space_only_anomalies = space[space_anomalies,]
-  anomalies = which(do.call(paste0, localities[,c("longitude","latitude")]) %in% do.call(paste0, space_only_anomalies))
+  anomalies = which(do.call(paste0, fulldataset[,c("longitude","latitude")]) %in% do.call(paste0, space_only_anomalies))
   return(anomalies)
 }
 #' Species Occurrences to Subspecies Occurrences
@@ -1409,29 +1410,9 @@ databaseToAssignedSubspecies = function(spp,
   }
   print("Starting anomaly detection for whole species")
   list_of_anomalies = c()
-  for (i in 0:length(c(subsppNames))) {
-    if (i == 0) {
-      #print("full")
-      #print(nrow(labeledLoc))
-      detectedLocs = detectSpatialOutliers(localities = labeledLoc, epsilon = epsilon)
-    }
-    else {
-      name = subsppNames[[i]]
-      if (name != "unknown") {
-        #print(name)
-        subset = labeledLoc[labeledLoc$subspecies == name,]
-        #print(nrow(subset))
-        detectedLocs = detectSpatialOutliers(localities = subset, epsilon = epsilon)
-      }
-    }
-    anomalies = as.numeric(detectedLocs)
-    list_of_anomalies = c(list_of_anomalies, anomalies)
-  }
-
-  ## need to take a second and remove the data that don't fit
-  ## figure out which lat-longs are in each
-
-
+  detectedLocs = detectSpatialOutliers(localities = labeledLoc, epsilon = epsilon)
+  anomalies = as.numeric(detectedLocs)
+  list_of_anomalies = c(list_of_anomalies, anomalies)
   rows_purged = sort(unique(as.integer(list_of_anomalies)))
   if (length(rows_purged) > 0) {
     print(paste("Removing",length(rows_purged),"detected anomalies of",length(labeledLoc[, 1]),"rows"))
@@ -1451,7 +1432,7 @@ databaseToAssignedSubspecies = function(spp,
       dev.off()
     }
   } else {
-    print("No anomalies found")
+    print("No anomalies found at whole species level")
   }
   ## removing single individual subspecies
   print("Removing single-individual subspecies")
@@ -1463,6 +1444,43 @@ databaseToAssignedSubspecies = function(spp,
       labeledLoc = labeledLoc[labeledLoc$subspecies != sub,]
     }
   }
+
+
+  print("Starting anomaly detection for each subspecies")
+  subspecies_anomalies = c()
+  for(i_name in subsppNames){
+    print(i_name)
+    if(i_name!="unknown"){
+      subset = labeledLoc[labeledLoc$subspecies==i_name,]
+      detectedLocs_subset = detectSpatialOutliers(localities = subset, epsilon = epsilon,fulldataset = labeledLoc)
+      subspecies_anomalies = c(subspecies_anomalies,as.numeric(detectedLocs_subset))
+    }
+  }
+  subspecies_anomalies = sort(unique(as.numeric(subspecies_anomalies)))
+  if (length(subspecies_anomalies) > 0) {
+    print(paste("Removing",length(subspecies_anomalies),"detected subspecies anomalies of",length(labeledLoc[, 1]),"rows"))
+    removed2 = labeledLoc[subspecies_anomalies,]
+    labeledLoc = labeledLoc[-(subspecies_anomalies),]
+    if (plotIt == T) {
+      png(paste("SubspeciesAnomaliesRemoved_", spp,quant,".png", sep = ""))
+      raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Anomalies"))
+      points(labeledLoc$longitude,labeledLoc$latitude,
+             col = "lightgrey",pch = 0)
+      points(removed$longitude,removed2$latitude,
+             col = as.factor(removed2$subspecies))
+      legend("top",
+             legend = as.factor(unique(removed$subspecies)),
+             pch = 1,bty = "n",
+             col = as.factor(unique(removed$subspecies)))
+      dev.off()
+    }
+  } else {
+    print("No anomalies found at subspecies level")
+  }
+
+
+
+
   subsppNames = unique(labeledLoc$subspecies)
   ## clean up the bgLayer again in case it needs to be smaller
   print("Check xy maxmin 2nd time")
