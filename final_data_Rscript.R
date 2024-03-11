@@ -9,26 +9,24 @@ library(subsppLabelR)
 ## parameters
 redo=F; overwrite=F
 pointLimit=10000
-quant_list=sort(c(seq(0.05,0.95,0.05),0.99,0.33,0.67))
+#quant_list=sort(c(seq(0.05,0.95,0.05),0.99,0.33,0.67))
+quant_list=c(0.80)
 dbToQuery=c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
 xmin = -180; xmax = -50; ymin = 0; ymax = 75;
 if(redo==T) {
   species_list = c(
-    "Cardinalis cardinalis",
+    #"Cardinalis cardinalis",
     #"Phainopepla nitens",
     #"Cardinalis sinuatus",
     #"Campylorhynchus brunneicapillus","Amphispiza bilineata",
     #"Vireo bellii","Toxostoma crissale","Toxostoma curvirostre","Polioptila melanura",
-    #"Melospiza melodia","Zonotrichia leucophrys","Geococcyx californianus","Geococcyx",
+    #"Melospiza melodia","Zonotrichia leucophrys","Geococcyx californianus",
+    "Geococcyx",
     #"Melozone fusca","Auriparus flaviceps",
     NULL
   )
 
-  subspp_list = list(c("affinis","canicaudus","cardinalis","carneus","clintoni",
-                       "coccineus","flammiger","floridanus","igneus","littoralis",
-                       "magnirostris","mariae",
-                       "phillipsi","saturatus","seftoni","sinaloensis","superbus",
-                       "townsendi","yucatanicus"),
+  subspp_list = list(#c("affinis","canicaudus","cardinalis","carneus","clintoni", "coccineus","flammiger","floridanus","igneus","littoralis", "magnirostris","mariae", "phillipsi","saturatus","seftoni","sinaloensis","superbus","townsendi","yucatanicus"),
     #c("lepida","nitens"),
     #c("fulvescens","peninsulae","sinuatus"),
     #c("affinis","brunneicapillus","anthonyi","bryanti","guttatus","sandiegensis","seri"),
@@ -37,15 +35,12 @@ if(redo==T) {
     #c("coloradense","crissale","dumosum","trinitatis"),
     #c("celsum","curvirostre","insularum","maculatum","oberholseri","occidentale","palmeri"),
     #c("curtata","melanura","lucida"),
-    #c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia",
-    #   "fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis",
-    #  "mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis",
-    #   "pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
+    #c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia","fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis","mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis","pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
     # c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
-     NULL,
-     c("californianus","velox"),
-     c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
-     c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
+    #NULL,
+    c("californianus","velox"),
+    #c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
+    #c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
     NULL
   )
 
@@ -87,6 +82,8 @@ if(redo==T) {
         final$pol
         write.table(final$loc_suspect,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"/",spp,"_",quant,"_subspplabelR_loc_suspect.txt",sep=""),sep="\t",row.names = F)
         write.table(final$loc_good,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"/",spp,"_",quant,"_subspplabelR_loc_good.txt",sep=""),sep="\t",row.names = F)
+        loc_all = rbind(final$loc_suspect,final$loc_good)
+        write.table(loc_all,paste("C:/Users/kaiya/Documents/GitHub/subsppLabelR/",spp,"/",spp,"_",quant,"_subspplabelR_loc_all.txt",sep=""),sep="\t",row.names = F)
       }
     }
     print(i)
@@ -96,81 +93,100 @@ if(redo==T) {
 setwd("C:/Users/kaiya/Documents/GitHub/subsppLabelR/")
 occfiles=list.files(path="C:/Users/kaiya/Documents/GitHub/subsppLabelR/",
                     pattern="_subspplabelR_loc_good.txt$",recursive=T,full.names = T)
+occ_suspect_files = list.files(path="C:/Users/kaiya/Documents/GitHub/subsppLabelR/",
+                               pattern="_subspplabelR_loc_suspect.txt$",recursive=T,full.names = T)
+occfiles = c(occ_suspect_files,occfiles)
+occfiles = sort(unique(occfiles))
 wcdata = geodata::worldclim_global("bio",res=10,path="~/",download=F) #wcdata = raster::getData(name="worldclim",download=F,path="~/",var="bio",res=10)
 wcdata = raster::stack(wcdata)
 x = file.info(occfiles)
 occfiles = occfiles[order(x$size)]
-occfiles = occfiles[grepl("0.9",occfiles)]
-occfiles = occfiles[grepl("Geococcyx",occfiles)]
+#occfiles = occfiles[grepl("Toxostoma curvirostre",occfiles)]
+occfiles = occfiles[grepl("LOCALITIES",occfiles)]
 
 for(i in (1:length(occfiles))){
   occ_name = basename(occfiles[i])
   occ_dir = dirname(occfiles[i])
   setwd(occ_dir)
-  occ=read.table(occfiles[i],header=T)
-  #occ = occ[,c("longitude","latitude","assigned")]
-  occ = unique(occ)
-  print(occ_name)
-  unique(occ$assigned)
-  if(nrow(occ)>0){
-    #occ = occ[sample(1:nrow(occ),100),]
+  try({
+    occ=read.table(occfiles[i],header=T)
+    #occ = occ[,c("longitude","latitude","assigned")]
+    occ = unique(occ)
+    print(occ_name)
+    unique(occ$assigned)
+    if(nrow(occ)>0){
+      #occ = occ[sample(1:nrow(occ),100),]
 
-    if(length(unique(occ$assigned))>1){
-      print(paste("NUMBER SUBSPECIES:",length(unique(occ$assigned))))
-      try({
-        Env=wcdata
-        loc=occ
-        species=occ_name
-        runNicheModels=F ## turning this on makes it lengthy but runs the other stuff
-        occ_clean = subsppLabelR::localitiesToNicheMath(Env=Env,loc=loc,species=species,runNicheModels=runNicheModels,overwrite=overwrite,numCores=4)
-        print(occ_clean)
-      })
+      if(length(unique(occ$assigned))>1){
+        print(paste("NUMBER SUBSPECIES:",length(unique(occ$assigned))))
+        try({
+          Env=wcdata
+          loc=occ
+          species=occ_name
+          runNicheModels=F ## turning this on makes it lengthy but runs the other stuff
+          occ_clean = subsppLabelR::localitiesToNicheMath(Env=Env,loc=loc,species=species,runNicheModels=runNicheModels,overwrite=overwrite,numCores=4)
+          print(occ_clean)
+        })
+      } else {
+        print("ONLY ONE SUBSPECIES!")
+      }
     } else {
-      print("ONLY ONE SUBSPECIES!")
+      print("NO LOCALITIES!")
     }
-  } else {
-    print("NO LOCALITIES!")
-  }
-
+  })
 }
 
 occ_suspect_files = list.files(path="C:/Users/kaiya/Documents/GitHub/subsppLabelR/",
                                pattern="_subspplabelR_loc_suspect.txt$",recursive=T,full.names = T)
-for(j in sample(1:length(occ_suspect_files))){
-  sus_name = basename(occ_suspect_files[j])
+x = file.info(occ_suspect_files)
+occ_suspect_files = occ_suspect_files[order(x$size)]
+occ_suspect_files = occ_suspect_files[grepl("0.5",occ_suspect_files)]
+occ_suspect_files = occ_suspect_files[grepl("Zonotrichia",occ_suspect_files)]
+#occ_suspect_files = occ_suspect_files[!grepl("californianus",occ_suspect_files)]
+for(j in (1:length(occ_suspect_files))){
+  occ_name = basename(occ_suspect_files[j])
   sus_dir = dirname(occ_suspect_files[j])
   setwd(sus_dir)
-  sus_occ=read.table(occ_suspect_files[j],header=T)
+  try({
+    sus_occ=read.table(occ_suspect_files[j],header=T)
 
-  ## get rid of any that are subspecies unknown and assigned none
-  sus_occ = sus_occ[!(sus_occ$subspecies=="unknown" & sus_occ$assigned=="none"),]
-  sus_occ$assigned = sus_occ$subspecies
+    ## get rid of any that are subspecies unknown and assigned none
+    sus_occ = sus_occ[!(sus_occ$subspecies=="unknown" & sus_occ$assigned=="none"),]
+    sus_occ$assigned = sus_occ$subspecies
 
-  ## need to get rid of subspecies that have fewer than 10 points so the kernel can be estimated
-  sus_occ = sus_occ[,c("longitude","latitude","assigned")]
-  sus_occ = unique(sus_occ)
-  sus_tab = table(sus_occ$assigned)
-  bad_subspp = names(sus_tab)[which(sus_tab<10)]
-  sus_occ = sus_occ[!(sus_occ$assigned %in% bad_subspp),]
+    ## need to get rid of subspecies that have fewer than 10 points so the kernel can be estimated
+    sus_occ = sus_occ[,c("longitude","latitude","assigned")]
+    sus_occ = unique(sus_occ)
+    sus_tab = table(sus_occ$assigned)
+    bad_subspp = names(sus_tab)[which(sus_tab<10)]
+    sus_occ = sus_occ[!(sus_occ$assigned %in% bad_subspp),]
 
-  print(sus_name)
-  unique(sus_occ$assigned)
-  if(nrow(sus_occ)>0){
-    if(length(unique(sus_occ$assigned))>1){
-      print(paste("NUMBER SUBSPECIES:",length(unique(sus_occ$assigned))))
-      try({
-        Env=wcdata
-        loc=sus_occ
-        species=sus_name
-        runNicheModels=T
-        sus_clean = subsppLabelR::localitiesToNicheMath(Env=Env,loc=loc,species=species,runNicheModels=runNicheModels)
-      })
+    print(occ_name) ## note: occ_name might accidentally be global
+    unique(sus_occ$assigned)
+    if(nrow(sus_occ)>0){
+      if(length(unique(sus_occ$assigned))>1){
+        print(paste("NUMBER SUBSPECIES:",length(unique(sus_occ$assigned))))
+        try({
+          Env=wcdata
+          loc=sus_occ
+          species=occ_name
+          runNicheModels=F
+          sus_clean = subsppLabelR::localitiesToNicheMath(Env=Env,loc=loc,species=species,runNicheModels=runNicheModels)
+        })
+      } else {
+        print("ONLY ONE SUBSPECIES!")
+      }
     } else {
-      print("ONLY ONE SUBSPECIES!")
+      print("NO LOCALITIES!")
     }
-  } else {
-    print("NO LOCALITIES!")
-  }
-
+  })
 
 }
+
+
+## combine loc_good and loc_suspect into loc_all for each if not already exist
+occ_suspect_files = list.files(path="C:/Users/kaiya/Documents/GitHub/subsppLabelR/",
+                               pattern="_subspplabelR_loc_suspect.txt$",recursive=T,full.names = T)
+occfiles=list.files(path="C:/Users/kaiya/Documents/GitHub/subsppLabelR/",
+                    pattern="_subspplabelR_loc_good.txt$",recursive=T,full.names = T)
+
