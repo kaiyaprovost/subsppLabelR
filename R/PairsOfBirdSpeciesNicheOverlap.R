@@ -1236,51 +1236,50 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
 #'
 detectSpatialOutliers = function(localities = locs,
                                  epsilon = 0.0001) {
-  ## use MASS to do linear algebra
-  ## TODO: why is this removing central anomalies?
-  # Multivariate Gaussian Distribution anomaly detection
-  m = length(localities[, 1]) ## the number of rows, aka the number of points
-  if (m == 1) {
-    anomalies = 0
-    purged = c()
-    kept = localities
-    return(list(purged, anomalies, kept))
-  }
-  lat = as.numeric(localities$latitude) ## converting to numeric
-  lon = as.numeric(localities$longitude) ## converting to numeric
-  space = cbind(lat, lon) ## creating a dataframe of latitude and longitude
-  ## need to remove any rows of space that are NA
-  space = space[complete.cases(space),]
-  n = length(space[1,]) ## the number of columns, aka dimensions
-  mu = colMeans(space,na.rm=T) ## takes the mean of both lat and long
-  ## this does the above but faster
-  Sigma = cov(space) ## get the covariance matrix
 
-  ## SOURCE: https://datascience-enthusiast.com/R/anomaly_detection_R.html
-  ## wayback machine: http://web.archive.org/web/20161126195138/https://datascience-enthusiast.com/R/anomaly_detection_R.html
-  ## And also the Coursera course Machine Learning by A. Ng
-  ## this uses a somewhat different probability density function
-  centered <- caret::preProcess(space, method = "center") ## generates a scaling with which to center the values
-  space_mu <- as.matrix(predict(centered, space)) ## converts the data to the centered values
-  #sigma2=diag(var(X2))
-  #sigma2
-  #sigma2=diag(sigma2)
-  #sigma2 ## this is the same as Sigma on the diagonals, but different on the off-diags
-  ## it doesn't matter which you use here you get the same answer
-  A = (2 * pi) ^ (-n / 2) * det(Sigma) ^ (-0.5)
-  ## det() is the determinant of the matrix
-  ## %*% is matrix multiplication
-  ## ginv() takes the inverse of the matrix
-  B = exp(-0.5 * rowSums((space_mu %*% MASS::ginv(Sigma)) * space_mu))
-  p_x = A * B ## this is the probability of each value coming from the same normal distribution
-  #P_x = (1 /( ((2*pi)^(n/2) * (norm(Sigma) ^ (1/2))))) * exp (-1/2*(space-mu) %*% MASS::ginv(Sigma) %*% t(space-mu))
-  p_x = cbind(p_x)
-  colnames(p_x) = "anomaly"
-  locs_2 = cbind(localities, p_x)
-  anomalies = which(locs_2$anomaly < epsilon) ## anything where the probability is less than epsilon is considered too improbable
-  purged = localities[anomalies,]
-  kept = localities[-(anomalies),]
-  return(list(purged, anomalies, kept))
+  ## TODO: why is this removing central anomalies?
+  ## TODO: fix the code, taking the unique data is what is causing the issue, need to match
+
+  mgdad = function(space,epsilon=epsilon) {
+    ## use MASS to do linear algebra
+    # Multivariate Gaussian Distribution anomaly detection
+    ## SOURCE: https://datascience-enthusiast.com/R/anomaly_detection_R.html
+    ## wayback machine: http://web.archive.org/web/20161126195138/https://datascience-enthusiast.com/R/anomaly_detection_R.html
+    ## And also the Coursera course Machine Learning by A. Ng
+    ## this uses a somewhat different probability density function
+    m=nrow(space) ## the number of rows
+
+    if(m==1) {
+      amonalies=0
+      return(anomalies)
+    } else {
+
+
+
+      n = ncol(space) ## the number of columns, aka dimensions
+      mu = colMeans(space,na.rm=T) ## takes the mean of each column
+      Sigma = cov(space) ## get the covariance matrix
+      centered <- caret::preProcess(space, method = "center") ## generates a scaling with which to center the values
+      space_mu <- as.matrix(predict(centered, space)) ## converts the data to the centered values
+      A = (2 * pi) ^ (-n / 2) * det(Sigma) ^ (-0.5)
+      B = exp(-0.5 * rowSums((space_mu %*% MASS::ginv(Sigma)) * space_mu))
+      p_x = A * B ## this is the probability of each value coming from the same normal distribution
+      anomalies = which(p_x < epsilon) ## anything where the probability is less than epsilon is considered too improbable
+      return(anomalies)
+    }
+  }
+
+  #localities = localities[!is.na(localities$longitude),]
+  #localities = localities[!is.na(localities$latitude),]
+  space = localities[,c("longitude","latitude")]
+  rownames(space) = make.unique(rep("anomaly",nrow(space)))
+  space = unique(space)
+  space_anomalies=mgdad(space,epsilon=epsilon)
+
+  anomalies_raw = names(space_anomalies)
+  anomalies = gsub("anomaly.","",anomalies_raw)
+
+  return(anomalies)
 }
 #' Species Occurrences to Subspecies Occurrences
 #'
@@ -1385,6 +1384,8 @@ databaseToAssignedSubspecies = function(spp,
   labeledLoc = labeledLoc[labeledLoc$latitude>=-90,]
   labeledLoc = labeledLoc[labeledLoc$longitude<=180,]
   labeledLoc = labeledLoc[labeledLoc$longitude>=-180,]
+  labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
+  labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),]
   print(paste("Rounding lat/longs to",num_digits_latlong,"decimal places",sep=" "))
   labeledLoc$latitude = round(labeledLoc$latitude,num_digits_latlong)
   labeledLoc$longitude = round(labeledLoc$longitude,num_digits_latlong)
@@ -1428,8 +1429,6 @@ databaseToAssignedSubspecies = function(spp,
     dev.off()
   }
   print("Starting anomaly detection for whole species")
-  purged_list = c()
-  kept_list = c()
   list_of_anomalies = c()
   for (i in 0:length(c(subsppNames))) {
     if (i == 0) {
@@ -1446,19 +1445,19 @@ databaseToAssignedSubspecies = function(spp,
         detectedLocs = detectSpatialOutliers(localities = subset, epsilon = epsilon)
       }
     }
-    purged = detectedLocs[[1]]
-    anomalies = detectedLocs[[2]]
-    kept = detectedLocs[[3]] ## DO NOT KEEP THIS
-    #print(length(anomalies))
-    purged_list = rbind(purged_list, purged)
+        anomalies = as.numeric(detectedLocs)
     list_of_anomalies = c(list_of_anomalies, anomalies)
-    kept_list = rbind(kept_list, kept)
   }
-  rows_purged = sort(unique(as.integer(rownames(purged_list))))
+
+  ## need to take a second and remove the data that don't fit
+  ## figure out which lat-longs are in each
+
+
+  rows_purged = sort(unique(as.integer(list_of_anomalies)))
   if (length(rows_purged) > 0) {
-    print(paste("Removing",length(rows_purged),"of",length(labeledLoc[, 1]),"detected anomalies"))
-    removed = labeledLoc[(rows_purged),]
-    labeledLoc = labeledLoc[-(rows_purged),]
+    print(paste("Removing",length(rows_purged),"detected anomalies of",length(labeledLoc[, 1]),"rows"))
+    removed = labeledLoc[list_of_anomalies,]
+    labeledLoc = labeledLoc[-(list_of_anomalies),]
     if (plotIt == T) {
       png(paste("AnomaliesRemoved_", spp,quant,".png", sep = ""))
       raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Anomalies"))
