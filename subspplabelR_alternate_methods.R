@@ -1,9 +1,25 @@
+install.packages("C:/Users/kaiya/Documents/Work/GitHub/subsppLabelR/",repos=NULL,type="source",force=T)
 library(subsppLabelR)
+
 library(e1071)
 
 ## import data I already have
 
+detectSpatialOutliers_w = function(localities,
+                                 epsilon = 0.0001) {
+
+
+}
+
 df2 <- read.delim("~/Work/GitHub/subsppLabelR/Phainopepla nitens/LOCALITIES/Phainopepla nitens_0.9_subspplabelR_RAW.txt")
+df2 = df2[complete.cases(df2),]
+df2 = unique(df2)
+anomalies=detectSpatialOutliers_w(df2[,c("longitude","latitude")])
+plot(df2$longitude,df2$latitude)
+points(df2$longitude[as.numeric(anomalies)],
+       df2$latitude[as.numeric(anomalies)],col="blue")
+
+
 df = df2[,c("longitude","latitude","subspecies")]
 #df = unique(df) -- NO
 df = df[df$subspecies!="unknown",]
@@ -84,7 +100,6 @@ plot(r2_ssp1_rel_bias,ylim=c(10,50),xlim=c(-130,-90),colNA="grey",col=rwbramp(10
 plot(r2_ssp2_rel_bias,ylim=c(10,50),xlim=c(-130,-90),colNA="grey",col=rwbramp(100),zlim=c(-0.1,0.1))
 
 
-detectSpatialOutliers()
 mgdad = function(localities,epsilon=0.0001) {
   ## Multivariate Gaussian Distribution anomaly detection
   m=nrow(localities) ## the number of rows

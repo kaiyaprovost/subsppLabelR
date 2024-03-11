@@ -1236,49 +1236,28 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
 #'
 detectSpatialOutliers = function(localities = locs,
                                  epsilon = 0.0001) {
-
   ## TODO: why is this removing central anomalies?
   ## TODO: fix the code, taking the unique data is what is causing the issue, need to match
 
-  mgdad = function(space,epsilon=epsilon) {
-    ## use MASS to do linear algebra
-    # Multivariate Gaussian Distribution anomaly detection
-    ## SOURCE: https://datascience-enthusiast.com/R/anomaly_detection_R.html
-    ## wayback machine: http://web.archive.org/web/20161126195138/https://datascience-enthusiast.com/R/anomaly_detection_R.html
-    ## And also the Coursera course Machine Learning by A. Ng
-    ## this uses a somewhat different probability density function
-    m=nrow(space) ## the number of rows
-
-    if(m==1) {
-      amonalies=0
-      return(anomalies)
-    } else {
-
-
-
-      n = ncol(space) ## the number of columns, aka dimensions
-      mu = colMeans(space,na.rm=T) ## takes the mean of each column
-      Sigma = cov(space) ## get the covariance matrix
-      centered <- caret::preProcess(space, method = "center") ## generates a scaling with which to center the values
-      space_mu <- as.matrix(predict(centered, space)) ## converts the data to the centered values
-      A = (2 * pi) ^ (-n / 2) * det(Sigma) ^ (-0.5)
-      B = exp(-0.5 * rowSums((space_mu %*% MASS::ginv(Sigma)) * space_mu))
-      p_x = A * B ## this is the probability of each value coming from the same normal distribution
-      anomalies = which(p_x < epsilon) ## anything where the probability is less than epsilon is considered too improbable
-      return(anomalies)
-    }
+  mgdad = function(localities,epsilon=0.0001) {
+    ## Multivariate Gaussian Distribution anomaly detection
+    m=nrow(localities) ## the number of rows
+    n = ncol(localities) ## the number of columns, aka dimensions
+    mu = colMeans(localities,na.rm=T) ## takes the mean of each column
+    Sigma = cov(localities) ## get the covariance matrix
+    centered <- caret::preProcess(localities, method = "center") ## generates a scaling with which to center the values
+    space_mu <- as.matrix(predict(centered, localities)) ## converts the data to the centered values
+    A = (2 * pi) ^ (-n / 2) * det(Sigma) ^ (-0.5)
+    B = exp(-0.5 * rowSums((space_mu %*% MASS::ginv(Sigma)) * space_mu))
+    p_x = A * B ## this is the probability of each value coming from the same normal distribution
+    anomalies = which(p_x < epsilon) ## anything where the probability is less than epsilon is considered too improbable
+    return(anomalies)
   }
 
-  #localities = localities[!is.na(localities$longitude),]
-  #localities = localities[!is.na(localities$latitude),]
   space = localities[,c("longitude","latitude")]
-  rownames(space) = make.unique(rep("anomaly",nrow(space)))
-  space = unique(space)
-  space_anomalies=mgdad(space,epsilon=epsilon)
-
-  anomalies_raw = names(space_anomalies)
-  anomalies = gsub("anomaly.","",anomalies_raw)
-
+  space_anomalies=mgdad(localities=space,epsilon=epsilon)
+  space_only_anomalies = space[space_anomalies,]
+  anomalies = which(do.call(paste0, localities[,c("longitude","latitude")]) %in% do.call(paste0, space_only_anomalies))
   return(anomalies)
 }
 #' Species Occurrences to Subspecies Occurrences
@@ -1445,7 +1424,7 @@ databaseToAssignedSubspecies = function(spp,
         detectedLocs = detectSpatialOutliers(localities = subset, epsilon = epsilon)
       }
     }
-        anomalies = as.numeric(detectedLocs)
+    anomalies = as.numeric(detectedLocs)
     list_of_anomalies = c(list_of_anomalies, anomalies)
   }
 
