@@ -1,4 +1,0 @@
-"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
-"1" "fulvescens" "peninsulae" "0.249359381767023" "0.423979728928825"
-"2" "fulvescens" "sinuatus" "0.238747505830267" "0.43184230104217"
-"3" "peninsulae" "sinuatus" "0.0444341552233556" "0.173275436885334"

@@ -1,7 +1,0 @@
-"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
-"1" "acaciarum" "hidalgensis" "0.0207740487216929" "0.0548732059454123"
-"2" "acaciarum" "lamprocephalus" "0" "-2.22044604925031e-16"
-"3" "acaciarum" "ornatus" "0.535162833120553" "0.712695450609741"
-"4" "hidalgensis" "lamprocephalus" "0.024673001363326" "0.0501883473516567"
-"5" "hidalgensis" "ornatus" "0.0748365025721718" "0.113810261030914"
-"6" "lamprocephalus" "ornatus" "0.00837680442874944" "0.0124179597775363"

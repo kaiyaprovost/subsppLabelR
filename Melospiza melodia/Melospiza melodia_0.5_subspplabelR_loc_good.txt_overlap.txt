@@ -1,2 +1,0 @@
-"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
-"1" "amaka" "mailliardi" "0.101957629246022" "0.173191880660299"
