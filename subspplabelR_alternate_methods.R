@@ -5,33 +5,69 @@ library(e1071)
 
 ## import data I already have
 
-
 df2 <- read.delim("~/Work/GitHub/subsppLabelR/Phainopepla nitens/LOCALITIES/Phainopepla nitens_0.9_subspplabelR_RAW.txt")
 df2 = df2[complete.cases(df2),]
 df2 = unique(df2)
-anomalies=detectSpatialOutliers(df2[,c("longitude","latitude")])
+
+nominateSubspecies = "nitens"
+
+print("Cleaning bad lat/longs")
+df2 = df2[!(is.na(df2$longitude)),] ## fine
+df2 = df2[!(is.na(df2$latitude)),]
+df2 = df2[df2$latitude<=90,]
+df2 = df2[df2$latitude>=-90,]
+df2 = df2[df2$longitude<=180,]
+df2 = df2[df2$longitude>=-180,]
+df2 = df2[!(is.na(df2$latitude)),]
+df2 = df2[!(is.na(df2$longitude)),]
+print(paste("Rounding lat/longs to",6,"decimal places",sep=" "))
+df2$latitude = round(df2$latitude,6)
+df2$longitude = round(df2$longitude,6)
+df2 = unique(df2)
+
+if(cleanup_nominate==T){
+  print("RELABELING NOMINATE AFTER CLEANUP")
+  good_nominate_rows=which(grepl(paste(nominateSubspecies,nominateSubspecies,sep=" "),df2$name))
+  labeled_nominate_rows = which(df2$subspecies==nominateSubspecies)
+  nominate_rows_to_keep = intersect(good_nominate_rows,labeled_nominate_rows)
+  to_relabel=labeled_nominate_rows[!(labeled_nominate_rows %in% nominate_rows_to_keep)]
+  df2$subspecies[to_relabel] = "unknown"
+  df2 = unique(df2)
+}
+
+print("Check xy maxmin")
+xmin = as.numeric(min(as.numeric(df2$longitude),na.rm=T))
+xmax = as.numeric(max(as.numeric(df2$longitude),na.rm=T))
+ymin = as.numeric(min(as.numeric(df2$latitude),na.rm=T))
+ymax = as.numeric(max(as.numeric(df2$latitude),na.rm=T))
+print("Cleaning bgLayer")
+ext = raster::extent(c(as.numeric(xmin),as.numeric(xmax),
+                       as.numeric(ymin),as.numeric(ymax)))
+bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
+subsppNames = unique(df2$subspecies)
+
+anomalies=detectSpatialOutliers(df2[,c("longitude","latitude")],epsilon=1e-5)
 plot(df2$longitude,df2$latitude,col="grey")
 points(df2$longitude[as.numeric(anomalies)],
        df2$latitude[as.numeric(anomalies)],col="black")
+## remove the anomalies before doing the subspecies testing
+df2a = df2[-anomalies,]
 
-df2_n = df2[df2$subspecies=="nitens",c("longitude","latitude")]
-anomalies2=detectSpatialOutliers(df2_n)
-plot(df2_n$longitude,df2_n$latitude,col="grey")
-points(df2_n$longitude[as.numeric(anomalies2)],
-       df2_n$latitude[as.numeric(anomalies2)],col="blue")
+good_subset = NULL
+bad_subset = NULL
+for(i_name in subsppNames){
+  subset = df2a[df2a$subspecies==i_name,]
+  anomalies=detectSpatialOutliers(subset)
+  if(length(anomalies)>=1){
+    good_subset = rbind(good_subset,subset[-anomalies,])
+    bad_subset = rbind(bad_subset,subset[anomalies,])
+  } else {
+    good_subset = rbind(good_subset,subset)
+  }
+}
 
-df2_l = df2[df2$subspecies=="nitens",c("longitude","latitude")]
-anomalies3=detectSpatialOutliers(df2_l)
-points(df2_l$longitude[as.numeric(anomalies3)],
-       df2_l$latitude[as.numeric(anomalies3)],col="red")
 
-df = df2[,c("longitude","latitude","subspecies")]
-#df = unique(df) -- NO
-df = df[df$subspecies!="unknown",]
-df$subspecies = as.factor(df$subspecies)
-## quick error removal
-df = df[df$latitude<=45,]
-df = df[df$longitude<=-90,]
+
 
 library(raster)
 
@@ -162,9 +198,26 @@ plot(df$longitude,df$latitude,col=as.numeric(as.factor(df$subspecies)),
      pch=as.numeric(as.factor(df$subspecies)),
      cex=as.numeric(as.factor(df$subspecies)))
 
+##
+data(iris)
+svmiris = svm(Species~Petal.Length+Petal.Width,data=iris)
+svmiris
+plot(x=svmiris,data=iris,formula=Petal.Length~Petal.Width,
+     svSymbol=1,dataSymbol=2,col=c("white","pink","lightgreen"))
+
+m2 <- svm(Species~., data = iris)
+plot(m2, iris, Petal.Width ~ Petal.Length,
+     slice = list(Sepal.Width = 3, Sepal.Length = 4))
+
+data(cats, package = "MASS")
+m <- svm(Sex~., data = cats)
+#plot(m, cats)
+plot(m, cats, svSymbol = 1, dataSymbol = 2, symbolPalette = rainbow(4),
+     color.palette = terrain.colors)
+
 ## after error removal not better so also thin
 svmfit = svm(subspecies~longitude+latitude,data=df,
-             kernel="radial",scale=F,cost=100)
+             kernel="linear",scale=F,cost=100)
 ## reached max iterations? taking a while?
 ## linear took a long time and didn't work
 ## radial did some weird stuff

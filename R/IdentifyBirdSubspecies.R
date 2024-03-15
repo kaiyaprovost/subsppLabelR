@@ -1229,6 +1229,7 @@ subspeciesMatchChecker = function(locfile, subsppNames) {
 #' Distribution anomaly detection. Based off of
 #'
 #' @param localities A list of localities to check for anomalies
+#' @param fulldataset The full dataset this is taken from
 #' @param epsilon An value with which to flag anomalies with probability less than epsilon
 #'
 #' @export
@@ -1256,9 +1257,10 @@ detectSpatialOutliers = function(localities,
   }
 
   space = localities[,c("longitude","latitude")]
-  space_anomalies=mgdad(localities=space,epsilon=epsilon)
-  space_only_anomalies = space[space_anomalies,]
-  anomalies = which(do.call(paste0, fulldataset[,c("longitude","latitude")]) %in% do.call(paste0, space_only_anomalies))
+  anomalies = mgdad(localities=space,epsilon=epsilon)
+  #space_anomalies=mgdad(localities=space,epsilon=epsilon)
+  #space_only_anomalies = space[space_anomalies,]
+  #anomalies = which(do.call(paste0, fulldataset[,c("longitude","latitude")]) %in% do.call(paste0, space_only_anomalies))
   return(anomalies)
 }
 #' Species Occurrences to Subspecies Occurrences
@@ -1447,39 +1449,40 @@ databaseToAssignedSubspecies = function(spp,
 
 
   print("Starting anomaly detection for each subspecies")
-  subspecies_anomalies = c()
+
+  good_subset = NULL
+  bad_subset = NULL
   for(i_name in subsppNames){
-    print(i_name)
-    if(i_name!="unknown"){
-      subset = labeledLoc[labeledLoc$subspecies==i_name,]
-      detectedLocs_subset = detectSpatialOutliers(localities = subset, epsilon = epsilon,fulldataset = labeledLoc)
-      subspecies_anomalies = c(subspecies_anomalies,as.numeric(detectedLocs_subset))
+    subset = labeledLoc[labeledLoc$subspecies==i_name,]
+    anomalies=detectSpatialOutliers(subset)
+    if(length(anomalies)>=1){
+      good_subset = rbind(good_subset,subset[-anomalies,])
+      bad_subset = rbind(bad_subset,subset[anomalies,])
+    } else {
+      good_subset = rbind(good_subset,subset)
     }
   }
-  subspecies_anomalies = sort(unique(as.numeric(subspecies_anomalies)))
-  if (length(subspecies_anomalies) > 0) {
-    print(paste("Removing",length(subspecies_anomalies),"detected subspecies anomalies of",length(labeledLoc[, 1]),"rows"))
-    removed2 = labeledLoc[subspecies_anomalies,]
-    labeledLoc = labeledLoc[-(subspecies_anomalies),]
+  labeledLoc = good_subset
+  removed2 = bad_subset
+
+  if (nrow(removed2) > 0) {
+    print(paste("Removing",nrow(removed2),"detected subspecies anomalies"))
     if (plotIt == T) {
       png(paste("SubspeciesAnomaliesRemoved_", spp,quant,".png", sep = ""))
       raster::plot(bgLayer,col = "grey",colNA = "darkgrey",main = paste("Anomalies"))
       points(labeledLoc$longitude,labeledLoc$latitude,
              col = "lightgrey",pch = 0)
-      points(removed$longitude,removed2$latitude,
-             col = as.factor(removed2$subspecies))
+      points(removed2$longitude,removed2$latitude,
+             col = as.numeric(as.factor(removed2$subspecies)))
       legend("top",
-             legend = as.factor(unique(removed$subspecies)),
+             legend = as.factor(unique(removed2$subspecies)),
              pch = 1,bty = "n",
-             col = as.factor(unique(removed$subspecies)))
+             col = as.factor(unique(removed2$subspecies)))
       dev.off()
     }
   } else {
     print("No anomalies found at subspecies level")
   }
-
-
-
 
   subsppNames = unique(labeledLoc$subspecies)
   ## clean up the bgLayer again in case it needs to be smaller
