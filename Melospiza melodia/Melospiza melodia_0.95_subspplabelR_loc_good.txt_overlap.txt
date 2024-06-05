@@ -1,4 +1,4 @@
 "spp1" "spp2" "SchoenersD" "modifiedHellingersI"
-"1" "atlantica" "kenaiensis" "0" "-2.22044604925031e-16"
-"2" "atlantica" "rivularis" "0" "-2.22044604925031e-16"
-"3" "kenaiensis" "rivularis" "1.11022302462516e-16" "2.22044604925031e-16"
+"1" "atlantica" "kenaiensis" "-1.11022302462516e-15" "-1.11022302462516e-15"
+"2" "atlantica" "rivularis" "8.88178419700125e-16" "1.11022302462516e-15"
+"3" "kenaiensis" "rivularis" "-1.33226762955019e-15" "-1.11022302462516e-15"
