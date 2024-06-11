@@ -25,22 +25,17 @@ df2$latitude = round(df2$latitude,6)
 df2$longitude = round(df2$longitude,6)
 df2 = unique(df2)
 
-if(cleanup_nominate==T){
-  print("RELABELING NOMINATE AFTER CLEANUP")
   good_nominate_rows=which(grepl(paste(nominateSubspecies,nominateSubspecies,sep=" "),df2$name))
   labeled_nominate_rows = which(df2$subspecies==nominateSubspecies)
   nominate_rows_to_keep = intersect(good_nominate_rows,labeled_nominate_rows)
   to_relabel=labeled_nominate_rows[!(labeled_nominate_rows %in% nominate_rows_to_keep)]
   df2$subspecies[to_relabel] = "unknown"
   df2 = unique(df2)
-}
 
-print("Check xy maxmin")
 xmin = as.numeric(min(as.numeric(df2$longitude),na.rm=T))
 xmax = as.numeric(max(as.numeric(df2$longitude),na.rm=T))
 ymin = as.numeric(min(as.numeric(df2$latitude),na.rm=T))
 ymax = as.numeric(max(as.numeric(df2$latitude),na.rm=T))
-print("Cleaning bgLayer")
 ext = raster::extent(c(as.numeric(xmin),as.numeric(xmax),
                        as.numeric(ymin),as.numeric(ymax)))
 bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
@@ -66,6 +61,8 @@ for(i_name in subsppNames){
   }
 }
 
+plot(good_subset$longitude,good_subset$latitude,
+     col=as.numeric(as.factor(good_subset$subspecies)))
 
 
 
@@ -194,9 +191,26 @@ plot(r2_ssp1)
 #df$longitude = round(df$longitude)
 #df$latitude = round(df$latitude)
 #df = unique(df)
-plot(df$longitude,df$latitude,col=as.numeric(as.factor(df$subspecies)),
-     pch=as.numeric(as.factor(df$subspecies)),
-     cex=as.numeric(as.factor(df$subspecies)))
+good_subset_svm = good_subset[good_subset$subspecies!="unknown",]
+plot(good_subset_svm$longitude,good_subset_svm$latitude,
+     col=as.numeric(as.factor(good_subset_svm$subspecies)),
+     pch=as.numeric(as.factor(good_subset_svm$subspecies)),
+     cex=as.numeric(as.factor(good_subset_svm$subspecies)))
+good_subset_svm$longitude = as.numeric(good_subset_svm$longitude)
+good_subset_svm$latitude = as.numeric(good_subset_svm$latitude)
+good_subset_svm$subspecies = (as.factor(good_subset_svm$subspecies))
+
+## after error removal not better so also thin
+svmfit = svm(subspecies~longitude+latitude,data=good_subset_svm)
+## reached max iterations? taking a while?
+## linear took a long time and didn't work
+## radial did some weird stuff
+## polynomial was also weird
+## sigmoid didn't work
+
+svmfit
+plot(x=svmfit,data=good_subset_svm,formula=latitude~longitude)
+
 
 ##
 data(iris)
@@ -215,14 +229,3 @@ m <- svm(Sex~., data = cats)
 plot(m, cats, svSymbol = 1, dataSymbol = 2, symbolPalette = rainbow(4),
      color.palette = terrain.colors)
 
-## after error removal not better so also thin
-svmfit = svm(subspecies~longitude+latitude,data=df,
-             kernel="linear",scale=F,cost=100)
-## reached max iterations? taking a while?
-## linear took a long time and didn't work
-## radial did some weird stuff
-## polynomial was also weird
-## sigmoid didn't work
-
-svmfit
-plot(x=svmfit,data=df)
