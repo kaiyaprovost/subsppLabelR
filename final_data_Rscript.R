@@ -12,7 +12,7 @@ install.packages(pkgDirectory,repos=NULL,type="source",force=T)
 library(subsppLabelR)
 ## parameters
 redo=T; overwrite=T
-pointLimit=3000
+pointLimit=10000
 quant_list=c(seq(0.05,0.95,0.05),0.99,0.33,0.67)
 dbToQuery=c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
 xmin = -180; xmax = -50; ymin = 0; ymax = 75;
@@ -58,12 +58,12 @@ if(redo==T) {
     if(!(file.exists(paste(pkgDirectory,spp,"/",spp,"_subspplabelR_RAW.txt",sep="")))){
       listFromSubspeciesOcc = subspeciesOccQuery(spp=spp,subsppList=subspp,pointLimit=pointLimit,dbToQuery=dbToQuery)
       labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc,
-                                   spp=spp,subsppList=subspp,cleanup_nominate=F)
+                                   spp=spp,subsppList=subspp)#,cleanup_nominate=F)
       head(labeledLoc)
       write.table(labeledLoc,paste(pkgDirectory,spp,"/",spp,"_subspplabelR_RAW.txt",sep=""),sep="\t",row.names = F)
     } else {
       labeledLoc = read.table(paste(pkgDirectory,spp,"/",spp,"_subspplabelR_RAW.txt",sep=""),sep="\t",header=T)
-    }
+    } 
     subspp_new = unique(labeledLoc$subspecies)
     subspp_new = subspp_new[subspp_new!="unknown"]
 
