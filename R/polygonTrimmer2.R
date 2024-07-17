@@ -12,8 +12,7 @@ NULL
 #' Polygon Trimmer 2
 #'
 #' This function takes a list of polygons as from densityMapToPolygons() or similar
-#' and removes portions of the polygons as determined by flagPolygonOverlap() and
-#' trimPolygonsByOverlap()
+#' and removes portions of the polygons based off of their overlaps.
 #'
 #' @param polygonList A list of polygons to check
 #' @param namesList The subspecies (or other) names associated with polygon list
@@ -36,7 +35,7 @@ NULL
 #' densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 #' densPol_ful = densityMapToPolygons(densityMap=dens_ful)
 #' densityPolygons = list(sinuatus=densPol_sin,fulvescens=densPol_ful)
-#' densityPolygons_trim = polygonTrimmer(polygonList=densityPolygons,
+#' densityPolygons_trim = polygonTrimmer2(polygonList=densityPolygons,
 #'    namesList=c("sinuatus","fulvescens"))
 #'
 polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=WGS84") {

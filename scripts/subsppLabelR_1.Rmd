@@ -17,7 +17,7 @@ devtools::install_github('kaiyaprovost/subsppLabelR',force=F)
 library(subsppLabelR)
 ```
 
-Let us download some data. We will use Phainopepla nitens as a test species: it has two subspecies that are relatively allopatric. Although the species has hundreds of thousands of points, for now we will only download 2000. 
+Let us download some data. We will use *Phainopepla nitens* as a test species: it has two subspecies that are relatively allopatric. Although the species has hundreds of thousands of points, for now we will only download 2000. 
 
 ```{r listFromSubspeciesOcc}
 
@@ -50,7 +50,7 @@ head(labeledLoc)
 
 ```
 
-This has added a column to the data with the occurrences labeled by subspecies. Lets plot these data. First though, we need a raster layer to plot against. We can either import a raster as "bgLayer", or we can create one from the Phainopepla data. For this example we will create a raster layer. We will then plot the data.
+This has added a column to the data with the occurrences labeled by subspecies. Lets plot these data. First though, we need a raster layer to plot against. We can either import a raster as "bgLayer", or we can create one from the *Phainopepla* data. For this example we will create a raster layer. We will then plot the data.
 
 ```{r 2}
 
@@ -276,7 +276,6 @@ for (i in 1:length(densityRasters)) {
 
 ```
 
-
 And for fun let's look at how the data vary when we change the density we retain, from 5% to 10% (the 90th percentile)
 
 ```{r density2}
@@ -348,7 +347,7 @@ for (i in 1:length(densityRasters_10)) {
 
 ```
 
-Now we can see where the bulk of the data are found for these ranges. Most of the unknown samples we downloaded appear to be in subspecies lepida. Comparing the top 5% and top 10% shows us how choosing cutoffs can impact our downstream analyses. We will continue for now with the top 5%. 
+Now we can see where the bulk of the data are found for these ranges. Most of the unknown samples we downloaded appear to be in subspecies *lepida*. Comparing the top 5% and top 10% shows us how choosing cutoffs can impact our downstream analyses. We will continue for now with the top 5%. 
 
 Next let us convert these maps to polygons. 
 
@@ -388,7 +387,6 @@ legend(
 )
 
 ```
-
 
 We must now check the polygons for overlaps.
 
@@ -540,10 +538,6 @@ lapply(1:length(pol),FUN=function(i){
 
 ```
 
-
-
-
-
 Putting this all together in one function looks like this:
 
 ```{r database}
@@ -566,5 +560,3 @@ print(head(db$pol))
 ```
 
 Note that when you run this script, it will automatically generate the images as PNG files in the directory specified in the function. Here that is the home directory ("~/").
-
-

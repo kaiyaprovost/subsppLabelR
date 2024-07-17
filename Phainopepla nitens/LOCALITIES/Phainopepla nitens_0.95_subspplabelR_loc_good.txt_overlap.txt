@@ -1,2 +1,0 @@
-"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
-"1" "lepida" "nitens" "0.395716783475551" "0.571199990036906"
