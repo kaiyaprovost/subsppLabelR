@@ -160,7 +160,8 @@ databaseToAssignedSubspecies = function(spp,
   detectedLocs = detectSpatialOutliers(localities = labeledLoc, epsilon = epsilon)
   anomalies = as.numeric(detectedLocs)
   list_of_anomalies = c(list_of_anomalies, anomalies)
-  rows_purged = sort(unique(as.integer(list_of_anomalies)))
+  list_of_anomalies_names = names(list_of_anomalies)
+  rows_purged = sort(unique(as.integer(list_of_anomalies_names)))
   if (length(rows_purged) > 0) {
     print(paste("Removing",length(rows_purged),"detected anomalies of",length(labeledLoc[, 1]),"rows"))
     removed = labeledLoc[list_of_anomalies,]

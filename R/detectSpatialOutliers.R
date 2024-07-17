@@ -11,7 +11,10 @@ NULL
 #' Outlier Detection
 #'
 #' This does outlier detection on points using Multivariate Gaussian
-#' Distribution anomaly detection. Based off of
+#' Distribution anomaly detection. Returns anomalies, which are a named
+#' set of integers where the names are the original rowname of the point
+#' and the integers are the rowname of the dataframe, if they are not the
+#' same.
 #'
 #' @param localities A list of localities to check for anomalies
 #' @param fulldataset The full dataset this is taken from

@@ -85,48 +85,26 @@ legend(
 
 As you can see with this example, there is an outlier that is far away from the rest of the distribution. Otherwise, the red and blue dots (which are labeled subspecies) appear to roughly correspond with the known distributions. 
 
-Lets do anomaly detection now to remove the outliers and then update the raster. 
+Lets do anomaly detection now to remove the species-wide outliers and then update the raster. 
 
-```{r anom}
+```{r anomspp}
 print("Starting anomaly detection for whole species")
 
-purged_list = c()
-kept_list = c()
 list_of_anomalies = c()
 epsilon = 1e-6
 
-for (i in 0:length(c(subsppNames))) {
-  if (i == 0) {
-    #print("full")
-    #print(nrow(labeledLoc))
-    detectedLocs = subsppLabelR::detectSpatialOutliers(localities = labeledLoc, epsilon = epsilon)
-  }
-  else {
-    name = subsppNames[[i]]
-    if (name != "unknown") {
-      #print(name)
-      subset = labeledLoc[labeledLoc$subspecies == name,]
-      #print(nrow(subset))
-      detectedLocs = subsppLabelR::detectSpatialOutliers(localities = subset, epsilon = epsilon)
-    }
-  }
-  purged = detectedLocs[[1]]
-  anomalies = detectedLocs[[2]]
-  kept = detectedLocs[[3]] ## DO NOT KEEP THIS
-  #print(length(anomalies))
-  
-  purged_list = rbind(purged_list, purged)
-  list_of_anomalies = c(list_of_anomalies, anomalies)
-  kept_list = rbind(kept_list, kept)
-}
-rows_purged = sort(unique(as.integer(rownames(purged_list))))
-head(rows_purged)
+anomalies = subsppLabelR::detectSpatialOutliers(localities = labeledLoc, epsilon = epsilon)
+
+list_of_anomalies = c(list_of_anomalies, anomalies)
+
+list_of_anomalies_names = names(list_of_anomalies)
+rows_purged = sort(unique(list_of_anomalies_names))
 
 ```
 
-We have identified some rows to remove as anomalies for the whole species. Now let us remove them and plot where they are, color coded by subspecies. 
+Let's visualize these anomalies for the whole species.
 
-```{r anom2}
+```{r anomplotspp}
 
 print(paste(
   "Removing",
@@ -135,8 +113,11 @@ print(paste(
   length(labeledLoc[, 1]),
   "detected anomalies"
 ))
-removed = labeledLoc[(rows_purged),]
-labeledLoc = labeledLoc[-(rows_purged),]
+removed = labeledLoc[(rownames(labeledLoc) %in% rows_purged),]
+labeledLoc = labeledLoc[!(rownames(labeledLoc) %in% rows_purged),]
+## set up factors for removed
+removed$subspecies = as.factor(removed$subspecies)
+levels(removed$subspecies) = levels(as.factor(labeledLoc$subspecies))
 
 raster::plot(
   bgLayer,
@@ -161,7 +142,75 @@ legend(
 
 
 ```
-These six outliers come from three localities it seems.
+Perfect, these look like outliers. They are now removed from the dataset. 
+
+If you had a sharp eye you may have noticed that there were some subspecies that seemed to be out of the proper range. Let's run anomaly detection again just for the subspecies individually and see if we can get rid of those. 
+NOTE: remember, if you run anomaly detection multiple times, you will get progressively more outliers removed. 
+
+```{r anomsubspp}
+print("Starting anomaly detection for each subspecies")
+
+list_of_anomalies_sub = c()
+
+for (i in 1:length(c(subsppNames))) {
+  name = subsppNames[[i]]
+  if (name != "unknown") {
+    #print(name)
+    subset = labeledLoc[labeledLoc$subspecies == name,]
+    #print(nrow(subset))
+    anomalies = subsppLabelR::detectSpatialOutliers(localities = subset, epsilon = epsilon)
+  } 
+  #print(length(anomalies))
+  list_of_anomalies_sub = c(list_of_anomalies_sub, anomalies)
+  
+}
+list_of_anomalies_sub_names = names(list_of_anomalies_sub)
+rows_purged_sub = sort(unique(as.integer(list_of_anomalies_sub_names)))
+
+```
+
+
+And again, let's visualise.
+
+```{r anomplotspp}
+
+print(paste(
+  "Removing",
+  length(rows_purged_sub),
+  "of",
+  length(labeledLoc[, 1]),
+  "detected anomalies"
+))
+removed_sub = labeledLoc[(rownames(labeledLoc) %in% rows_purged_sub),]
+labeledLoc = labeledLoc[!(rownames(labeledLoc) %in% rows_purged_sub),]
+## set up factors for removed
+removed_sub$subspecies = as.factor(removed_sub$subspecies)
+levels(removed_sub$subspecies) = levels(as.factor(labeledLoc$subspecies))
+
+raster::plot(
+  bgLayer,
+  col = "grey",
+  colNA = "darkgrey",
+  main = paste("Anomalies")
+)
+points(labeledLoc$longitude,
+       labeledLoc$latitude,
+       col = "lightgrey",
+       pch = 0)
+points(removed_sub$longitude,
+       removed_sub$latitude,
+       col = as.factor(removed_sub$subspecies))
+legend(
+  "top",
+  legend = as.factor(unique(removed_sub$subspecies)),
+  pch = 1,
+  bty = "n",
+  col = as.factor(unique(removed_sub$subspecies))
+)
+
+
+```
+As you can see this specifies certain points to be removed that may be fully outside the original boundaries. It does not, however, catch the *nitens* points that are very far west. It is likely that epsilon is set incorrectly for just this subspecies -- 
 
 We also will do a quick clean up to make sure that none of the subspecies are now only represented by a single individual, and also to alter the raster file so that it is no longer so wide.
 
@@ -213,7 +262,7 @@ xmax = max_long
 xmin = min_long 
 ymax = max_lat
 ymin = min_lat
-quantile=0.95
+quant=0.95
 
 #total_range = bgLayer
 #raster::values(total_range)[!is.na(raster::values(bgLayer))] = NA
@@ -227,12 +276,15 @@ densityRasters = lapply(subsppNames, function(subspp) {
   #print(head(locs))
   dens = subsppLabelR::subspeciesDensityMap(
     localities = locs,
-    quantile = quantile,
+    quant = quant,
     xmin = xmin,
     xmax = xmax,
     ymin = ymin,
     ymax = ymax,
-    total_range= bgLayer
+    total_range= bgLayer,
+    outputDir = getwd(),
+    spp = spp,
+    subspp = subspp
   )
   if (is.null(dens)) {
     dens = NA
@@ -280,7 +332,7 @@ And for fun let's look at how the data vary when we change the density we retain
 
 ```{r density2}
 
-quantile=0.90
+quant=0.90
 
 print("Building species kernel density maps -- top 10 %")
 
@@ -289,7 +341,7 @@ densityRasters_10 = lapply(subsppNames, function(subspp) {
   locs = labeledLoc[labeledLoc$subspecies == subspp,]
   dens = subsppLabelR::subspeciesDensityMap(
     localities = locs,
-    quantile = quantile,
+    quant = quant,
     xmin = xmin,
     xmax = xmax,
     ymin = ymin,
@@ -546,7 +598,7 @@ db = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                 subsppList = c("lepida","nitens"),
                                                 pointLimit=2000,
                                                 dbToQuery=c("gbif"),
-                                                quantile=0.95,
+                                                quant=0.95,
                                                 xmin=-125,
                                                 xmax=-60,
                                                 ymin=10,
