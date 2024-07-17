@@ -90,8 +90,7 @@ subspeciesDensityMap = function(localities,
     quan = quantile(densRas[densRas], quant)
     densRas_trim = densRas
     densRas_trim[densRas_trim <= quan] = NA
-    plot(densRas_trim,colNA="black")
-    #,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
+    plot(densRas_trim,colNA="black")    #,xlim=c(xmin,xmax),ylim=c(ymin,ymax))
     total_crs = raster::crs(total_range)
     total_ext = raster::extent(total_range)
     total_res = raster::res(total_range)
