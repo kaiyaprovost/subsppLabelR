@@ -33,7 +33,7 @@ mgdad_px = function(localities) {
 
 #' Outlier Detection
 #'
-#' Calculates Multivariate Gaussian Distribution values for p_x
+#' Calculates probability values for p_x given an epsilon
 #'
 #' @param localities A list of localities to check for anomalies
 #' @param epsilon An value with which to flag anomalies with probability less than epsilon

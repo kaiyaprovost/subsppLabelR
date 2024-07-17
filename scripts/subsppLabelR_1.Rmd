@@ -210,7 +210,16 @@ legend(
 
 
 ```
-As you can see this specifies certain points to be removed that may be fully outside the original boundaries. It does not, however, catch the *nitens* points that are very far west. It is likely that epsilon is set incorrectly for just this subspecies -- 
+As you can see this specifies certain points to be removed that may be fully outside the original boundaries. It does not, however, catch the *nitens* points that are very far west. It is likely that epsilon is set incorrectly for just this subspecies -- we can examine this by using the mgdad_px() function on just *nitens* data to see what the probabilities are and what cutoff we may wish to use.
+
+```{r mgdad}
+
+p_x = mgdad_px(labeledLoc[labeledLoc$subspecies=="nitens",])
+
+```
+
+
+
 
 We also will do a quick clean up to make sure that none of the subspecies are now only represented by a single individual, and also to alter the raster file so that it is no longer so wide.
 
