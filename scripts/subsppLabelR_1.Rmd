@@ -390,7 +390,7 @@ print("Converting density maps to polygons")
 ## can't handle if there's no data in previous step
 
 densityPolygons = lapply(densityRasters_10, function(dens) {
-  #print(names(dens))
+  print(names(dens))
   densPol = subsppLabelR::densityMapToPolygons(densityMap = dens)
   return(densPol)
 })
