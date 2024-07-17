@@ -55,8 +55,6 @@ flagPolygonOverlap = function(subsppPoly1 = polA,
   ## this function checks for overlaps between polygons
   ## TODO: remove polygon if not touching another of same spp
   ## but also closer to polygon of other species
-  #library(rgeos)
-  #library(raster)
   ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
   ## will delete that subspecies. no bueno
   badList_subsppA_features = c()

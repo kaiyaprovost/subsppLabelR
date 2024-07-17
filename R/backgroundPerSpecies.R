@@ -11,6 +11,7 @@
 #' @import raster
 #' @import rebird
 #' @import sp
+#' @import sf
 #' @import spocc
 #' @import viridis
 #' @import AppliedPredictiveModeling

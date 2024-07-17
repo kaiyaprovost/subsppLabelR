@@ -4,7 +4,7 @@ Version: 0.0.0.9000
 Authors@R: person("Kaiya", "Provost", email = "kprovost@adelphi.edu", role = c("aut", "cre"))
 Description: #' This package takes a species with a list of subspecies, and then assigns occurrence records to subspecies.
 Depends: R (>= 3.3.3)
-Imports: raster, MASS, spocc, rgeos, dplyr, sp, viridis
+Imports: raster, MASS, spocc, dplyr, sp, viridis
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
