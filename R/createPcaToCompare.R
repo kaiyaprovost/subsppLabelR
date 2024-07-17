@@ -10,7 +10,6 @@
 #' @import plyr
 #' @import raster
 #' @import rebird
-#' @import rgeos
 #' @import sp
 #' @import spocc
 #' @import viridis

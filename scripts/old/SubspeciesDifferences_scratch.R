@@ -5,7 +5,6 @@ library(EMCluster)
 library(viridis)
 library(MASS)
 library(raster)
-library(rgeos)
 
 Env = raster::stack(list.files(
   path='/Users/kprovost/Documents/Classes/Spatial Bioinformatics/spatial_bioinformatics-master/ENM/wc2-5/',
@@ -26,12 +25,12 @@ occ3 = occ("Phainopepla nitens lepida",limit=500,has_coords=T,
 ## then get the 90% of points closest to the center
 
 ## get centroid of all points
-## plot 
+## plot
 ## take 90% points closest to center
 ## plot
-## draw polygon? 
+## draw polygon?
 
-## change occ to points for each 
+## change occ to points for each
 subspp = "UNKNOWN"
 occ1d = data.frame(occ2df(occ1))
 loc1all = (na.omit(occ1d[,2:3]))
@@ -70,7 +69,7 @@ plot(loc3)
 locmerge = unique(rbind(loc1lab,loc2lab,loc3lab))
 
 #min convex poly
-mcp <- function (xy) { 
+mcp <- function (xy) {
   xy <- as.data.frame(coordinates(xy))
   coords.t <- chull(xy[, 1], xy[, 2])
   xy.bord <- xy[coords.t, ]
@@ -151,7 +150,7 @@ points(inCorrectPolygon2,col="cyan",pch=3)
 points(inOtherPolygon3,col="darkred",pch=4)
 points(inOtherPolygon2,col="red",pch=3)
 
-range = c(-125, -60, 10, 50) 
+range = c(-125, -60, 10, 50)
 ext = raster::extent(range)
 w1 = matrix(1,3,3)
 x1 = kde2d(loc1$longitude, loc1$latitude, #n=length(loc1$longitude)/20,
@@ -239,26 +238,26 @@ for (i in range(1,length(qpoly2))){
   for(j in range(1,length(qpoly3))) {
     intersect = gIntersection(qpoly2[i,],qpoly3[j,],byid=T)
     #print(length(intersect))
-    if (length(intersect) != 0){ 
+    if (length(intersect) != 0){
       plot(Env[[1]], col="black")
       plot(qpoly2[i,],border="red",add=T)
       plot(qpoly3[j,],border="cyan",add=T)
       areaInt = gArea(intersect)
       area2 = gArea(qpoly2[i,])
       area3 = gArea(qpoly3[j,])
-      
+
       if (areaInt >= area2) {
         #print("remove area 2")
         badList_i = c(badList_i,i)
-      } 
+      }
       if (areaInt >= area3) {
         #print("remove area 3")
         badList_j = c(badList_j,j)
       }
-    
+
     }
 
-    
+
     #invisible(readline(prompt="Press [enter] to continue"))
   }
 }
@@ -279,7 +278,7 @@ plot(fullspp,add=T,col=rgb(1,1,1,0),border="grey",lwd=7)
 plot(subspp2,add=T,col=rgb(1,0,0,0),border="red",lwd=4)
 plot(subspp3,add=T,col=rgb(0,1,1,0),border="cyan",lwd=1)
 
-## redo points to see which are where 
+## redo points to see which are where
 ## which of subspp 2 is in subspp 3 polygon
 proj4string(subspp2) = CRS("+proj=longlat")
 proj4string(subspp3) = CRS("+proj=longlat")
@@ -380,7 +379,7 @@ points(cleanlocMerge,col=cleanlocMerge$subspecies,
 # points(maxXY)
 
 ## calculate based on eucledian distance only
-distance = pointDistance(p1=c(cent_x,cent_y), p2=loc2, 
+distance = pointDistance(p1=c(cent_x,cent_y), p2=loc2,
               lonlat=T, allpairs=FALSE)
 hist(distance)
 quantile(distance,seq(0,1,0.05))
@@ -438,13 +437,13 @@ plot(loc2,col=clus2)
 }
 
  emClustPicker = function(maxk=2,loc,iter=100,label){
-  #maxk=3 
+  #maxk=3
   kval = seq(1,maxk,1)
    #k = 2
    #loc=loc2
    #loc=loc2trim[,1:2]
    #iter=10000
-   a = lapply(kval,function(x,d=loc,numRandomIter=iter){ 
+   a = lapply(kval,function(x,d=loc,numRandomIter=iter){
      #print(x)
      k = as.character(x)
      ret.em <- init.EM(d, nclass = x, method = "em.EM",min.n.iter=numRandomIter)
@@ -460,7 +459,7 @@ plot(loc2,col=clus2)
      plotem(ret.Rndp, d, main = "Rnd+")
      plotem(ret.svd, d, main = "svd")
      dev.off()
-     
+
      aics = rbind(em.aic(d,ret.em),
               em.aic(d,ret.Rnd),
               em.aic(d,ret.Rndp),
@@ -472,7 +471,7 @@ plot(loc2,col=clus2)
        groupdif=FALSE
        chk = cbind(d,ret.em$class,ret.Rnd$class,
                    ret.Rndp$class,ret.svd$class)
-       
+
        for(i in 1:x){
          ch = chk[chk$`ret.em$class`==i,]
          l = sum(sapply(3:6, function(x){length(unique(ch[,x]))}))
@@ -485,12 +484,12 @@ plot(loc2,col=clus2)
          #print("yay")
          bestAIC = 1
          suffix = "allsameAIC"
-       } 
+       }
        else {
          bestAIC = which(aics==min(aics))
          suffix = "lowestAIC"
        }
-     } 
+     }
      else {
        bestAIC=1
        suffix = "k1"
@@ -503,15 +502,15 @@ plot(loc2,col=clus2)
      })
   a = do.call(rbind,a)
   rownames(a) = paste("k",as.character(1:maxk),sep="")
-  #a 
+  #a
   return(a)
 }
- 
+
  loc2clust = emClustPicker(maxk=2,loc=loc2,iter=100,label="Phainopepla_nitens_nitens")
  loc3clust = emClustPicker(maxk=2,loc=loc3,iter=100,label="Phainopepla_nitens_lepida")
- 
- 
- 
+
+
+
  kval = seq(1,5,1)
  test = sapply(kval,function(x,y=loc2){
    emobj = simple.init(y,nclass=x)
@@ -519,7 +518,7 @@ plot(loc2,col=clus2)
  })
 deltatest = test-min(test)
 ktest = which(test==min(test))
- 
+
 x = loc2
 k = ktest
 
@@ -527,14 +526,14 @@ k = ktest
  ret.Rnd <- init.EM(x, nclass = k, method = "Rnd.EM", EMC = .EMC.Rnd)
  emobj <- simple.init(x, nclass = k)
  ret.init <- emcluster(x, emobj, assign.class = TRUE)
- 
+
  par(mfrow = c(2, 2))
  plotem(ret.em, x)
  plotem(ret.Rnd, x)
  plotem(ret.init, x)
- 
+
  em.aic(x,emobj)
- 
+
  ## EM -- supervised
  library(EMCluster, quiet = TRUE)
  set.seed(1234)
@@ -574,4 +573,3 @@ k = ktest
  rownames(ret.all) <- c("em", "Rnd", "Rnd+")
  colnames(ret.all) <- c("logL", "adjR")
  ret.all
- 

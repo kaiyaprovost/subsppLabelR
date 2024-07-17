@@ -1,7 +1,6 @@
 #' @import raster
 #' @import MASS
 #' @import spocc
-#' @import rgeos
 #' @import dplyr
 #' @import sp
 #' @import viridis
