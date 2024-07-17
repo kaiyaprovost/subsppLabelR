@@ -20,6 +20,8 @@ databaseToAssignedSubspecies(
   outputDir,
   datafile = NULL,
   epsilon = 1e-06,
+  spp_epsilon = epsilon,
+  subspp_epsilon = epsilon,
   restrictNominate = F,
   cleanup_nominate = T,
   num_digits_latlong = 2,
