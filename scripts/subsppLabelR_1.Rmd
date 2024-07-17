@@ -37,10 +37,10 @@ listFromSubspeciesOcc = subsppLabelR::subspeciesOccQuery(
 
 ```
 
-Now we have returned an object with 2000 occurrences that are not labeled, ~1700 that are labeled as lepida, and ~70 labeled as nitens. Let's do the labeling procedure. 
+Now we have returned an object with 2000 occurrences that are not labeled, ~1700 that are labeled as *lepida*, and ~70 labeled as *nitens*. Let's do the labeling procedure. 
 
 ```{r labelSubspecies}
-## label the data by subspeces
+## label the data by subspecies
 print("Labeling data by subspecies")
 labeledLoc = subsppLabelR::labelSubspecies(subsppOccList = listFromSubspeciesOcc)
 labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),]
@@ -58,7 +58,7 @@ max_long = max(labeledLoc$longitude,na.rm=T)
 min_long = min(labeledLoc$longitude,na.rm=T)
 max_lat = max(labeledLoc$latitude,na.rm=T)
 min_lat = min(labeledLoc$latitude,na.rm=T)
-palette(c("red","blue","black"))
+palette(c("red","blue","black","lightblue","cyan","pink","magenta","purple","brown"))
 
 ext = raster::extent(c(min_long,max_long,min_lat,max_lat))
 bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
@@ -83,26 +83,73 @@ legend(
 
 ```
 
-As you can see with this example, there is an outlier that is far away from the rest of the distribution. Otherwise, the red and blue dots (which are labeled subspecies) appear to roughly correspond with the known distributions. 
+As you can see with this example, there is are outliers that is far east from the rest of the distribution. Otherwise, the red and blue dots (which are labeled subspecies) appear to roughly correspond with the known distributions. 
 
-Lets do anomaly detection now to remove the species-wide outliers and then update the raster. 
+Setting epsilon to be a higher value will remove more anomalies. Setting it to a lower value will remove fewer anomalies. You will likely need to tune your epsilon value. One way to do this is by examining the data in labeledLoc to see what sort of cutoffs there are. 
+
+For example, we know that there are some *nitens* points that are very far west. What epsilon value would we need to set for this subspecies? we can examine this by using the mgdad_px() function on just *nitens* data to see what the probabilities are and what cutoff we may wish to use.
+
+```{r mgdad}
+
+p_x = mgdad_px(labeledLoc[labeledLoc$subspecies=="nitens",c("latitude","longitude")])
+log_p_x = log10(p_x)
+hist(log_p_x)
+log_p_x_cutoffs = ceiling(log_p_x*2)/2
+plot(labeledLoc$longitude[labeledLoc$subspecies=="nitens"],
+     labeledLoc$latitude[labeledLoc$subspecies=="nitens"],
+     col=as.factor(log_p_x_cutoffs))
+legend(
+  "topright",
+  legend = as.factor(unique(log_p_x_cutoffs)),
+  pch = 1,
+  bty = "n",
+  col = as.factor(unique(log_p_x_cutoffs))
+)
+
+```
+It seems that an epsilon value of 10^-3.5 would suffice to get rid of those two west points, though it will also remove some of the others. We will not examine values for other subspecies or the full species distribution here, but I recommend you do so on your own data.
+
+Lets do anomaly detection now to remove the species-wide outliers and then update the dataset. In this case, for the full species an epsilon value of 10^-6 is more appropriate, so we will use two epsilons.  
+
+NOTE: your epsilon cutoff values can change when you remove certain points. If you decide to iteratively remove outliers, keep this in mind. 
 
 ```{r anomspp}
 print("Starting anomaly detection for whole species")
 
 list_of_anomalies = c()
-epsilon = 1e-6
+spp_epsilon = 10^-6
 
-anomalies = subsppLabelR::detectSpatialOutliers(localities = labeledLoc, epsilon = epsilon)
+anomalies = subsppLabelR::detectSpatialOutliers(localities = labeledLoc, epsilon = spp_epsilon)
 
 list_of_anomalies = c(list_of_anomalies, anomalies)
 
 list_of_anomalies_names = names(list_of_anomalies)
 rows_purged = sort(unique(list_of_anomalies_names))
 
-```
+print("Starting anomaly detection for each subspecies")
 
-Let's visualize these anomalies for the whole species.
+list_of_anomalies_sub = c()
+subspp_epsilon = 10^-3.5
+
+for (i in 1:length(c(subsppNames))) {
+  name = subsppNames[[i]]
+  if (name != "unknown") {
+    #print(name)
+    subset = labeledLoc[labeledLoc$subspecies == name,]
+    #print(nrow(subset))
+    anomalies = subsppLabelR::detectSpatialOutliers(localities = subset, epsilon = subspp_epsilon)
+  } 
+  #print(length(anomalies))
+  list_of_anomalies_sub = c(list_of_anomalies_sub, anomalies)
+  
+}
+list_of_anomalies_sub_names = names(list_of_anomalies_sub)
+rows_purged_sub = sort(unique(as.integer(list_of_anomalies_sub_names)))
+
+rows_purged = sort(unique(c(rows_purged,rows_purged_sub)))
+
+```
+Let's visualize these anomalies.
 
 ```{r anomplotspp}
 
@@ -142,84 +189,7 @@ legend(
 
 
 ```
-Perfect, these look like outliers. They are now removed from the dataset. 
-
-If you had a sharp eye you may have noticed that there were some subspecies that seemed to be out of the proper range. Let's run anomaly detection again just for the subspecies individually and see if we can get rid of those. 
-NOTE: remember, if you run anomaly detection multiple times, you will get progressively more outliers removed. 
-
-```{r anomsubspp}
-print("Starting anomaly detection for each subspecies")
-
-list_of_anomalies_sub = c()
-
-for (i in 1:length(c(subsppNames))) {
-  name = subsppNames[[i]]
-  if (name != "unknown") {
-    #print(name)
-    subset = labeledLoc[labeledLoc$subspecies == name,]
-    #print(nrow(subset))
-    anomalies = subsppLabelR::detectSpatialOutliers(localities = subset, epsilon = epsilon)
-  } 
-  #print(length(anomalies))
-  list_of_anomalies_sub = c(list_of_anomalies_sub, anomalies)
-  
-}
-list_of_anomalies_sub_names = names(list_of_anomalies_sub)
-rows_purged_sub = sort(unique(as.integer(list_of_anomalies_sub_names)))
-
-```
-
-
-And again, let's visualise.
-
-```{r anomplotspp}
-
-print(paste(
-  "Removing",
-  length(rows_purged_sub),
-  "of",
-  length(labeledLoc[, 1]),
-  "detected anomalies"
-))
-removed_sub = labeledLoc[(rownames(labeledLoc) %in% rows_purged_sub),]
-labeledLoc = labeledLoc[!(rownames(labeledLoc) %in% rows_purged_sub),]
-## set up factors for removed
-removed_sub$subspecies = as.factor(removed_sub$subspecies)
-levels(removed_sub$subspecies) = levels(as.factor(labeledLoc$subspecies))
-
-raster::plot(
-  bgLayer,
-  col = "grey",
-  colNA = "darkgrey",
-  main = paste("Anomalies")
-)
-points(labeledLoc$longitude,
-       labeledLoc$latitude,
-       col = "lightgrey",
-       pch = 0)
-points(removed_sub$longitude,
-       removed_sub$latitude,
-       col = as.factor(removed_sub$subspecies))
-legend(
-  "top",
-  legend = as.factor(unique(removed_sub$subspecies)),
-  pch = 1,
-  bty = "n",
-  col = as.factor(unique(removed_sub$subspecies))
-)
-
-
-```
-As you can see this specifies certain points to be removed that may be fully outside the original boundaries. It does not, however, catch the *nitens* points that are very far west. It is likely that epsilon is set incorrectly for just this subspecies -- we can examine this by using the mgdad_px() function on just *nitens* data to see what the probabilities are and what cutoff we may wish to use.
-
-```{r mgdad}
-
-p_x = mgdad_px(labeledLoc[labeledLoc$subspecies=="nitens",])
-
-```
-
-
-
+These indeed look like outliers, though our subspecies cutoff might be too high for *lepida*. We shall leave the *lepida* as is for now, to be more conservative with our estimate.
 
 We also will do a quick clean up to make sure that none of the subspecies are now only represented by a single individual, and also to alter the raster file so that it is no longer so wide.
 
@@ -241,7 +211,7 @@ max_long = max(labeledLoc$longitude,na.rm=T)
 min_long = min(labeledLoc$longitude,na.rm=T)
 max_lat = max(labeledLoc$latitude,na.rm=T)
 min_lat = min(labeledLoc$latitude,na.rm=T)
-palette(c("red","blue","black"))
+palette(c("red","blue","black","lightblue","cyan"))
 
 ext = raster::extent(c(min_long,max_long,min_lat,max_lat))
 bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
@@ -262,7 +232,6 @@ legend(
 )
 
 ```
-
 Now let us plot the density maps for the species. We will only retain the top 5% most dense points (the 95th percentile) for each subspecies. 
 
 ```{r density}
@@ -336,8 +305,7 @@ for (i in 1:length(densityRasters)) {
 }
 
 ```
-
-And for fun let's look at how the data vary when we change the density we retain, from 5% to 10% (the 90th percentile)
+Hm. The *lepida* looks like it is a little gappy. Let's increase our density cutoff from 5% to 10% (the 90th percentile). 
 
 ```{r density2}
 
@@ -355,7 +323,10 @@ densityRasters_10 = lapply(subsppNames, function(subspp) {
     xmax = xmax,
     ymin = ymin,
     ymax = ymax,
-    total_range= bgLayer
+    total_range= bgLayer,
+    outputDir = getwd(),
+    spp = spp,
+    subspp = subspp
   )
   if (is.null(dens)) {
     dens = NA
@@ -408,7 +379,7 @@ for (i in 1:length(densityRasters_10)) {
 
 ```
 
-Now we can see where the bulk of the data are found for these ranges. Most of the unknown samples we downloaded appear to be in subspecies *lepida*. Comparing the top 5% and top 10% shows us how choosing cutoffs can impact our downstream analyses. We will continue for now with the top 5%. 
+Now we can see where the bulk of the data are found for these ranges. Most of the unknown samples we downloaded appear to be in subspecies *lepida*. Comparing the top 5% and top 10% shows us how choosing cutoffs can impact our downstream analyses. We will continue for now with the top 10%, as it seems to connect the bulk of the *lepida* samples.  
 
 Next let us convert these maps to polygons. 
 
@@ -419,7 +390,7 @@ Next let us convert these maps to polygons.
 print("Converting density maps to polygons")
 ## can't handle if there's no data in previous step
 
-densityPolygons = lapply(densityRasters, function(dens) {
+densityPolygons = lapply(densityRasters_10, function(dens) {
   #print(names(dens))
   densPol = subsppLabelR::densityMapToPolygons(densityMap = dens)
   return(densPol)
