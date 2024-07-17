@@ -52,10 +52,10 @@ databaseToAssignedSubspecies = function(spp,
                                         method = "polygon",
                                         ## methods: polygon, density
                                         quant = 0.95,
-                                        xmin = NULL,
-                                        xmax = NULL,
-                                        ymin = NULL,
-                                        ymax = NULL,
+                                        xmin = -180,
+                                        xmax = 180,
+                                        ymin = -90,
+                                        ymax = 90,
                                         plotIt = F,
                                         bgLayer = NULL,
                                         outputDir,
@@ -131,6 +131,12 @@ databaseToAssignedSubspecies = function(spp,
   labeledLoc$longitude = round(labeledLoc$longitude, num_digits_latlong)
   labeledLoc = unique(labeledLoc)
 
+  print("Removing points outside of bounds")
+  labeledLoc = labeledLoc[labeledLoc$latitude <= ymax, ]
+  labeledLoc = labeledLoc[labeledLoc$latitude >= ymin, ]
+  labeledLoc = labeledLoc[labeledLoc$longitude <= xmax, ]
+  labeledLoc = labeledLoc[labeledLoc$longitude >= xmin, ]
+
   if (cleanup_nominate == T) {
     print("RELABELING NOMINATE AFTER CLEANUP")
     good_nominate_rows = which(grepl(
@@ -144,29 +150,15 @@ databaseToAssignedSubspecies = function(spp,
     labeledLoc = unique(labeledLoc)
   }
 
-  print("Check xy maxmin")
-  if (is.null(xmin)) {
-    xmin = as.numeric(min(as.numeric(labeledLoc$longitude), na.rm = T))
-  } ## fine?
-  if (is.null(xmax)) {
-    xmax = as.numeric(max(as.numeric(labeledLoc$longitude), na.rm = T))
-  }
-  if (is.null(ymin)) {
-    ymin = as.numeric(min(as.numeric(labeledLoc$latitude), na.rm = T))
-  }
-  if (is.null(ymax)) {
-    ymax = as.numeric(max(as.numeric(labeledLoc$latitude), na.rm = T))
-  }
-  print(paste(xmin, xmax, ymin, ymax))
+  max_long = max(labeledLoc$longitude,na.rm=T)
+  min_long = min(labeledLoc$longitude,na.rm=T)
+  max_lat = max(labeledLoc$latitude,na.rm=T)
+  min_lat = min(labeledLoc$latitude,na.rm=T)
+
   print("Cleaning bgLayer")
   if (is.null(bgLayer)) {
-    print(paste(xmin, xmax, ymin, ymax))
-    ext = raster::extent(c(
-      as.numeric(xmin),
-      as.numeric(xmax),
-      as.numeric(ymin),
-      as.numeric(ymax)
-    ))
+    ext = raster::extent(c(min_long,max_long,min_lat,max_lat))
+
     print(ext)
     bgLayer = raster::raster(
       ext = ext,
@@ -292,31 +284,14 @@ databaseToAssignedSubspecies = function(spp,
 
   subsppNames = unique(labeledLoc$subspecies)
   ## clean up the bgLayer again in case it needs to be smaller
-  print("Check xy maxmin 2nd time")
-  xmin2 = as.numeric(min(as.numeric(labeledLoc$longitude), na.rm = T))
-  xmax2 = as.numeric(max(as.numeric(labeledLoc$longitude), na.rm = T))
-  ymin2 = as.numeric(min(as.numeric(labeledLoc$latitude), na.rm = T))
-  ymax2 = as.numeric(max(as.numeric(labeledLoc$latitude), na.rm = T))
-  ## make sure the new boundaries aren't outside your given boundaries
-  xmin2 = max(xmin, xmin2)
-  xmax2 = min(xmax, xmax2)
-  ymin2 = max(ymin, ymin2)
-  ymax2 = min(ymax, ymax2)
-  print("Removing points outside of bounds")
-  labeledLoc = labeledLoc[labeledLoc$latitude <= ymax2, ]
-  labeledLoc = labeledLoc[labeledLoc$latitude >= ymin2, ]
-  labeledLoc = labeledLoc[labeledLoc$longitude <= xmax2, ]
-  labeledLoc = labeledLoc[labeledLoc$longitude >= xmin2, ]
-
+  max_long = max(labeledLoc$longitude,na.rm=T)
+  min_long = min(labeledLoc$longitude,na.rm=T)
+  max_lat = max(labeledLoc$latitude,na.rm=T)
+  min_lat = min(labeledLoc$latitude,na.rm=T)
 
   print("Cleaning bgLayer 2nd time")
   #print(paste(xmin2,xmax2,ymin2,ymax2))
-  ext2 = raster::extent(c(
-    as.numeric(xmin2),
-    as.numeric(xmax2),
-    as.numeric(ymin2),
-    as.numeric(ymax2)
-  ))
+  ext2 = raster::extent(c(min_long,max_long,min_lat,max_lat))
   bgLayer = raster::raster(
     ext = ext2,
     nrow = cells_per_bgLayer,
@@ -352,6 +327,10 @@ databaseToAssignedSubspecies = function(spp,
 
   # if(method %in% c("polygon","density")) {
   print("Building species kernel density maps")
+  xmax = max_long
+  xmin = min_long
+  ymax = max_lat
+  ymin = min_lat
   ## TODO: add something to increase quants dynamically here? so if 0.95 does not return all the valid subspecies, reduce to 0.90 etc?
   densityRasters = lapply(subsppNames, function(subspp) {
     print(subspp)
