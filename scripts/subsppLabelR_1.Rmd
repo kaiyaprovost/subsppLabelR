@@ -617,7 +617,7 @@ legend(
 )
 ```
 
-Putting this all together in one function looks like this (though note that the epsilons do not match 100%):
+Putting this all together in one function looks like this:
 
 ```{r database}
 
@@ -631,7 +631,10 @@ db = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                 ymin=10,
                                                 ymax=50,
                                                 plotIt=T, bgLayer=raster::raster(ext=raster::extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
-                                                outputDir="~/")
+                                                outputDir="~/",
+                                                spp_epsilon=1e-6,
+                                                subspp_epsilon=10^-3.5,
+                                                cells_per_bgLayer = 100)
 print(head(db$loc_suspect))
 print(head(db$loc_good))
 print(head(db$pol))
