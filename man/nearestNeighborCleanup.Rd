@@ -16,3 +16,8 @@ nearestNeighborCleanup(good_points, bad_points, k = 21)
 \description{
 This function XXX
 }
+\examples{
+
+## i am an example
+
+}

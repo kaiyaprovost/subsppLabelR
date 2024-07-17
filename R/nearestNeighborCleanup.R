@@ -9,6 +9,8 @@
 #' @export
 #' @examples
 #'
+#' ## i am an example
+#'
 nearestNeighborCleanup = function(good_points,bad_points,k=21){
   pr <- class::knn(train=good_points[,c("longitude","latitude")],
                    test=bad_points[,c("longitude","latitude")],
