@@ -50,22 +50,29 @@ NULL
 #' overlapToRemove_sin = polygonsToRemove$subsppA_intToRemove
 #' overlapToRemove_ful = polygonsToRemove$subsppB_intToRemove
 flagPolygonOverlap = function(subsppPoly1 = polA,
-                              subsppPoly2 = polB) {
+                               subsppPoly2 = polB,
+                               crs = "+proj=longlat +ellps=WGS84") {
   ##function(subsppPoly1,subsppPoly2)
   ## this function checks for overlaps between polygons
   ## TODO: remove polygon if not touching another of same spp
   ## but also closer to polygon of other species
+  #library(rgeos)
+  #library(raster)
   ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
   ## will delete that subspecies. no bueno
   badList_subsppA_features = c()
   badList_subsppB_features = c()
   overlapsToRemove_subsppA = c()
   overlapsToRemove_subsppB = c()
+  ## NOT RIGHT BECAUSE NOT ADDING TO CORRECT SPOTS
   for (feature_subsppA in (1:length(subsppPoly1))) {
     ## get the features within the subspecies polygon
     for (feature_subsppB in (1:length(subsppPoly2))) {
       ## get the features within the subspecies polygon
       ## check areas
+      ## Warning message:
+      ## In RGEOSMiscFunc(spgeom, byid, "rgeos_area") :
+      ##  Spatial object is not projected; GEOS expects planar coordinates
       totArea1 = sf::st_Area(subsppPoly1) ## the whole area of the subspecies
       totArea2 = sf::st_Area(subsppPoly2) ## the whole area of the subspecies
       area1 = sf::st_Area(subsppPoly1[feature_subsppA,]) ## the area of the single feature
@@ -91,51 +98,94 @@ flagPolygonOverlap = function(subsppPoly1 = polA,
           ## if they overlap
           area1percent = areaInt / totArea1 ## the area of the feature as a percent of the area of the subspecies
           area2percent = areaInt / totArea2
-          if (areaInt >= area1 || areaInt >= area2) {
-            #print("SUBSUMED")
-            if (areaInt >= area1) {
-              ## if the overlap entirely subsumes an area
-              ## check if the area is the entire subspecies range
-              if (area1percent != 1) {
-                ## remove the area
-                #print("SUBSPP1 SUBSUMED")
-                badList_subsppA_features = c(badList_subsppA_features, feature_subsppA)
-              }
-              ## TODO: change to check for density?
+          ## NEW IF STATEMENTS
+          if (area1 > area2) {
+            ## if A big B small -- area1 vs area2
+            if (testArea < area2) {
+              ## if B not subsumed, remove from A -- testArea
+              #badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+              overlapsToRemove_subsppA = c(overlapsToRemove_subsppA, intersect)
             }
-            if (areaInt >= area2) {
-              ## if the overlap entirely subsumes an area
-              ## check if the area is the entire subspecies range
-              if (area2percent != 1) {
-                ## remove the area
-                ## TODO: change to check for density?
-                #print("SUBSPP2 SUBSUMED")
+            else if (testArea >= area2) {
+              ## else if B subsumed
+              if (area2percent == 1) {
+                ## if B = 100% of subspecies, remove from A -- area2percent
+                #badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+                overlapsToRemove_subsppA = c(overlapsToRemove_subsppA, intersect)
+              }
+              else if (area2percent != 1) {
+                ## else if B not 100% of subspecies, remove from B
                 badList_subsppB_features = c(badList_subsppB_features, feature_subsppB)
               }
             }
           }
-          else {
-            #print("NOT SUBSUMED")
-            if (area1percent <= area2percent) {
-              #print("AREA1 IS LARGER")
-              #print("remove area1")
+          else if (area1 < area2) {
+            ## else if A small B big
+            if (testArea < area1) {
+              ## if A not subsumed, remove from B -- area1percent
+              #badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+              overlapsToRemove_subsppB = c(overlapsToRemove_subsppB, intersect)
+            }
+            else if (testArea >= area1) {
+              ## else if A subsumed
+              if (area1percent == 1) {
+                ## if A = 100% of subspecies, remove from B
+                #badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+                overlapsToRemove_subsppB = c(overlapsToRemove_subsppB, intersect)
+              }
+              else if (area1percent != 1) {
+                ## else if A not 100% of subspecies, remove from A
+                badList_subsppA_features = c(badList_subsppA_features, feature_subsppA)
+              }
+            }
+          }
+          else if (area1 == area2) {
+            ## else if A = B
+            ## check total areas and remove larger
+            if (totArea1 > totArea2) {
+              ## if total A is greater than total B, remove A
+              #badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
               overlapsToRemove_subsppA = c(overlapsToRemove_subsppA, intersect)
             }
-            else if (area1percent >= area2percent) {
-              #print("AREA2 IS LARGER")
-              #print("remove area1")
+            else if (totArea1 < totArea2) {
+              ## if total B is greater than total A, remove B
+              #badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
               overlapsToRemove_subsppB = c(overlapsToRemove_subsppB, intersect)
+            }
+            else if (totArea1 == totArea2) {
+              ## if they are the exact same size
+              if (testArea < area1 &&
+                  testArea < area2) {
+                ## if neither subsumed, remove arbitrary
+                flip = sample(1:2, 1)
+                if (flip == 1) {
+                  ## flip coin remove A
+                  #badList_subsppA_features = c(badList_subsppA_features,feature_subsppA)
+                  overlapsToRemove_subsppA = c(overlapsToRemove_subsppA, intersect)
+                }
+                else if (flip == 2) {
+                  ## flip coin remove B
+                  #badList_subsppB_features = c(badList_subsppB_features,feature_subsppB)
+                  overlapsToRemove_subsppB = c(overlapsToRemove_subsppB, intersect)
+                }
+              }
+              else if (testArea == area1 &&
+                       testArea == area2) {
+                ## if both are subsumed, keep both
+                print("EXACT MATCH, KEEPING BOTH")
+              }
             }
           }
         }
       }
     }
+    toReturn = list(
+      subsppApoly_toremove = badList_subsppA_features,
+      subsppBpoly_toremove = badList_subsppB_features,
+      subsppA_intToRemove = overlapsToRemove_subsppA,
+      subsppB_intToRemove = overlapsToRemove_subsppB
+    )
+    return(toReturn)
   }
-  toReturn = list(
-    subsppApoly_toremove = badList_subsppA_features,
-    subsppBpoly_toremove = badList_subsppB_features,
-    subsppA_intToRemove = overlapsToRemove_subsppA,
-    subsppB_intToRemove = overlapsToRemove_subsppB
-  )
-  return(toReturn)
 }
+

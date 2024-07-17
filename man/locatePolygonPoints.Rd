@@ -7,31 +7,25 @@
 locatePolygonPoints(
   test_points,
   polygonA,
-  polygonB,
   crs = "+proj=longlat +ellps=WGS84",
   setcoord = TRUE,
-  nameA = "A",
-  nameB = "B"
+  nameA = "A"
 )
 }
 \arguments{
 \item{test_points}{The points to check where they fall}
 
-\item{polygonA}{The first polygon}
-
-\item{polygonB}{The second polygon}
+\item{polygonA}{The  polygon}
 
 \item{crs}{A coordinate reference system to assign to the polygons and the test points if setcoord = TRUE}
 
 \item{setcoord}{Whether to set a coordinate reference system to the points and polygons}
 
 \item{nameA}{The (subspecies) name associated with the first polygon}
-
-\item{nameB}{The (subspecies) name associated with the second polygon}
 }
 \description{
-This function takes a two polygons and a list of points
-and determines whether the points fall within the polygons, then
+This function takes a one polygon and a list of points
+and determines whether the points fall within the polygon, then
 adds a column for each polygon's name with a boolean of whether
 the point overlaps.
 }
@@ -51,5 +45,5 @@ densPol_sin = densityMapToPolygons(densityMap=dens_sin)
 densPol_ful = densityMapToPolygons(densityMap=dens_ful)
 polyLocations = labeledLoc
 polyLocations = locatePolygonPoints(test_points=polyLocations,polygonA=densPol_sin,
-   polygonB=densPol_ful,crs="+proj=longlat +ellps=WGS84",setcoord = TRUE,nameA="sinuatus",nameB="fulvescens")
+   crs="+proj=longlat +ellps=WGS84",setcoord = TRUE,nameA="sinuatus")
 }

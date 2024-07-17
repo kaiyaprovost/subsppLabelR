@@ -4,7 +4,11 @@
 \alias{flagPolygonOverlap}
 \title{Flag Bad Polygon Overlaps}
 \usage{
-flagPolygonOverlap(subsppPoly1 = polA, subsppPoly2 = polB)
+flagPolygonOverlap(
+  subsppPoly1 = polA,
+  subsppPoly2 = polB,
+  crs = "+proj=longlat +ellps=WGS84"
+)
 }
 \arguments{
 \item{subsppPoly1}{Polygon for first subspecies to compare}

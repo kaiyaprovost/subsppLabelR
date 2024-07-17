@@ -11,8 +11,7 @@ NULL
 #' Polygon Trimmer
 #'
 #' This function takes a list of polygons as from densityMapToPolygons() or similar
-#' and removes portions of the polygons as determined by flagPolygonOverlap() and
-#' trimPolygonsByOverlap()
+#' and removes portions of the polygons based off of their overlaps.
 #'
 #' @param polygonList A list of polygons to check
 #' @param namesList The subspecies (or other) names associated with polygon list
@@ -38,50 +37,70 @@ NULL
 #' densityPolygons_trim = polygonTrimmer(polygonList=densityPolygons,
 #'    namesList=c("sinuatus","fulvescens"))
 #'
-polygonTrimmer = function(polygonList, namesList) {
+polygonTrimmer = function(polygonList, namesList, crs = "+proj=longlat +ellps=WGS84") {
+  ## if the names list has changed this doesn't work?
   newPolygonList = polygonList
+
+  if(length(namesList)!=length(polygonList)) {
+    namesList = names(polygonList)
+    print(names(polygonList))
+  }
+
+  print(paste(length(newPolygonList),length(namesList)))
+
   for (slotA in 1:length(namesList)) {
     for (slotB in 1:length(namesList)) {
       if (namesList[[slotA]] != "unknown" &&
           namesList[[slotB]] != "unknown" && slotA != slotB) {
-        print(paste(slotA,slotB,sep=" "))
-        #print(paste(namesList[[slotA]],"with",namesList[[slotB]],sep=" "))
-        polA = newPolygonList[[slotA]]
-        polB = newPolygonList[[slotB]]
-        #print(class(polA))
-        #print(class(polB))
-        # plot(bg,col="grey",colNA="darkgrey")
-        # plot(polA,add=T,border="cyan",lwd=7)
-        # plot(polB,add=T,border="red",lwd=4)
-        # #invisible(readline(prompt="Press [enter] to continue"))
-        # if(!is.null(raster::intersect(polA,polB))){
-        #   plot(raster::intersect(polA,polB),add=T,lwd=1,border="black")
-        # }
-        ## this throws the warnings
-        polygonsToRemove = (flagPolygonOverlap2(polA, polB)) ######### CHANGED
-        #print("CALLING NEW FUNCTION")
-        subsppA_polygonsToRemove = polygonsToRemove$subsppApoly_toremove
-        subsppB_polygonsToRemove = polygonsToRemove$subsppBpoly_toremove
-        overlapToRemove_subsppA = polygonsToRemove$subsppA_intToRemove
-        overlapToRemove_subsppB = polygonsToRemove$subsppB_intToRemove
-        subsppA_densityPolygon_trim = trimPolygonsByOverlap(polygon = polA,
-                                                            idList = subsppA_polygonsToRemove,
-                                                            intList = overlapToRemove_subsppA)
-        ## THIS IS FAILING
-        subsppB_densityPolygon_trim = trimPolygonsByOverlap(polygon = polB,
-                                                            idList = subsppB_polygonsToRemove,
-                                                            intList = overlapToRemove_subsppB)
-        ## TODO: fix this
-        subsppA = namesList[[slotA]]
-        subsppB = namesList[[slotB]]
-        if(!(is.null(subsppA_densityPolygon_trim))){newPolygonList[[slotA]] = subsppA_densityPolygon_trim}
-        if(!(is.null(subsppB_densityPolygon_trim))){newPolygonList[[slotB]] = subsppB_densityPolygon_trim}
-        names(newPolygonList) = names(polygonList)
-        #print(names(newPolygonList))
-        #plot(bg,col="grey",colNA="darkgrey")
-        #plot(subsppA_densityPolygon_trim,add=T,border="cyan",lwd=7)
-        #plot(subsppB_densityPolygon_trim,add=T,border="red",lwd=4)
-        #plot(intersect(polA,polB),add=T,lwd=1,border="black")
+        print(paste(slotA,namesList[[slotA]],slotB,namesList[[slotB]],sep=" "))
+
+        try({
+          polA = newPolygonList[[slotA]]
+          polB = newPolygonList[[slotB]]
+
+          ## check overlap between polA and polB
+          overlapPol = sf::st_intersection(polA,polB)
+
+          if(is.null(overlapPol)) {
+            overlapArea = 0
+          } else {
+            overlapArea = sf::st_Area(overlapPol)
+          }
+
+          if(overlapArea != 0){
+            if(class(overlapPol)=="SpatialCollections") {
+              overlapPol = overlapPol@polyobj
+            }
+            ## check the overlap size relative to the other sizes
+            areaPolA = sf::st_Area(polA)
+            areaPolB = sf::st_Area(polB)
+
+            ## check if it is smaller than one or the other or both
+
+            if(overlapArea < areaPolA) {all_of_A = F} else {all_of_A = T}
+            if(overlapArea < areaPolB) {all_of_B = F} else {all_of_B = T}
+
+            if (all_of_A == F && all_of_B == T) {
+              ## remove from A
+              polA = sf::st_Difference(polA,overlapPol) ## order matters
+            } else if (all_of_A == T && all_of_B == F) {
+              ## remove from B
+              polB = sf::st_Difference(polB,overlapPol) ## order matters
+
+            } else if (all_of_A == F && all_of_B == F) {
+              ## remove from both
+              polA = sf::st_Difference(polA,overlapPol) ## order matters
+              polB = sf::st_Difference(polB,overlapPol) ## order matters
+
+            } ## we don't do anything if both are true
+
+
+          }
+
+          newPolygonList[[slotA]] = polA
+          newPolygonList[[slotB]] = polB
+        })
+
       }
     }
   }

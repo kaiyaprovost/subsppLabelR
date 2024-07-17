@@ -4,7 +4,7 @@
 \alias{polygonTrimmer}
 \title{Polygon Trimmer}
 \usage{
-polygonTrimmer(polygonList, namesList)
+polygonTrimmer(polygonList, namesList, crs = "+proj=longlat +ellps=WGS84")
 }
 \arguments{
 \item{polygonList}{A list of polygons to check}
@@ -13,8 +13,7 @@ polygonTrimmer(polygonList, namesList)
 }
 \description{
 This function takes a list of polygons as from densityMapToPolygons() or similar
-and removes portions of the polygons as determined by flagPolygonOverlap() and
-trimPolygonsByOverlap()
+and removes portions of the polygons based off of their overlaps.
 }
 \examples{
 

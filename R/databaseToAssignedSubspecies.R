@@ -419,7 +419,7 @@ databaseToAssignedSubspecies = function(spp,
   ## will delete that subspecies. no bueno
   ## TODO: nominate subspecies special case
 
-  densityPolygons_trim1 = polygonTrimmer2(polygonList = densityPolygons, namesList = subsppNames)
+  densityPolygons_trim1 = polygonTrimmer(polygonList = densityPolygons, namesList = subsppNames)
   if (plotIt == T) {
     for (i in 1:length(densityPolygons_trim1)) {
       name = names(densityPolygons_trim1)[[i]]
@@ -468,7 +468,7 @@ databaseToAssignedSubspecies = function(spp,
         polygonA = as(polygonA, "SpatialPolygonsDataFrame")
         nameA = subsppNames[[polygonSlot]]
         print(polygonA) ## this needs to be a spatial polygon dataframe
-        polyLocations = locatePolygonPoints2(test_points = polyLocations,
+        polyLocations = locatePolygonPoints(test_points = polyLocations,
                                              polygonA = polygonA,
                                              nameA = nameA,
                                              setcoord = T)
