@@ -157,6 +157,7 @@ databaseToAssignedSubspecies = function(spp,
   if (is.null(ymax)) {
     ymax = as.numeric(max(as.numeric(labeledLoc$latitude), na.rm = T))
   }
+  print(paste(xmin, xmax, ymin, ymax))
   print("Cleaning bgLayer")
   if (is.null(bgLayer)) {
     print(paste(xmin, xmax, ymin, ymax))
