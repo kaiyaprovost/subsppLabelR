@@ -249,9 +249,7 @@ print("Building species kernel density maps")
 
 densityRasters = lapply(subsppNames, function(subspp) {
   print(subspp)
-  #subspp="relicta"
   locs = labeledLoc[labeledLoc$subspecies == subspp,]
-  #print(head(locs))
   dens = subsppLabelR::subspeciesDensityMap(
     localities = locs,
     quant = quant,
@@ -305,11 +303,11 @@ for (i in 1:length(densityRasters)) {
 }
 
 ```
-Hm. The *lepida* looks like it is a little gappy. Let's increase our density cutoff from 5% to 10% (the 90th percentile). 
+Hm. The *lepida* looks like it is a little gappy. Let's look at density cutoffs of 5%, 10%, and 15% (the 95th, 90th, and 85th percentile, respectively). 
 
 ```{r density2}
 
-quant=0.90
+quant = 0.90
 
 print("Building species kernel density maps -- top 10 %")
 
@@ -347,7 +345,44 @@ densityRasters_10 = densityRasters_10[!(is.na(densityRasters_10))]
 subsppNames = names(densityRasters_10)
 
 
-par(mfrow=c(2,3))
+quant=0.85
+
+print("Building species kernel density maps -- top 15 %")
+
+densityRasters_15 = lapply(subsppNames, function(subspp) {
+  print(subspp)
+  locs = labeledLoc[labeledLoc$subspecies == subspp,]
+  dens = subsppLabelR::subspeciesDensityMap(
+    localities = locs,
+    quant = quant,
+    xmin = xmin,
+    xmax = xmax,
+    ymin = ymin,
+    ymax = ymax,
+    total_range= bgLayer,
+    outputDir = getwd(),
+    spp = spp,
+    subspp = subspp
+  )
+  if (is.null(dens)) {
+    dens = NA
+  }
+  
+  if ((length((raster::unique(dens,na.last=NA)))) == 0) {
+    dens = NA
+  }
+  
+  names(dens) = subspp
+  return(dens)
+})
+#print("done density")
+names(densityRasters_15) = subsppNames
+
+## remove failed ones
+densityRasters_15 = densityRasters_15[!(is.na(densityRasters_15))]
+subsppNames = names(densityRasters_15)
+
+par(mfrow=c(3,3))
 for (i in 1:length(densityRasters)) {
   print(i)
   name = names(densityRasters)[[i]]
@@ -376,10 +411,24 @@ for (i in 1:length(densityRasters_10)) {
                add = T,
                col = viridis::viridis(99))
 }
+for (i in 1:length(densityRasters_15)) {
+  print(i)
+  name = names(densityRasters_15)[[i]]
+  raster::plot(
+    bgLayer,
+    col = "grey",
+    colNA = "darkgrey",
+    legend=F,
+    main = paste("Density for 15%, subspp:", name)
+  )
+  raster::plot(densityRasters_15[[i]],
+               add = T,
+               col = viridis::viridis(99))
+}
 
 ```
 
-Now we can see where the bulk of the data are found for these ranges. Most of the unknown samples we downloaded appear to be in subspecies *lepida*. Comparing the top 5% and top 10% shows us how choosing cutoffs can impact our downstream analyses. We will continue for now with the top 10%, as it seems to connect the bulk of the *lepida* samples.  
+Now we can see where the bulk of the data are found for these ranges. Most of the unknown samples we downloaded appear to be in subspecies *lepida*. Comparing the plots shows us how choosing cutoffs can impact our downstream analyses. We will continue for now with the top 10%, as it seems to connect the bulk of the *lepida* samples without adding too many extra bits.  
 
 Next let us convert these maps to polygons. 
 
@@ -395,11 +444,12 @@ densityPolygons = lapply(densityRasters_10, function(dens) {
   return(densPol)
 })
 
+palette(c("black", "red", "blue"))
 raster::plot(
   bgLayer,
   col = "grey",
   colNA = "darkgrey",
-  main = paste("Polygons, untrimmed", name)
+  main = paste("Polygons, untrimmed", spp)
 )
 for (i in 1:length(densityPolygons)) {
   raster::plot(
@@ -418,10 +468,10 @@ legend(
 )
 
 ```
-
-We must now check the polygons for overlaps.
+We must now check the polygons for overlaps. For this particular configuration of the data, there are no overlaps to be seen. 
 
 ```{r next}
+
 
 ## check overlaps between polygons
 
@@ -468,7 +518,7 @@ legend(
 
 ```
 
-These polygons look good now, considering we are missing a lot of data from the center of the distribution. 
+These polygons look good considering we are missing a lot of data from the center of the distribution. 
 Now lets locate the unknown points relative to those polygons and do some clean up. 
 
 ```{r pointlocate}
@@ -480,20 +530,12 @@ print("Locating points relative to polygons")
 polyLocations = labeledLoc
 
 for (slotA in 1:length(subsppNames)) {
-  for (slotB in 1:length(subsppNames)) {
-    if (subsppNames[[slotA]] != "unknown" &&
-        subsppNames[[slotB]] != "unknown" && slotA != slotB) {
-      #print(paste(slotA,slotB,sep=" "))
-      polyLocations = subsppLabelR::locatePolygonPoints(
-        test_points = polyLocations,
-        polygonA = densityPolygons_trim[[slotA]],
-        polygonB = densityPolygons_trim[[slotB]],
-        nameA = subsppNames[[slotA]],
-        nameB = subsppNames[[slotB]],
-        setcoord = T
-      )
-      
-    }
+  if (subsppNames[[slotA]] != "unknown") {
+    polyLocations = subsppLabelR::locatePolygonPoints(
+      test_points = polyLocations,
+      polygonA = densityPolygons_trim[[slotA]],
+      name=subsppNames[[slotA]]
+    )
     
   }
   
@@ -546,7 +588,7 @@ raster::plot(
   bgLayer,
   col = "grey",
   colNA = "darkgrey",
-  main = "Unknown or Suspect Poimts"
+  main = "Unknown or Suspect Points"
 )
 points(loc_suspect$longitude,loc_suspect$latitude)
 raster::plot(
@@ -564,12 +606,18 @@ raster::plot(
   main = "Final Polygons by Subspecies"
 )
 lapply(1:length(pol),FUN=function(i){
-  raster::plot(pol[[i]],add=T,border=as.numeric(as.factor(names(pol)))[i])
+  raster::plot(pol[[i]],add=T,border=i)
 })
-
+legend(
+  "top",
+  legend = names(pol),
+  bty = "n",
+  fill = rgb(0, 0, 0, 0),
+  border = 1:length(pol)
+)
 ```
 
-Putting this all together in one function looks like this:
+Putting this all together in one function looks like this (though note that the epsilons do not match 100%):
 
 ```{r database}
 
@@ -577,7 +625,7 @@ db = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                 subsppList = c("lepida","nitens"),
                                                 pointLimit=2000,
                                                 dbToQuery=c("gbif"),
-                                                quant=0.95,
+                                                quant=0.90,
                                                 xmin=-125,
                                                 xmax=-60,
                                                 ymin=10,
