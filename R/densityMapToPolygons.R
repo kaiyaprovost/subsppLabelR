@@ -35,8 +35,9 @@ densityMapToPolygons = function(densityMap,verbose=F) {
   if(verbose==T){print(class(polygonR))}
   polygon = raster::rasterToPolygons(polygonR,fun = NULL,na.rm = T,dissolve = T)
   if(verbose==T){print(class(polygon))}
-  polygon = as(sf::st_as_sf(polygon), "Spatial") ## added 15 Sep 2023 because rgeos and sp are not compatable?  as(st_as_sf(x), "Spatial")
-  polygon <- sp::disaggregate(polygon)
+  polygon = as(sf::st_as_sf(polygon), "Spatial")
+  #polygon <- sp::disaggregate(polygon)
+  polygon = st_cast(st_cast,"POLYGON")
   if(verbose==T){print("DISAGGREGATE SUCCESSFUL")}
   #plot(polygon)
   return(polygon)
