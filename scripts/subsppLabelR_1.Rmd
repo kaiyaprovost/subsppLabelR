@@ -385,7 +385,6 @@ Next let us convert these maps to polygons.
 
 ```{r polygons}
 
-
 ## convert to polygons
 print("Converting density maps to polygons")
 ## can't handle if there's no data in previous step
