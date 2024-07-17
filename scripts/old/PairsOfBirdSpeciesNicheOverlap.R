@@ -268,7 +268,6 @@ databaseToAssignedSubspecies = function(spp,subspp1,subspp2,pointLimit,dbToQuery
   library(dplyr)
   library(spocc)
   library(MASS)
-  library(rgeos)
   library(raster)
   ## step 1: get the species
   ## in this case, subspecies

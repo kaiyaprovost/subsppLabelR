@@ -59,12 +59,12 @@ polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=W
           polB = newPolygonList[[slotB]]
 
           ## check overlap between polA and polB
-          overlapPol = rgeos::gIntersection(polA,polB)
+          overlapPol = sf::st_intersection(polA,polB)
 
           if(is.null(overlapPol)) {
             overlapArea = 0
           } else {
-            overlapArea = rgeos::gArea(overlapPol)
+            overlapArea = sf::st_Area(overlapPol)
           }
 
           if(overlapArea != 0){
@@ -72,8 +72,8 @@ polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=W
               overlapPol = overlapPol@polyobj
             }
             ## check the overlap size relative to the other sizes
-            areaPolA = rgeos::gArea(polA)
-            areaPolB = rgeos::gArea(polB)
+            areaPolA = sf::st_Area(polA)
+            areaPolB = sf::st_Area(polB)
 
             ## check if it is smaller than one or the other or both
 
@@ -82,15 +82,15 @@ polygonTrimmer2 = function(polygonList, namesList, crs = "+proj=longlat +ellps=W
 
             if (all_of_A == F && all_of_B == T) {
               ## remove from A
-              polA = rgeos::gDifference(polA,overlapPol) ## order matters
+              polA = sf::st_Difference(polA,overlapPol) ## order matters
             } else if (all_of_A == T && all_of_B == F) {
               ## remove from B
-              polB = rgeos::gDifference(polB,overlapPol) ## order matters
+              polB = sf::st_Difference(polB,overlapPol) ## order matters
 
             } else if (all_of_A == F && all_of_B == F) {
               ## remove from both
-              polA = rgeos::gDifference(polA,overlapPol) ## order matters
-              polB = rgeos::gDifference(polB,overlapPol) ## order matters
+              polA = sf::st_Difference(polA,overlapPol) ## order matters
+              polB = sf::st_Difference(polB,overlapPol) ## order matters
 
             } ## we don't do anything if both are true
 

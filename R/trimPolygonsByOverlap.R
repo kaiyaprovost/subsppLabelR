@@ -54,10 +54,14 @@ trimPolygonsByOverlap = function(polygon,
   if (is.null(idList)) {
     if (is.null(intList)) {
       #print("no overlaps to remove")
-      polytrim = rgeos::gUnion(polytrim, polytrim)
+
+      polytrim = sf::st_union(polytrim,polytrim)
+      #polytrim = gUnion(polytrim, polytrim)
     } else {
       for (int in 1:length(intList)) {
-        polytrim = rgeos::gDifference(polytrim, intList[[int]])
+
+        polytrim = sf::st_difference(polytrim, intList[[int]])
+        #polytrim = gDifference(polytrim, intList[[int]])
       }
       #print("removing differences from larger shapefile")
     }
@@ -71,10 +75,12 @@ trimPolygonsByOverlap = function(polygon,
     }
     if (is.null(intList)) {
       #print("removing subsumed polygons")
-      polytrim = rgeos::gUnion(polytrim, polytrim)
+      polytrim = sf::st_union(polytrim,polytrim)
+      #polytrim = gUnion(polytrim, polytrim)
     } else {
       for (int in 1:length(intList)) {
-        polytrim = rgeos::gDifference(polytrim, intList[[int]])
+        polytrim = sf::st_difference(polytrim, intList[[int]])
+        #polytrim = gDifference(polytrim, intList[[int]])
       }
       #print("removing subsumed polygons and differences from larger shape")
     }

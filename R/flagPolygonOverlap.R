@@ -68,28 +68,28 @@ flagPolygonOverlap = function(subsppPoly1 = polA,
     for (feature_subsppB in (1:length(subsppPoly2))) {
       ## get the features within the subspecies polygon
       ## check areas
-      totArea1 = rgeos::gArea(subsppPoly1) ## the whole area of the subspecies
-      totArea2 = rgeos::gArea(subsppPoly2) ## the whole area of the subspecies
-      area1 = rgeos::gArea(subsppPoly1[feature_subsppA,]) ## the area of the single feature
-      area2 = rgeos::gArea(subsppPoly2[feature_subsppB,]) ## the area of the single feature
+      totArea1 = sf::st_Area(subsppPoly1) ## the whole area of the subspecies
+      totArea2 = sf::st_Area(subsppPoly2) ## the whole area of the subspecies
+      area1 = sf::st_Area(subsppPoly1[feature_subsppA,]) ## the area of the single feature
+      area2 = sf::st_Area(subsppPoly2[feature_subsppB,]) ## the area of the single feature
       # subsppPoly1$totalArea = totArea1
       # subsppPoly2$totalArea = totArea2
       # subsppPoly1[feature_subsppA,]$featureArea = area1
       # subsppPoly2[feature_subsppB]$featureArea = area2
-      if (rgeos::gIntersects(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])) {
+      if (sf::st_Intersects(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])) {
         #print("INTERSECTS")
-        testInt = rgeos::gIntersection(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])
+        testInt = sf::st_Intersection(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])
         #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
         #print(length(intersect))
         ## if they overlap
         #plot(subsppPoly1[feature_subsppA,],border="red",add=T)
         #plot(subsppPoly2[feature_subsppB,],border="cyan",add=T)
-        testArea = rgeos::gArea(testInt)
+        testArea = sf::st_Area(testInt)
         if (testArea > 0) {
           #print("OVERLAP AREA NOT ZERO")
           intersect = raster::intersect(subsppPoly1[feature_subsppA,], subsppPoly2[feature_subsppB,])
           #intersect = gIntersection(subsppPoly1[feature_subsppA,],subsppPoly2[feature_subsppB,],byid=T)
-          areaInt = rgeos::gArea(intersect)
+          areaInt = sf::st_Area(intersect)
           ## if they overlap
           area1percent = areaInt / totArea1 ## the area of the feature as a percent of the area of the subspecies
           area2percent = areaInt / totArea2

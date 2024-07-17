@@ -71,7 +71,6 @@ databaseToAssignedSubspecies = function(spp,
   #library(dplyr)
   #library(spocc)
   #library(MASS)
-  #library(rgeos)
   #library(raster)
   #library(sp)
   ## get the species and subspecies
@@ -381,7 +380,7 @@ databaseToAssignedSubspecies = function(spp,
     #polygons_notnom = densityPolygons[!(names(densityPolygons) %in% c(nominateSubspecies))]
     fullpoly=raster::bind(polygons_notnom)
     if(length(fullpoly)==1){fullpoly=fullpoly[[1]]}
-    densityPolygons[[nominateSubspecies]]=rgeos::gDifference(densityPolygons[[nominateSubspecies]], fullpoly)
+    densityPolygons[[nominateSubspecies]]=sf::st_Difference(densityPolygons[[nominateSubspecies]], fullpoly)
   }
 
   #print(densityPolygons)

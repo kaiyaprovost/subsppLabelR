@@ -37,16 +37,16 @@ closestPolygonFunction = function(listOfPolygons) {
         print("only one feature, skipping")
       }
       else {
-        wholePol$area = rgeos::gArea(wholePol, byid = T)
+        wholePol$area = sf::st_Area(wholePol, byid = T)
         print(wholePol$area)
         ## sort features by size
         wholePol = wholePol[rev(order(wholePol$area)),]
         #print(wholePol)
         for (features_j in 1:length(wholePol)) {
           feat2check = wholePol[features_j,]
-          if (rgeos::gArea(feat2check) < max(wholePol$area)) {
+          if (sf::st_Area(feat2check) < max(wholePol$area)) {
             ## if not the largest chunk, check if touching other chunks
-            int = (rgeos::gIntersection(feat2check, wholePol[-features_j,]))
+            int = (sf::st_Intersection(feat2check, wholePol[-features_j,]))
             if (is.null(int)) {
               ## diagonal is fine
               ## if not touching, check what polygon is shortest distance to
@@ -57,7 +57,7 @@ closestPolygonFunction = function(listOfPolygons) {
               #polyListForCheck = polyListForCheck[names(polyListForCheck)!="unknown"]
               dists = sapply(1:length(polyListForCheck), function(i) {
                 x = ((
-                  rgeos::gDistance(feat2check, polyListForCheck[[i]])
+                  sf::st_Distance(feat2check, polyListForCheck[[i]])
                 ))
                 names(x) = names(polyListForCheck)[[i]]
                 return(x)

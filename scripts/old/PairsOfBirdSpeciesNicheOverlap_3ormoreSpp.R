@@ -235,7 +235,6 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
   ## this function checks for overlaps between polygons
   ## TODO: remove polygon if not touching another of same spp
   ## but also closer to polygon of other species
-  #library(rgeos)
   #library(raster)
 
   ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
@@ -249,10 +248,11 @@ flagPolygonOverlap = function(subsppPoly1=polA,subsppPoly2=polB){
   for (feature_subsppA in range(1,length(subsppPoly1))){
     for(feature_subsppB in range(1,length(subsppPoly2))) {
       ## check areas
-      totArea1 = rgeos::gArea(subsppPoly1)
-      totArea2 = rgeos::gArea(subsppPoly2)
-      area1 = rgeos::gArea(subsppPoly1[feature_subsppA,])
-      area2 = rgeos::gArea(subsppPoly2[feature_subsppB,])
+
+      #totArea1 = rgeos::gArea(subsppPoly1)
+      #totArea2 = rgeos::gArea(subsppPoly2)
+      #area1 = rgeos::gArea(subsppPoly1[feature_subsppA,])
+      #area2 = rgeos::gArea(subsppPoly2[feature_subsppB,])
 
       # subsppPoly1$totalArea = totArea1
       # subsppPoly2$totalArea = totArea2
