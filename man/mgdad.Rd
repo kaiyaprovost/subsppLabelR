@@ -12,5 +12,5 @@ mgdad(localities, epsilon = 1e-04)
 \item{epsilon}{An value with which to flag anomalies with probability less than epsilon}
 }
 \description{
-Calculates Multivariate Gaussian Distribution values for p_x
+Calculates probability values for p_x given an epsilon
 }
