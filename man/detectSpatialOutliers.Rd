@@ -15,5 +15,8 @@ detectSpatialOutliers(localities, fulldataset = localities, epsilon = 1e-04)
 }
 \description{
 This does outlier detection on points using Multivariate Gaussian
-Distribution anomaly detection. Based off of
+Distribution anomaly detection. Returns anomalies, which are a named
+set of integers where the names are the original rowname of the point
+and the integers are the rowname of the dataframe, if they are not the
+same.
 }
