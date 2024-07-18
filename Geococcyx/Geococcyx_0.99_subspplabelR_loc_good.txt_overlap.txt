@@ -1,2 +1,0 @@
-"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
-"1" "californianus" "velox" "0.04954839073573" "0.0870759399135862"

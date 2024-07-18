@@ -1,2 +1,0 @@
-"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
-"1" "campoi" "mesata" "0.010091947385807" "0.011280777159448"

@@ -1,4 +1,0 @@
-"spp1" "spp2" "SchoenersD" "modifiedHellingersI"
-"1" "curtata" "lucida" "0.073983958196103" "0.110987999353672"
-"2" "curtata" "melanura" "0.249801457462858" "0.460712733583571"
-"3" "lucida" "melanura" "0.359010675530033" "0.460240528004228"

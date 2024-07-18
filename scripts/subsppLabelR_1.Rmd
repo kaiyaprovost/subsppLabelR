@@ -1,0 +1,644 @@
+---
+title: "subsppLabelR_1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setting Up the Package
+
+First we must install the R package before we can use it. 
+
+```{r install}
+library(devtools)
+devtools::install_github('kaiyaprovost/subsppLabelR',force=F)
+library(subsppLabelR)
+```
+
+Let us download some data. We will use *Phainopepla nitens* as a test species: it has two subspecies that are relatively allopatric. Although the species has hundreds of thousands of points, for now we will only download 2000. 
+
+```{r listFromSubspeciesOcc}
+
+spp = "Phainopepla nitens"
+subsppList = c("lepida","nitens")
+pointLimit=2000
+dbToQuery=c("gbif")
+
+print("Downloading species occurrences")
+listFromSubspeciesOcc = subsppLabelR::subspeciesOccQuery(
+  spp = spp,
+  subsppList = subsppList,
+  pointLimit = pointLimit,
+  dbToQuery = dbToQuery
+)
+
+
+```
+
+Now we have returned an object with 2000 occurrences that are not labeled, ~1700 that are labeled as *lepida*, and ~70 labeled as *nitens*. Let's do the labeling procedure. 
+
+```{r labelSubspecies}
+## label the data by subspecies
+print("Labeling data by subspecies")
+labeledLoc = subsppLabelR::labelSubspecies(subsppOccList = listFromSubspeciesOcc)
+labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)),]
+labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)),]
+
+head(labeledLoc)
+
+```
+
+This has added a column to the data with the occurrences labeled by subspecies. Lets plot these data. First though, we need a raster layer to plot against. We can either import a raster as "bgLayer", or we can create one from the *Phainopepla* data. For this example we will create a raster layer. We will then plot the data.
+
+```{r 2}
+
+max_long = max(labeledLoc$longitude,na.rm=T)
+min_long = min(labeledLoc$longitude,na.rm=T)
+max_lat = max(labeledLoc$latitude,na.rm=T)
+min_lat = min(labeledLoc$latitude,na.rm=T)
+palette(c("red","blue","black","lightblue","cyan","pink","magenta","purple","brown"))
+
+ext = raster::extent(c(min_long,max_long,min_lat,max_lat))
+bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
+
+subsppNames = unique(labeledLoc$subspecies)
+
+raster::plot(bgLayer,
+             col = "grey",
+             colNA = "darkgrey",
+             main = spp)
+points(labeledLoc$longitude,
+       labeledLoc$latitude,
+       col = as.numeric(as.factor(labeledLoc$subspecies)),
+       pch = as.numeric(as.factor(labeledLoc$subspecies)))
+legend(
+  "top",
+  legend = as.factor(unique(labeledLoc$subspecies)),
+  bty = "n",
+  col = as.numeric(as.factor(unique(labeledLoc$subspecies))),
+  pch = as.numeric(as.factor(unique(labeledLoc$subspecies)))
+)
+
+```
+
+As you can see with this example, there is are outliers that is far east from the rest of the distribution. Otherwise, the red and blue dots (which are labeled subspecies) appear to roughly correspond with the known distributions. 
+
+Setting epsilon to be a higher value will remove more anomalies. Setting it to a lower value will remove fewer anomalies. You will likely need to tune your epsilon value. One way to do this is by examining the data in labeledLoc to see what sort of cutoffs there are. 
+
+For example, we know that there are some *nitens* points that are very far west. What epsilon value would we need to set for this subspecies? we can examine this by using the mgdad_px() function on just *nitens* data to see what the probabilities are and what cutoff we may wish to use.
+
+```{r mgdad}
+
+p_x = mgdad_px(labeledLoc[labeledLoc$subspecies=="nitens",c("latitude","longitude")])
+log_p_x = log10(p_x)
+hist(log_p_x)
+log_p_x_cutoffs = ceiling(log_p_x*2)/2
+plot(labeledLoc$longitude[labeledLoc$subspecies=="nitens"],
+     labeledLoc$latitude[labeledLoc$subspecies=="nitens"],
+     col=as.factor(log_p_x_cutoffs))
+legend(
+  "topright",
+  legend = as.factor(unique(log_p_x_cutoffs)),
+  pch = 1,
+  bty = "n",
+  col = as.factor(unique(log_p_x_cutoffs))
+)
+
+```
+It seems that an epsilon value of 10^-3.5 would suffice to get rid of those two west points, though it will also remove some of the others. We will not examine values for other subspecies or the full species distribution here, but I recommend you do so on your own data.
+
+Lets do anomaly detection now to remove the species-wide outliers and then update the dataset. In this case, for the full species an epsilon value of 10^-6 is more appropriate, so we will use two epsilons.  
+
+NOTE: your epsilon cutoff values can change when you remove certain points. If you decide to iteratively remove outliers, keep this in mind. 
+
+```{r anomspp}
+print("Starting anomaly detection for whole species")
+
+list_of_anomalies = c()
+spp_epsilon = 10^-6
+
+anomalies = subsppLabelR::detectSpatialOutliers(localities = labeledLoc, epsilon = spp_epsilon)
+
+list_of_anomalies = c(list_of_anomalies, anomalies)
+
+list_of_anomalies_names = names(list_of_anomalies)
+rows_purged = sort(unique(list_of_anomalies_names))
+
+print("Starting anomaly detection for each subspecies")
+
+list_of_anomalies_sub = c()
+subspp_epsilon = 10^-3.5
+
+for (i in 1:length(c(subsppNames))) {
+  name = subsppNames[[i]]
+  if (name != "unknown") {
+    #print(name)
+    subset = labeledLoc[labeledLoc$subspecies == name,]
+    #print(nrow(subset))
+    anomalies = subsppLabelR::detectSpatialOutliers(localities = subset, epsilon = subspp_epsilon)
+  } 
+  #print(length(anomalies))
+  list_of_anomalies_sub = c(list_of_anomalies_sub, anomalies)
+  
+}
+list_of_anomalies_sub_names = names(list_of_anomalies_sub)
+rows_purged_sub = sort(unique(as.integer(list_of_anomalies_sub_names)))
+
+rows_purged = sort(unique(c(rows_purged,rows_purged_sub)))
+
+```
+Let's visualize these anomalies.
+
+```{r anomplotspp}
+
+print(paste(
+  "Removing",
+  length(rows_purged),
+  "of",
+  length(labeledLoc[, 1]),
+  "detected anomalies"
+))
+removed = labeledLoc[(rownames(labeledLoc) %in% rows_purged),]
+labeledLoc = labeledLoc[!(rownames(labeledLoc) %in% rows_purged),]
+## set up factors for removed
+removed$subspecies = as.factor(removed$subspecies)
+levels(removed$subspecies) = levels(as.factor(labeledLoc$subspecies))
+
+raster::plot(
+  bgLayer,
+  col = "grey",
+  colNA = "darkgrey",
+  main = paste("Anomalies")
+)
+points(labeledLoc$longitude,
+       labeledLoc$latitude,
+       col = "lightgrey",
+       pch = 0)
+points(removed$longitude,
+       removed$latitude,
+       col = as.factor(removed$subspecies))
+legend(
+  "top",
+  legend = as.factor(unique(removed$subspecies)),
+  pch = 1,
+  bty = "n",
+  col = as.factor(unique(removed$subspecies))
+)
+
+
+```
+These indeed look like outliers, though our subspecies cutoff might be too high for *lepida*. We shall leave the *lepida* as is for now, to be more conservative with our estimate.
+
+We also will do a quick clean up to make sure that none of the subspecies are now only represented by a single individual, and also to alter the raster file so that it is no longer so wide.
+
+```{r anom3}
+## removing single individual subspecies
+print("Removing single-individual subspecies")
+
+for (sub in unique(labeledLoc$subspecies)) {
+  #print(sub)
+  rows = (nrow(labeledLoc[labeledLoc$subspecies == sub,]))
+  if (rows <= 1) {
+    print(sub)
+    labeledLoc = labeledLoc[labeledLoc$subspecies != sub,]
+  }
+}
+subsppNames = unique(labeledLoc$subspecies)
+
+max_long = max(labeledLoc$longitude,na.rm=T)
+min_long = min(labeledLoc$longitude,na.rm=T)
+max_lat = max(labeledLoc$latitude,na.rm=T)
+min_lat = min(labeledLoc$latitude,na.rm=T)
+palette(c("red","blue","black","lightblue","cyan"))
+
+ext = raster::extent(c(min_long,max_long,min_lat,max_lat))
+bgLayer = raster::raster(ext=ext,nrow=100,ncol=100,vals=0)
+raster::plot(bgLayer,
+             col = "grey",
+             colNA = "darkgrey",
+             main = spp)
+points(labeledLoc$longitude,
+       labeledLoc$latitude,
+       col = as.numeric(as.factor(labeledLoc$subspecies)),
+       pch = as.numeric(as.factor(labeledLoc$subspecies)))
+legend(
+  "topright",
+  legend = as.factor(unique(labeledLoc$subspecies)),
+  bty = "n",
+  col = as.numeric(as.factor(unique(labeledLoc$subspecies))),
+  pch = as.numeric(as.factor(unique(labeledLoc$subspecies)))
+)
+
+```
+Now let us plot the density maps for the species. We will only retain the top 5% most dense points (the 95th percentile) for each subspecies. 
+
+```{r density}
+
+xmax = max_long 
+xmin = min_long 
+ymax = max_lat
+ymin = min_lat
+quant=0.95
+
+#total_range = bgLayer
+#raster::values(total_range)[!is.na(raster::values(bgLayer))] = NA
+
+print("Building species kernel density maps")
+
+densityRasters = lapply(subsppNames, function(subspp) {
+  print(subspp)
+  locs = labeledLoc[labeledLoc$subspecies == subspp,]
+  dens = subsppLabelR::subspeciesDensityMap(
+    localities = locs,
+    quant = quant,
+    xmin = xmin,
+    xmax = xmax,
+    ymin = ymin,
+    ymax = ymax,
+    total_range= bgLayer,
+    outputDir = getwd(),
+    spp = spp,
+    subspp = subspp
+  )
+  if (is.null(dens)) {
+    dens = NA
+  }
+  
+  if ((length((raster::unique(dens,na.last=NA)))) == 0) {
+    dens = NA
+  }
+  
+  names(dens) = subspp
+  return(dens)
+})
+#print("done density")
+names(densityRasters) = subsppNames
+
+## remove failed ones
+densityRasters = densityRasters[!(is.na(densityRasters))]
+subsppNames = names(densityRasters)
+
+```
+
+Lets plot these data. 
+
+```{r densityplot}
+
+par(mfrow=c(1,3))
+for (i in 1:length(densityRasters)) {
+  print(i)
+  name = names(densityRasters)[[i]]
+  raster::plot(
+    bgLayer,
+    col = "grey",
+    colNA = "darkgrey",
+    legend=F,
+    main = paste("Density, subspp:", name)
+  )
+  raster::plot(densityRasters[[i]],
+               add = T,
+               col = viridis::viridis(99))
+}
+
+```
+Hm. The *lepida* looks like it is a little gappy. Let's look at density cutoffs of 5%, 10%, and 15% (the 95th, 90th, and 85th percentile, respectively). 
+
+```{r density2}
+
+quant = 0.90
+
+print("Building species kernel density maps -- top 10 %")
+
+densityRasters_10 = lapply(subsppNames, function(subspp) {
+  print(subspp)
+  locs = labeledLoc[labeledLoc$subspecies == subspp,]
+  dens = subsppLabelR::subspeciesDensityMap(
+    localities = locs,
+    quant = quant,
+    xmin = xmin,
+    xmax = xmax,
+    ymin = ymin,
+    ymax = ymax,
+    total_range= bgLayer,
+    outputDir = getwd(),
+    spp = spp,
+    subspp = subspp
+  )
+  if (is.null(dens)) {
+    dens = NA
+  }
+  
+  if ((length((raster::unique(dens,na.last=NA)))) == 0) {
+    dens = NA
+  }
+  
+  names(dens) = subspp
+  return(dens)
+})
+#print("done density")
+names(densityRasters_10) = subsppNames
+
+## remove failed ones
+densityRasters_10 = densityRasters_10[!(is.na(densityRasters_10))]
+subsppNames = names(densityRasters_10)
+
+
+quant=0.85
+
+print("Building species kernel density maps -- top 15 %")
+
+densityRasters_15 = lapply(subsppNames, function(subspp) {
+  print(subspp)
+  locs = labeledLoc[labeledLoc$subspecies == subspp,]
+  dens = subsppLabelR::subspeciesDensityMap(
+    localities = locs,
+    quant = quant,
+    xmin = xmin,
+    xmax = xmax,
+    ymin = ymin,
+    ymax = ymax,
+    total_range= bgLayer,
+    outputDir = getwd(),
+    spp = spp,
+    subspp = subspp
+  )
+  if (is.null(dens)) {
+    dens = NA
+  }
+  
+  if ((length((raster::unique(dens,na.last=NA)))) == 0) {
+    dens = NA
+  }
+  
+  names(dens) = subspp
+  return(dens)
+})
+#print("done density")
+names(densityRasters_15) = subsppNames
+
+## remove failed ones
+densityRasters_15 = densityRasters_15[!(is.na(densityRasters_15))]
+subsppNames = names(densityRasters_15)
+
+par(mfrow=c(3,3))
+for (i in 1:length(densityRasters)) {
+  print(i)
+  name = names(densityRasters)[[i]]
+  raster::plot(
+    bgLayer,
+    col = "grey",
+    colNA = "darkgrey",
+    legend=F,
+    main = paste("Density for 5%, subspp:", name)
+  )
+  raster::plot(densityRasters[[i]],
+               add = T,
+               col = viridis::viridis(99))
+}
+for (i in 1:length(densityRasters_10)) {
+  print(i)
+  name = names(densityRasters_10)[[i]]
+  raster::plot(
+    bgLayer,
+    col = "grey",
+    colNA = "darkgrey",
+    legend=F,
+    main = paste("Density for 10%, subspp:", name)
+  )
+  raster::plot(densityRasters_10[[i]],
+               add = T,
+               col = viridis::viridis(99))
+}
+for (i in 1:length(densityRasters_15)) {
+  print(i)
+  name = names(densityRasters_15)[[i]]
+  raster::plot(
+    bgLayer,
+    col = "grey",
+    colNA = "darkgrey",
+    legend=F,
+    main = paste("Density for 15%, subspp:", name)
+  )
+  raster::plot(densityRasters_15[[i]],
+               add = T,
+               col = viridis::viridis(99))
+}
+
+```
+
+Now we can see where the bulk of the data are found for these ranges. Most of the unknown samples we downloaded appear to be in subspecies *lepida*. Comparing the plots shows us how choosing cutoffs can impact our downstream analyses. We will continue for now with the top 10%, as it seems to connect the bulk of the *lepida* samples without adding too many extra bits.  
+
+Next let us convert these maps to polygons. 
+
+```{r polygons}
+
+## convert to polygons
+print("Converting density maps to polygons")
+## can't handle if there's no data in previous step
+
+densityPolygons = lapply(densityRasters_10, function(dens) {
+  print(names(dens))
+  densPol = subsppLabelR::densityMapToPolygons(densityMap = dens)
+  return(densPol)
+})
+
+palette(c("black", "red", "blue"))
+raster::plot(
+  bgLayer,
+  col = "grey",
+  colNA = "darkgrey",
+  main = paste("Polygons, untrimmed", spp)
+)
+for (i in 1:length(densityPolygons)) {
+  raster::plot(
+    densityPolygons[[i]],
+    add = T,
+    border = i,
+    lwd = ((3 * i) / 3)
+  )
+}
+legend(
+  "top",
+  legend = names(densityPolygons),
+  bty = "n",
+  fill = rgb(0, 0, 0, 0),
+  border = 1:length(densityPolygons)
+)
+
+```
+We must now check the polygons for overlaps. For this particular configuration of the data, there are no overlaps to be seen. 
+
+```{r next}
+
+
+## check overlaps between polygons
+
+print("Checking Overlaps of Polygons and Removing Overlaps")
+
+densityPolygons_trim1 = subsppLabelR::polygonTrimmer(polygonList = densityPolygons, namesList = subsppNames)
+
+for (i in 1:length(densityPolygons_trim1)) {
+  name = names(densityPolygons_trim1)[[i]]
+  raster::plot(
+    bgLayer,
+    col = "grey",
+    colNA = "darkgrey",
+    main = paste("Polygon, subspp:", name)
+  )
+  raster::plot(densityPolygons_trim1[[i]],
+               add = T,
+               col = viridis::viridis(99))
+}
+
+raster::plot(
+  bgLayer,
+  col = "grey",
+  colNA = "darkgrey",
+  main = paste("Polygon, subspp:", name)
+)
+for (i in 1:length(densityPolygons_trim1)) {
+  name = names(densityPolygons_trim1)[[i]]
+  raster::plot(
+    densityPolygons_trim1[[i]],
+    add = T,
+    border = i,
+    lwd = ((3 * i) / 3)
+  )
+}
+legend(
+  "top",
+  legend = names(densityPolygons_trim1),
+  bty = "n",
+  fill = rgb(0, 0, 0, 0),
+  border = 1:length(densityPolygons_trim1)
+)
+
+
+```
+
+These polygons look good considering we are missing a lot of data from the center of the distribution. 
+Now lets locate the unknown points relative to those polygons and do some clean up. 
+
+```{r pointlocate}
+
+densityPolygons_trim = densityPolygons_trim1
+
+print("Locating points relative to polygons")
+
+polyLocations = labeledLoc
+
+for (slotA in 1:length(subsppNames)) {
+  if (subsppNames[[slotA]] != "unknown") {
+    polyLocations = subsppLabelR::locatePolygonPoints(
+      test_points = polyLocations,
+      polygonA = densityPolygons_trim[[slotA]],
+      name=subsppNames[[slotA]]
+    )
+    
+  }
+  
+}
+
+print ("Cleaning up duplicate columns")
+colsToDelete = c()
+
+#print(polyLocations)
+
+for (colNumA in 5:length(colnames(polyLocations))) {
+  for (colNumB in 6:length(colnames(polyLocations))) {
+    if (colNumA < colNumB) {
+      #print(paste("compare",colNumA,colNumB,sep=" "))
+      if (identical(polyLocations[[colNumA]], polyLocations[[colNumB]])) {
+        #print("identical, deleting")
+        colsToDelete = c(colsToDelete, colNumB)
+      }
+    }
+  }
+}
+if (!(is.null(colsToDelete))) {
+  polyLocations = polyLocations[,-colsToDelete]
+}
+
+head(polyLocations)
+
+```
+
+Now we will label the occurrences based on those polygons and flag anything that looks suspect. 
+
+```{r match}
+
+print("Matching subspecies")
+checked = subsppLabelR::subspeciesMatchChecker(locfile = polyLocations, subsppNames =
+                                                 subsppNames)
+loc_suspect = checked$suspect
+loc_good = checked$good
+pol = densityPolygons_trim
+
+```
+
+And the final output: 
+
+```{r plotfinal}
+
+par(mfrow=c(1,1))
+
+raster::plot(
+  bgLayer,
+  col = "grey",
+  colNA = "darkgrey",
+  main = "Unknown or Suspect Points"
+)
+points(loc_suspect$longitude,loc_suspect$latitude)
+raster::plot(
+  bgLayer,
+  col = "grey",
+  colNA = "darkgrey",
+  main = "Good Points by Subspecies"
+)
+points(loc_good$longitude,loc_good$latitude,col=as.numeric(as.factor(loc_good$assigned)))
+
+raster::plot(
+  bgLayer,
+  col = "grey",
+  colNA = "darkgrey",
+  main = "Final Polygons by Subspecies"
+)
+lapply(1:length(pol),FUN=function(i){
+  raster::plot(pol[[i]],add=T,border=i)
+})
+legend(
+  "top",
+  legend = names(pol),
+  bty = "n",
+  fill = rgb(0, 0, 0, 0),
+  border = 1:length(pol)
+)
+```
+
+Putting this all together in one function looks like this:
+
+```{r database}
+
+db = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
+                                                subsppList = c("lepida","nitens"),
+                                                pointLimit=2000,
+                                                dbToQuery=c("gbif"),
+                                                quant=0.90,
+                                                xmin=-125,
+                                                xmax=-60,
+                                                ymin=10,
+                                                ymax=50,
+                                                plotIt=T, bgLayer=raster::raster(ext=raster::extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
+                                                outputDir="~/",
+                                                spp_epsilon=1e-6,
+                                                subspp_epsilon=10^-3.5,
+                                                cells_per_bgLayer = 100)
+print(head(db$loc_suspect))
+print(head(db$loc_good))
+print(head(db$pol))
+
+```
+
+Note that when you run this script, it will automatically generate the images as PNG files in the directory specified in the function. Here that is the home directory ("~/").

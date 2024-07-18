@@ -1,1 +1,0 @@
-"name"	"longitude"	"latitude"	"subspecies"	"celsum"	"numSubsppGroups"	"assigned"

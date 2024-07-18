@@ -1,1 +1,0 @@
-"name"	"longitude"	"latitude"	"subspecies"	"californianus"	"velox"	"numSubsppGroups"	"assigned"
