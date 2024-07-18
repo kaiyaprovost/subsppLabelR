@@ -205,13 +205,14 @@ databaseToAssignedSubspecies = function(spp,
   for (i in 1:length(c(subsppNames))) {
     name = subsppNames[[i]]
     if (name != "unknown") {
-      #print(name)
+      print(name)
       subset = labeledLoc[labeledLoc$subspecies == name, ]
-      #print(nrow(subset))
+      print(nrow(subset))
       anomalies = subsppLabelR::detectSpatialOutliers(localities = subset, epsilon = subspp_epsilon)
+      print(length(anomalies))
+      list_of_anomalies_sub = c(list_of_anomalies_sub, anomalies)
+      
     }
-    #print(length(anomalies))
-    list_of_anomalies_sub = c(list_of_anomalies_sub, anomalies)
 
   }
   list_of_anomalies_sub_names = names(list_of_anomalies_sub)
