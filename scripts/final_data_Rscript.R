@@ -2,14 +2,15 @@
 ## when it is actually determining the values
 ## TODO: unit testing
 
-detach("package:subsppLabelR", unload = TRUE)
-devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
-#install.packages(folder,repos=NULL,type="source",force=T)
-library(subsppLabelR)
 
 #folder = "C:/Users/kaiya/Documents/GitHub/subsppLabelR"
 folder = "/Users/kprovost/Documents/GitHub/subsppLabelR/"
 setwd(folder)
+
+detach("package:subsppLabelR", unload = TRUE)
+#devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
+install.packages(folder,repos=NULL,type="source",force=T)
+library(subsppLabelR)
 
 ## parameters
 redo=T; overwrite=F
