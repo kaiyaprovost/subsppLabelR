@@ -8,13 +8,13 @@ folder = "/Users/kprovost/Documents/GitHub/subsppLabelR/"
 setwd(folder)
 
 detach("package:subsppLabelR", unload = TRUE)
-#devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
-install.packages(folder,repos=NULL,type="source",force=T)
+devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
+#install.packages(folder,repos=NULL,type="source",force=T)
 library(subsppLabelR)
 
 ## parameters
 redo=T; overwrite=F
-pointLimit=2000
+pointLimit=10000
 #quant_list=sort(c(seq(0.05,0.95,0.05),0.99,0.33,0.67))
 quant_list=c(0.5)
 dbToQuery=c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
@@ -32,8 +32,8 @@ if(redo==T) {
     #"Polioptila melanura",
     #"Melospiza melodia",
     #"Zonotrichia leucophrys",
-    "Geococcyx californianus",
-    #"Geococcyx",
+    #"Geococcyx californianus",
+    "Geococcyx",
     #"Melozone fusca",
     #"Auriparus flaviceps",
     NULL
@@ -51,8 +51,8 @@ if(redo==T) {
     #c("curtata","melanura","lucida"),
     #c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia","fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis","mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis","pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
     # c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
-    NULL,
-    #c("californianus","velox"),
+    #NULL,
+    c("californianus","velox"),
     #c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
     #c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
     NULL
