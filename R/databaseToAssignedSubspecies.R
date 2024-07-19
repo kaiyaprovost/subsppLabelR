@@ -651,16 +651,21 @@ databaseToAssignedSubspecies = function(spp,
       print("Warning: no valid definition for subspecies given!") ## this is a joke
       return(
         list(
+          labeledLoc = labeledLoc,
           loc_suspect = checked_suspect,
           loc_good = checked_good,
           pol = densityPolygons_trim
+
         )
       )
     }
   } else {
     return(
       list(
-        labeledLoc = labeledLoc
+        labeledLoc = labeledLoc,
+        loc_suspect = NULL,
+        loc_good = NULL,
+        pol = NULL
       )
     )
   }
