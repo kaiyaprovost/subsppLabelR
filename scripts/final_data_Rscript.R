@@ -22,7 +22,7 @@ xmin = -180; xmax = -50; ymin = 0; ymax = 75;
 if(redo==T) {
   species_list = c(
     #"Cardinalis cardinalis",
-    #"Phainopepla nitens",
+    "Phainopepla nitens",
     #"Cardinalis sinuatus",
     #"Campylorhynchus brunneicapillus",
     #"Amphispiza bilineata",
@@ -33,7 +33,7 @@ if(redo==T) {
     #"Melospiza melodia",
     #"Zonotrichia leucophrys",
     #"Geococcyx californianus",
-    "Geococcyx",
+    #"Geococcyx",
     #"Melozone fusca",
     #"Auriparus flaviceps",
     NULL
@@ -41,7 +41,7 @@ if(redo==T) {
   
   subspp_list = list(
     #c("affinis","canicaudus","cardinalis","carneus","clintoni", "coccineus","flammiger","floridanus","igneus","littoralis", "magnirostris","mariae", "phillipsi","saturatus","seftoni","sinaloensis","superbus","townsendi","yucatanicus"),
-    #c("lepida","nitens"),
+    c("lepida","nitens"),
     #c("fulvescens","peninsulae","sinuatus"),
     #c("affinis","brunneicapillus","anthonyi","bryanti","guttatus","sandiegensis","seri"),
     #c("bangsi","bilineata","belvederei","cana","deserticola","carmenae","grisea","opuntia","pacifica","tortugae"),
@@ -52,7 +52,7 @@ if(redo==T) {
     #c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia","fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis","mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis","pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
     # c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
     #NULL,
-    c("californianus","velox"),
+    #c("californianus","velox"),
     #c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
     #c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
     NULL
