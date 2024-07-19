@@ -128,6 +128,7 @@ databaseToAssignedSubspecies = function(spp,
     "decimal places",
     sep = " "
   ))
+  
   labeledLoc$latitude = round(labeledLoc$latitude, num_digits_latlong)
   labeledLoc$longitude = round(labeledLoc$longitude, num_digits_latlong)
   labeledLoc = unique(labeledLoc)
