@@ -34,10 +34,10 @@ NULL
 #'
 #' loc_good_clean = cleanByEnvironment(Env, loc)
 #' locs_thinned = spThinBySubspecies(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",long.col="longitude",spec.col="assigned")
-#'loc_thin_bgstuff = backgroundForPCA(localities=loc_good[,c("Longitude","Latitude")],r=200000,num=(100*nrow(localities)),e=Env)
-#' perspecies_bgstuff = backgroundPerSpecies(loc_thin)
-backgroundPerSpecies = function(localities=loc_thin,verbose=T,name="assigned",e=Env){
-  if(verbose==T){print("starting backgroundPerSpecies")}
+#'loc_thin_bgstuff = generateBackgroundForPCA(localities=loc_good[,c("Longitude","Latitude")],r=200000,num=(100*nrow(localities)),e=Env)
+#' perspecies_bgstuff = generateBackgroundPerSpecies(loc_thin)
+generateBackgroundPerSpecies = function(localities=loc_thin,verbose=T,name="assigned",e=Env){
+  if(verbose==T){print("starting generateBackgroundPerSpecies")}
   name_col = which(colnames(localities) == name)
   loc_thin_by_subspecies = split(localities, localities[,name_col])
   bgenv_by_subspecies = list()
@@ -49,7 +49,7 @@ backgroundPerSpecies = function(localities=loc_thin,verbose=T,name="assigned",e=
   for(i in 1:length(names(loc_thin_by_subspecies))){
     singleSubspp = loc_thin_by_subspecies[[i]]
     subsppName = names(loc_thin_by_subspecies)[[i]]
-    single_bgstuff = backgroundForPCA(singleSubspp,e=e)
+    single_bgstuff = generateBackgroundForPCA(singleSubspp,e=e)
     bgenv_by_subspecies[[i]] = single_bgstuff$bgenv
     bgext_by_subspecies[[i]] = single_bgstuff$bgext
     bgpoints_by_subspecies[[i]] = single_bgstuff$bgpoints

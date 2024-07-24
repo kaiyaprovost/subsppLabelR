@@ -37,7 +37,7 @@ NULL
 #' ext = raster::extent(c(-125,-60,10,50))
 #' Env = raster::crop(Env, ext)
 #' bg = Env[[1]]
-#' phainopeplaNitens = databaseToAssignedSubspecies(spp="Phainopepla nitens",
+#' phainopeplaNitens = createAssignedSubspecies(spp="Phainopepla nitens",
 #'    subsppList=c("nitens","lepida"),
 #'    pointLimit=500,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
 #'    quant=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
@@ -45,7 +45,7 @@ NULL
 #' suspect_occurrences = phainopeplaNitens$loc_suspect,
 #' good_occurrences = phainopeplaNitens$loc_good,
 #' subspecies_polygons = phainopeplaNitens$pol
-databaseToAssignedSubspecies = function(spp,
+createAssignedSubspecies = function(spp,
                                         subsppList,
                                         pointLimit,
                                         dbToQuery,
@@ -549,8 +549,8 @@ databaseToAssignedSubspecies = function(spp,
       )
       dev.off()
     }
-    #densityPolygons_trim = closestPolygonFunction(listOfPolygons=densityPolygons_trim1)
-    ##TODO: get the closestPolygonFunction working
+    #densityPolygons_trim = findClosestPolygon(listOfPolygons=densityPolygons_trim1)
+    ##TODO: get the findClosestPolygon working
     densityPolygons_trim = densityPolygons_trim1
     ## this isn't working!!!!!!
     ##TODO: figure out how to remove small polygons that are closer to other subspp than their own
