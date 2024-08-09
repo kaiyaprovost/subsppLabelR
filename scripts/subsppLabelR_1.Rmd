@@ -641,4 +641,4 @@ print(head(db$pol))
 
 ```
 
-Note that when you run this script, it will automatically generate the images as PNG files in the directory specified in the function. Here that is the home directory ("~/").
+Note that when you run this script, it will automatically generate the images as PNG files in the directory specified in the function. Here that is the home directory ("~/"). 

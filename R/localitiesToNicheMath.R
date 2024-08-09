@@ -51,7 +51,7 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
 
   if(!file.exists(bg_dat_filename) | !file.exists(bg_bg_filename) | overwrite==T) {
     print("Making bg_dat and bg_bg")
-    loc_thin_bgstuff = backgroundForPCA(localities = loc_thin,e=Env)
+    loc_thin_bgstuff = generateBackgroundForPCA(localities = loc_thin,e=Env)
     bg_dat = loc_thin_bgstuff$bgenv
     bg_bg = loc_thin_bgstuff$bgpoints
     write.table(bg_dat,bg_dat_filename)
@@ -94,7 +94,7 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
   # if(do_files_exist==F) {
   #   print("NOT ALL FILES EXIST")
 
-  perspecies_bgstuff = backgroundPerSpecies(localities = loc_thin,e=Env)
+  perspecies_bgstuff = generateBackgroundPerSpecies(localities = loc_thin,e=Env)
 
   bgenv_by_subspecies = perspecies_bgstuff$bgenv_by_subspecies
   ## bgenv_by_subspecies has list of one df per subspecies
@@ -137,7 +137,7 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
   })
 
   # } else {
-  #   print("ALL backgroundPerSpecies FILES EXIST, IMPORTING")
+  #   print("ALL generateBackgroundPerSpecies FILES EXIST, IMPORTING")
   #   ## make a list of the bgenv
   #   ## need to get the names from the files
   #   bgext_files = list.files(pattern=paste(species,"_.+_bgext_by_subspecies.txt",sep=""))

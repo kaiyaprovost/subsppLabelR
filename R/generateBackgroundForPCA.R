@@ -37,8 +37,8 @@ NULL
 #'
 #' loc_good_clean = cleanByEnvironment(Env, loc)
 #' locs_thinned = spThinBySubspecies(loc_good_clean,thin.par=10,reps=1,lat.col="latitude",long.col="longitude",spec.col="assigned")
-#' loc_thin_bgstuff = backgroundForPCA(localities=loc_good[,c("Longitude","Latitude")],r=200000,num=(100*nrow(localities)),e=Env)
-backgroundForPCA = function(localities=locs_thinned,r=1,num=(100*nrow(localities)),e=Env,verbose=T){
+#' loc_thin_bgstuff = generateBackgroundForPCA(localities=loc_good[,c("Longitude","Latitude")],r=200000,num=(100*nrow(localities)),e=Env)
+generateBackgroundForPCA = function(localities=locs_thinned,r=1,num=(100*nrow(localities)),e=Env,verbose=T){
   localities=localities[,c("Longitude","Latitude")]
   localities_pol = terra::vect(as.matrix(localities),"points")
   bg1 = ENMTools::background.buffer(points=localities_pol, buffer.width = r,

@@ -21,7 +21,7 @@ NULL
 #'
 #' @export
 #'
-closestPolygonFunction = function(listOfPolygons) {
+findClosestPolygon = function(listOfPolygons) {
   ## TODO: is broken
   ##TODO: figure out how to do so that you check if polygons are between other polygons
   ## for now just remove if touching non-self boundary
