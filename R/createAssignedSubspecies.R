@@ -110,9 +110,9 @@ createAssignedSubspecies = function(spp,
       labeledLoc = datafile[, c("name", "longitude", "latitude", "subspecies")]
     }
   }
-  
+
   nominateSubspecies = strsplit(spp, " ")[[1]][2]
-  
+
   print("Cleaning bad lat/longs")
   labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)), ] ## fine
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)), ]
@@ -128,17 +128,17 @@ createAssignedSubspecies = function(spp,
     "decimal places",
     sep = " "
   ))
-  
+
   labeledLoc$latitude = round(labeledLoc$latitude, num_digits_latlong)
   labeledLoc$longitude = round(labeledLoc$longitude, num_digits_latlong)
   labeledLoc = unique(labeledLoc)
-  
+
   print("Removing points outside of bounds")
   labeledLoc = labeledLoc[labeledLoc$latitude <= ymax, ]
   labeledLoc = labeledLoc[labeledLoc$latitude >= ymin, ]
   labeledLoc = labeledLoc[labeledLoc$longitude <= xmax, ]
   labeledLoc = labeledLoc[labeledLoc$longitude >= xmin, ]
-  
+
   if (cleanup_nominate == T) {
     print("RELABELING NOMINATE AFTER CLEANUP")
     good_nominate_rows = which(grepl(
@@ -151,18 +151,18 @@ createAssignedSubspecies = function(spp,
     labeledLoc$subspecies[to_relabel] = "unknown"
     labeledLoc = unique(labeledLoc)
   }
-  
+
   if(downloadOnly==FALSE) {
-    
+
     max_long = max(labeledLoc$longitude,na.rm=T)
     min_long = min(labeledLoc$longitude,na.rm=T)
     max_lat = max(labeledLoc$latitude,na.rm=T)
     min_lat = min(labeledLoc$latitude,na.rm=T)
-    
+
     print("Cleaning bgLayer")
     if (is.null(bgLayer)) {
       ext = raster::extent(c(min_long,max_long,min_lat,max_lat))
-      
+
       print(ext)
       bgLayer = raster::raster(
         ext = ext,
@@ -196,16 +196,16 @@ createAssignedSubspecies = function(spp,
       )
       dev.off()
     }
-    
+
     print("Starting anomaly detection for whole species")
-    
+
     list_of_anomalies = subsppLabelR::detectSpatialOutliers(localities = labeledLoc, epsilon = spp_epsilon)
     list_of_anomalies_names = names(list_of_anomalies)
     rows_purged = sort(unique(list_of_anomalies_names))
-    
+
     print("Starting anomaly detection for each subspecies")
     list_of_anomalies_sub = c()
-    
+
     for (i in 1:length(c(subsppNames))) {
       name = subsppNames[[i]]
       if (name != "unknown") {
@@ -215,14 +215,14 @@ createAssignedSubspecies = function(spp,
         anomalies = subsppLabelR::detectSpatialOutliers(localities = subset, epsilon = subspp_epsilon)
         print(length(anomalies))
         list_of_anomalies_sub = c(list_of_anomalies_sub, anomalies)
-        
+
       }
-      
+
     }
     list_of_anomalies_sub_names = names(list_of_anomalies_sub)
     rows_purged_sub = sort(unique(as.integer(list_of_anomalies_sub_names)))
     rows_purged = sort(unique(c(rows_purged, rows_purged_sub)))
-    
+
     print(paste(
       "Removing",
       length(rows_purged),
@@ -235,7 +235,7 @@ createAssignedSubspecies = function(spp,
     ## set up factors for removed
     removed$subspecies = as.factor(removed$subspecies)
     levels(removed$subspecies) = levels(as.factor(labeledLoc$subspecies))
-    
+
     if (plotIt == T) {
       png(
         paste(
@@ -250,7 +250,7 @@ createAssignedSubspecies = function(spp,
           sep = ""
         )
       )
-      
+
       raster::plot(
         bgLayer,
         col = "grey",
@@ -275,7 +275,7 @@ createAssignedSubspecies = function(spp,
       )
       dev.off()
     }
-    
+
     ## removing single individual subspecies
     print("Removing single-individual subspecies")
     for (sub in unique(labeledLoc$subspecies)) {
@@ -286,14 +286,14 @@ createAssignedSubspecies = function(spp,
         labeledLoc = labeledLoc[labeledLoc$subspecies != sub, ]
       }
     }
-    
+
     subsppNames = unique(labeledLoc$subspecies)
     ## clean up the bgLayer again in case it needs to be smaller
     max_long = max(labeledLoc$longitude,na.rm=T)
     min_long = min(labeledLoc$longitude,na.rm=T)
     max_lat = max(labeledLoc$latitude,na.rm=T)
     min_lat = min(labeledLoc$latitude,na.rm=T)
-    
+
     print("Cleaning bgLayer 2nd time")
     #print(paste(xmin2,xmax2,ymin2,ymax2))
     ext2 = raster::extent(c(min_long,max_long,min_lat,max_lat))
@@ -303,7 +303,7 @@ createAssignedSubspecies = function(spp,
       ncol = cells_per_bgLayer,
       vals = 0
     )
-    
+
     #print(bgLayer)
     ## to reduce error take only subspecies within main density
     ## clean up the polygons so that if grouping way out in middle of nowhere, get rid of it
@@ -329,7 +329,7 @@ createAssignedSubspecies = function(spp,
     #   raster::plot(total_range,colNA = "darkgrey",main = paste("Distribution"))
     #   dev.off()
     # }
-    
+
     # if(method %in% c("polygon","density")) {
     print("Building species kernel density maps")
     xmax = max_long
@@ -384,8 +384,8 @@ createAssignedSubspecies = function(spp,
         dev.off()
       }
     }
-    
-    
+
+
     # if(method=="polygon") {
     #print("endplot1")
     ## convert to polygons
@@ -399,7 +399,7 @@ createAssignedSubspecies = function(spp,
       })
       return(densPol)
     })
-    
+
     ## optionally restrict the nominate
     if (restrictNominate == T) {
       print("Restricting the nominate")
@@ -410,7 +410,7 @@ createAssignedSubspecies = function(spp,
       }
       densityPolygons[[nominateSubspecies]] = sf::st_Difference(densityPolygons[[nominateSubspecies]], fullpoly)
     }
-    
+
     #print(densityPolygons)
     if (plotIt == T) {
       for (i in 1:length(densityPolygons)) {
@@ -484,7 +484,7 @@ createAssignedSubspecies = function(spp,
     ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
     ## will delete that subspecies. no bueno
     ## TODO: nominate subspecies special case
-    
+
     densityPolygons_trim1 = polygonTrimmer(polygonList = densityPolygons, namesList = subsppNames)
     if (plotIt == T) {
       for (i in 1:length(densityPolygons_trim1)) {
@@ -572,11 +572,11 @@ createAssignedSubspecies = function(spp,
           polygonA = densityPolygons_trim[[slotA]],
           name=subsppNames[[slotA]]
         )
-        
+
       }
-      
+
     }
-    
+
     print ("Cleaning up duplicate columns")
     ## this does not work with only one species
     colsToDelete = c()
@@ -604,7 +604,7 @@ createAssignedSubspecies = function(spp,
       }
       # }
       # }
-      
+
       # if(method=="density") {
       #
       #   density_stack = stack(densityRasters[names(densityRasters)!="unknown"])
@@ -626,9 +626,9 @@ createAssignedSubspecies = function(spp,
       #   plot(max_density)
       #
       # }
-      
-      
-      
+
+
+
       ## TODO: see if you can label unlabeled points based on polygons or nearest neighbor
       ## or nearest neighbor
       ## output the new data
@@ -640,6 +640,8 @@ createAssignedSubspecies = function(spp,
       ## or subspecies assignment a priori does not match final
       ## TODO: consider putting this in the other script file
       ## not working right now
+
+
       print("Matching subspecies")
       checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
                                          subsppNames)
