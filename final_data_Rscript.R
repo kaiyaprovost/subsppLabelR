@@ -12,23 +12,24 @@ roxygen2::roxygenize(package.dir = pkgDirectory)
 install.packages(pkgDirectory,repos=NULL,type="source",force=T)
 library(subsppLabelR)
 ## parameters
-redo=F; overwrite=T
-pointLimit=10000
-quant_list=c(seq(0.05,0.95,0.05),0.99,0.33,0.67)
+redo=T; overwrite=T
+pointLimit=2000
+#quant_list=c(seq(0.05,0.95,0.05),0.99,0.33,0.67)
+quant_list=c(0.9)
 dbToQuery=c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
 xmin = -180; xmax = -50; ymin = 0; ymax = 75;
-if(redo==T) {x
-  species_list = c(#"Phainopepla nitens",
+if(redo==T) {
+  species_list = c("Phainopepla nitens",
     #"Cardinalis sinuatus",
     #"Campylorhynchus brunneicapillus","Amphispiza bilineata",
     #"Vireo bellii","Toxostoma crissale","Toxostoma curvirostre","Polioptila melanura",
     #"Melospiza melodia","Zonotrichia leucophrys","Geococcyx californianus","Geococcyx",
     #"Melozone fusca","Auriparus flaviceps",
-    "Chondestes grammacus",
+    #"Chondestes grammacus",
     NULL
   )
 
-  subspp_list = list(#c("lepida","nitens"),
+  subspp_list = list(c("lepida","nitens"),
     #c("fulvescens","peninsulae","sinuatus"),
     #c("affinis","brunneicapillus","anthonyi","bryanti","guttatus","sandiegensis","seri"),
     #c("bangsi","bilineata","belvederei","cana","deserticola","carmenae","grisea","opuntia","pacifica","tortugae"),
@@ -45,7 +46,7 @@ if(redo==T) {x
     # c("californianus","velox"),
     # c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
     # c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
-    c("grammacus","strigatus"),
+    #c("grammacus","strigatus"),
     NULL
   )
 
@@ -59,7 +60,7 @@ if(redo==T) {x
     if(!(file.exists(paste(pkgDirectory,spp,"/",spp,"_subspplabelR_RAW.txt",sep="")))){
       listFromSubspeciesOcc = subspeciesOccQuery(spp=spp,subsppList=subspp,pointLimit=pointLimit,dbToQuery=dbToQuery)
       labeledLoc = labelSubspecies(subsppOccList=listFromSubspeciesOcc,
-                                   spp=spp,subsppList=subspp,cleanup_nominate=T)
+                                   spp=spp,subsppList=subspp) #cleanup_nominate=T argument removed
       head(labeledLoc)
       write.table(labeledLoc,paste(pkgDirectory,spp,"/",spp,"_subspplabelR_RAW.txt",sep=""),sep="\t",row.names = F)
     } else {
