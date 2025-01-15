@@ -14,7 +14,9 @@ nearestNeighborCleanup(good_points, bad_points, k = 21)
 \item{k}{XX}
 }
 \description{
-This function XXX
+This function calculates unlabeled points based on their assigned
+labels, assuming the assigned labels are correct.It calculates them
+based on their location in latitude and longitude space.
 }
 \examples{
 
