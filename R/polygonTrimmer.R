@@ -57,14 +57,20 @@ polygonTrimmer = function(polygonList, namesList, crs = "+proj=longlat +ellps=WG
         try({
           polA = newPolygonList[[slotA]]
           polB = newPolygonList[[slotB]]
+          #print(class(polA)) ## currently sf data.frame
+          #print(class(polB))
 
           ## check overlap between polA and polB
-          overlapPol = sf::st_intersection(polA,polB)
+
+          #overlapPol = sf::st_intersection(polA,polB) ## generates a new polygon
+          overlapPol = sf::st_intersects(polA,polB) ## tells you if there is an intersection
+          print(overlapPol)
+          #plot(overlapPol)
 
           if(is.null(overlapPol)) {
             overlapArea = 0
           } else {
-            overlapArea = sf::st_Area(overlapPol)
+            overlapArea = sf::st_area(overlapPol)
           }
 
           if(overlapArea != 0){
@@ -72,8 +78,8 @@ polygonTrimmer = function(polygonList, namesList, crs = "+proj=longlat +ellps=WG
               overlapPol = overlapPol@polyobj
             }
             ## check the overlap size relative to the other sizes
-            areaPolA = sf::st_Area(polA)
-            areaPolB = sf::st_Area(polB)
+            areaPolA = sf::st_area(polA)
+            areaPolB = sf::st_area(polB)
 
             ## check if it is smaller than one or the other or both
 
