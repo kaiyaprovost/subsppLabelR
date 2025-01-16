@@ -385,6 +385,10 @@ createAssignedSubspecies = function(spp,
       }
     }
 
+    ## it seems it is time to add a raster method instead
+    ## check raster overlaps with the quantified data
+
+
 
     # if(method=="polygon") {
     #print("endplot1")
