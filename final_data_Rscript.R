@@ -75,14 +75,15 @@ if(redo==T) {
         labeledLoc$longitude = as.numeric(labeledLoc$longitude)
         labeledLoc$latitude = as.numeric(labeledLoc$latitude)
         labeledLoc$subspecies = as.factor(labeledLoc$subspecies)
-        final = subsppLabelR::databaseToAssignedSubspecies(spp=spp,
+        final = subsppLabelR::createAssignedSubspecies(spp=spp,
                                                            subsppList = subspp_new,
                                                            pointLimit=pointLimit,dbToQuery=dbToQuery,
                                                            quant=quant,
                                                            plotIt=T,
                                                            datafile = labeledLoc,
                                                            xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax,
-                                                           outputDir=paste(pkgDirectory,spp,"/",sep=""))
+                                                           outputDir=paste(pkgDirectory,spp,"/",sep=""),
+                                                       verbose=T)
         final$loc_suspect
         final$loc_good
         final$pol
