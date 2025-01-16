@@ -38,9 +38,11 @@ densityMapToPolygons = function(densityMap,verbose=F) {
   polygon = terra::vect(polygon)
   #polygon <- sp::disaggregate(polygon)
   #polygon = st_cast(st_cast,"POLYGON")
-  polygon = terra::disagg(polygon)
-  polygon = as(sf::st_as_sf(polygon),"Spatial")
-  if(verbose==T){print("DISAGGREGATE SUCCESSFUL")}
+  polygon = terra::disagg(polygon) ## terra spatvector
+  #polygon = as(sf::st_as_sf(polygon),"Spatial") ## just did this one
+  polygon = sf::st_as_sf(polygon)
+  if(verbose==T){print("DISAGGREGATE SUCCESSFUL")
+  print(class(polygon))}
   #plot(polygon)
   return(polygon)
 }
