@@ -384,6 +384,13 @@ createAssignedSubspecies = function(spp,
         dev.off()
       }
     }
+    
+    ## we should output these rasters for posterity
+    print("Outputting density rasters")
+    densityStack = stack(densityRasters)
+    densityStackFile = paste("DensityRaster_", spp,"_",quant,".tif", sep = "")
+    names(densityStack) = names(densityRasters)
+    writeRaster(densityStack,densityStackFile,format="GTiff",overwrite=T,suffix="names")
 
     ## it seems it is time to add a raster method instead
     ## check raster overlaps with the quantified data
