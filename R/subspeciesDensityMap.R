@@ -41,7 +41,7 @@ subspeciesDensityMap = function(localities,
                                 relative=T,
                                 raw_raster=T,
                                 subspp,
-                                spp,+
+                                spp,
                                 outputDir) {
   ## this function uses kernel density to make a raster that will then be used to filter
   ## the data to remove all but the 5% (or 1-quant) most dense cells
