@@ -36,7 +36,7 @@ densityRasterIntersection = function(densA,densB,verbose=F) {
   densityStack = raster::stack("/Users/kprovost/Documents/GitHub/subsppLabelR/Phainopepla nitens/DensityRaster_Phainopepla nitens_0.75.tif")
   densA = densityStack[[2]]
   densB = densityStack[[3]]
-  plot(densityStack)
+  plot(densityStack[[2:3]])
   
   densAR = raster("/Users/kprovost/Documents/GitHub/subsppLabelR/Phainopepla nitens/Phainopepla nitens lepida_raw_raster.tif")
   densBR = raster("/Users/kprovost/Documents/GitHub/subsppLabelR/Phainopepla nitens/Phainopepla nitens nitens_raw_raster.tif")
@@ -60,7 +60,7 @@ densityRasterIntersection = function(densA,densB,verbose=F) {
   dens_AB_pres_dif = presAbs(densA,densB)
   plot(dens_AB_pres_dif) ## if 0, overlap. if -1 or +1, only on one side. 
   ## note: presAbs doesn't work with the raw rasters, they are all complete
-
+  
   relOverlap = function(densA,densB) {
     densA_rel = densA
     densA_rel[is.na(densA_rel)] = 0  
@@ -102,144 +102,79 @@ densityRasterIntersection = function(densA,densB,verbose=F) {
   ## can we dissolve the rasters somehow
   
   ## fine lets just loop over the damn raster and find all the adjacent cells
-  myCells = which(!is.na(values(dens_AB_rel_overlap)))  
-  
-  adjCells = lapply(myCells,FUN=function(x){
-    adjacent(dens_AB_rel_overlap,x,directions=8,target=myCells,sorted=T,include=T,pairs=F)
-  })
-  names(adjCells) = myCells
-  
-  posDirection <- matrix(c(NA, NA, NA, 
-                          NA, 0,  1, 
-                          1, 1, 1), ncol=3, byrow=TRUE)
-  adjCells = adjacent(dens_AB_rel_overlap,myCells,directions=posDirection,target=myCells,sorted=T,include=F)
-  adjCells2 = as.data.frame(adjCells)
-  adjCells2$keep = adjCells2$from<adjCells2$to
-  adjCells2 = adjCells2[adjCells2$keep==T,]
-  
-  
-  
-  
-  findLabelAdjCell = function(myCell=myCell,ras=dens_AB_rel_overlap,allCells=myCells,label=myCell,cellLabels=NULL,verbose=T) {
-    if(verbose==T) { print(myCell) }
-    
-    adjCells = adjacent(ras,myCell,directions=8,target=allCells[allCells>=myCell],sorted=T,include=T,pairs=F)
+  ## dave helped me do the recursive code so let's do the recursive code he coded out
 
-    for(newCell in adjCells[adjCells>myCell]){
-      if(verbose==T) { print("LOOP") }
-      
-      newAdjCells = findLabelAdjCell(myCell=newCell,ras=ras,allCells=allCells[!(allCells %in% adjCells)],label=myCell,cellLabels=cellLabels)
-      adjCells = sort(intersect(adjCells,newAdjCells))
+  ras = dens_AB_rel_overlap
+  myCells = which(!is.na(values(ras)))
+  target = myCells
+  visited = c()
+  clusterList = list()
+  for(cell in myCells) {
+    #print("MY CELL")
+    #print(cell)
+    if(cell %in% visited) { next }  else {
+      returned = recurseNeighbors(cell,visited)
+      cluster = c(returned$cluster)
+      visited = c(returned$visited)
+      #print("MY CLUSTER")
+      #print(cluster)
+      clusterList = c(clusterList,list(cluster))
+      #print("MY VISITED")
+      #print(visited)
     }
-
-    return(adjCells)
+  }
+  print(clusterList)
+  
+  ## the way this is set up it won't work properly if there are NA cells in myCells
+  recurseNeighbors = function(cell,visited) {
+    #print("CELLS VISITED")
+    #print(visited)
+    ## base case: cell is visited
+    if (cell %in% visited) {
+      #print(paste("VISITED",cell))
+      return(list(cluster=c(),visited=c(visited,cell)))
+    }
+    ## base case: cell is invalid (should not happen)
+    ## base case: cell is empty (should not happen)
+    ## recursive case: cell is valid and not visited
+    ## get neighbors of cell 
+    #print(paste("NOT VISITED",cell))
+    cellNeighbors = adjacent(ras,cell,directions=8,target,include=F,sorted=T,pairs=F)
+    cluster = c()
+    visited = sort(unique(c(visited,cell)))
+    #print("NEIGHBORS")
+    #print(cellNeighbors)
+    for (neighbor in cellNeighbors) {
+      #print(paste("NEIGHBOR",neighbor))
+      returned = recurseNeighbors(neighbor,visited)
+      cluster = sort(unique(c(cluster,returned$cluster)))
+      visited = sort(unique(c(visited,returned$visited)))
+      #print("CLUSTER")
+      #print(cluster)
+    }
+    return(list(cluster=unique(c(cluster,cell)),
+                visited=unique(c(visited,cell))))
   }
   
-  adjCells = findLabelAdjCell(myCell=myCell,ras=dens_AB_rel_overlap,allCells=myCells,label=myCell,cellLabels=NULL,verbose=T)
+  ## i can use this function to check if the highest density area is connected to the polygon tho which is nice
   
-  ## given a cell, find cells that are adjacent to it or to a neighbor etc the whole way down
-  getAllTouchingCells = function(myCell,foundCells=NULL,ras,allCells,checkedCells=NULL) {
-    if(is.null(foundCells)) { foundCells = c(myCell) }
-    if(verbose==T) { print(myCell) }
-    if(verbose==T) { print(foundCells) }
-    
-    ## get all cells touching this cell
-    adjCells = adjacent(ras,myCell,directions=8,target=allCells[!(allCells %in% foundCells)],sorted=T,include=F,pairs=F)
-    foundCells = sort(union(adjCells,foundCells))
-    
-    ## see if all of the found cells were checked 
-    outersect <- function(x, y) {
-      sort(c(setdiff(x, y),
-             setdiff(y, x)))
-    }
-    
-    if(is.null(checkedCells)) { checkedCells = c(myCell) }
-    cellsLeft = outersect(checkedCells,foundCells)
-    print(cellsLeft)
-    if(length(cellsLeft)>0) {
-      if(verbose==T) { print("RECURSE") }
-      myList = getAllTouchingCells(myCell=cellsLeft[1],
-                          foundCells=c(foundCells,cellsLeft[1]),
-                          ras=ras,
-                          allCells=allCells[!(allCells %in% intersect(foundCells,checkedCells))],
-                          checkedCells=checkedCells)
-      reFound = myList[[1]]
-      reChecked = myList[[2]]
-      if(verbose==T) { print("DONE RECURSE") }
-      foundCells = sort(union(reFound,foundCells,myCell,cellsLeft[1]))
-      checkedCells = sort(union(reChecked,checkedCells,cellsLeft[1]))
-    }
-    
-    return(list(foundCells=foundCells,checkedCells=checkedCells))
-  }
-  getAllTouchingCells(myCell=myCell,foundCells=NULL,ras=dens_AB_rel_overlap,allCells,checkedCells=NULL)
+  ras = densB
+  densCells = which(!is.na(values(ras)))
+  target = densCells
+  ## get the max density cell
+  densestCell = which(values(ras)==max(values(ras),na.rm=T))
+  visited = c()
+  clusterList = list()
+  print("MY CELL")
+  print(densestCell)
+  returned = recurseNeighbors(densestCell,visited)
+  cluster = c(returned$cluster)
+  visited = c(returned$visited)
   
-  ## base case: there are no cells in a direction touching the cell that have a cell index larger than that cell
-  ## if that is the case, it needs to return itself?
-  ## you just need to check if every thing it returns is a cell or not 
-  
-  touchingCells = function(myCell,neighborhood,ras,allCells) {
-    
-    ##set up adjacency matrix to look at each direction
-    middleRight <- matrix(c(NA, NA, NA, 
-                            NA, 0,  1, 
-                            NA, NA, NA), ncol=3, byrow=TRUE)
-    bottomLeft <- matrix(c(NA, NA, NA, 
-                           NA, 0,  NA, 
-                           1, NA, NA), ncol=3, byrow=TRUE)
-    bottomCenter <- matrix(c(NA, NA, NA, 
-                             NA, 0,  NA, 
-                             NA, 1, NA), ncol=3, byrow=TRUE)
-    bottomRight <- matrix(c(NA, NA, NA, 
-                            NA, 0,  NA, 
-                            NA, NA, 1), ncol=3, byrow=TRUE)
-    
-    if(neighborhood=="middleRight") {
-      adjCell = adjacent(ras,myCell,directions=middleRight,target=allCells,sorted=T,include=F,pairs=F)
-    } else if (neighborhood=="bottomLeft") {
-      adjCell = adjacent(ras,myCell,directions=bottomLeft,target=allCells,sorted=T,include=F,pairs=F)
-    } else if (neighborhood=="bottomCenter") {
-      adjCell = adjacent(ras,myCell,directions=bottomCenter,target=allCells,sorted=T,include=F,pairs=F)
-    } else if (neighborhood=="bottomRight") {
-      adjCell = adjacent(ras,myCell,directions=bottomRight,target=allCells,sorted=T,include=F,pairs=F)
-    } else {
-      stop("neighborhood value not accepted")
-      adjCell = adjacent(ras,myCell,directions=8,target=allCells,sorted=T,include=F,pairs=F)
-    }
-    
-    if(length(adjCell) == 0 ) {
-      ## we have reached the end of this path 
-      print("END OF PATH")
-      print(myCell)
-      return(myCell)
-    } else {
-      ## there are more cells to check
-      print("CHECK EACH DIRECTION")
-      print("MR")
-      mR = touchingCells(adjCell,neighborhood="middleRight",ras,allCells)
-      print("BL")
-      bL = touchingCells(adjCell,neighborhood="bottomLeft",ras,allCells)
-      print("BC")
-      bC = touchingCells(adjCell,neighborhood="bottomCenter",ras,allCells)
-      print("BR")
-      bR = touchingCells(adjCell,neighborhood="bottomRight",ras,allCells)
-      outputCells = sort(unique(c(mR,bL,bC,bR)))
-      return(outputCells)
-      
-    }
-  } 
-  
-  touchingCells(myCell=410,neighborhood="bottomLeft",ras,allCells)
-  
-  
-  ## time for a list of lists
-  for(myCell in myCells) {
-    touching_cells_from = adjCells2$from[adjCells2$from==myCell | adjCells2$to==myCell]
-    touching_cells_to = adjCells2$to[adjCells2$from==myCell | adjCells2$to==myCell]
-    touching_cells = intersect(touching_cells_from,touching_cells_to)
-  }
-  
-  
+  plot(densB)
+  densBtest = densB
+  densBtest[cluster] = 10
+  plot(densBtest)
   
   
   spatrast = terra::rast(dens_AB_rel_overlap)
@@ -248,7 +183,7 @@ densityRasterIntersection = function(densA,densB,verbose=F) {
   st_union(polygon)
   pbuffer = st_buffer(polygon,0.1)
   polygon1 = aggregate(polygon,pbuffer,mean,do_union=T,simplify=T,
-                      join = function(x, y) st_is_within_distance(x, y, dist = 0.3))
+                       join = function(x, y) st_is_within_distance(x, y, dist = 0.3))
   plot(polygon1)
   
   
@@ -260,25 +195,25 @@ densityRasterIntersection = function(densA,densB,verbose=F) {
     ux <- unique(x)
     return(ux[which.max(tabulate(match(x, ux)))])
   }
-
+  
   polygon2 = aggregate(polygon, by = list(diss = polygon$layer), 
                        FUN = function(x)x[1], do_union = TRUE)
   plot(polygon2)
   pbuffer = st_buffer(polygon2,0.2)
   #polygon3 = st_union(polygon2, by_feature = TRUE)
   polygon3 = aggregate(polygon2,pbuffer,mean,do_union=T,simplify=F,
-                      join = function(x, y) st_is_within_distance(x, y, dist = 0.3))
+                       join = function(x, y) st_is_within_distance(x, y, dist = 0.3))
   plot(polygon3)
   
   
-
+  
   
   polygon = st_as_sf(dens_AB_rel_overlap)
   polygon = raster::rasterToPolygons(dens_AB_rel_overlap,fun = NULL,na.rm = T,dissolve = F)
   plot(polygon,col=1:2)
   
   ## this function locates intersections between rasters
-
+  
   #densA <- raster(nrows=40, ncols=40, xmn=0, xmx=2, ymn=0, ymx=2)
   #densA[] <- seq(1, 100, length.out=ncell(densA))
   #densB <- raster(outer(1:20,20:1), xmn=0, xmx=1, ymn=0, ymx=1)
@@ -288,6 +223,6 @@ densityRasterIntersection = function(densA,densB,verbose=F) {
   plot(overlapRas)
   overlapRas = mask(crop(densA, densB), densB)
   plot(overlapRas)
-
+  
   return(polygon)
 }
