@@ -4,8 +4,8 @@
 
 detach("package:subsppLabelR", unload = TRUE)
 
-#pkgDirectory = "C:/Users/kaiya/Documents/Work/GitHub/subsppLabelR/" ## WINDOWS
-pkgDirectory = "/Users/kprovost/Documents/GitHub/subsppLabelR/" ## MAC
+pkgDirectory = "C:/Users/kaiya/Documents/Work/GitHub/subsppLabelR/" ## WINDOWS
+#pkgDirectory = "/Users/kprovost/Documents/GitHub/subsppLabelR/" ## MAC
 
 #devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
 roxygen2::roxygenize(package.dir = pkgDirectory)
@@ -15,7 +15,7 @@ library(subsppLabelR)
 redo=T; overwrite=T
 pointLimit=2000
 #quant_list=c(seq(0.05,0.95,0.05),0.99,0.33,0.67)
-quant_list=c(0.75)
+quant_list=c(0.9)
 dbToQuery=c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
 xmin = -180; xmax = -50; ymin = 0; ymax = 75;
 if(redo==T) {
