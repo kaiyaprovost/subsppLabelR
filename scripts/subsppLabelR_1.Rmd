@@ -437,7 +437,7 @@ for (i in 1:length(densityRasters_15)) {
 
 Now we can see where the bulk of the data are found for these ranges. Most of the unknown samples we downloaded appear to be in subspecies *lepida*. Comparing the plots shows us how choosing cutoffs can impact our downstream analyses. We will continue for now with the top 10%, as it seems to connect the bulk of the *lepida* samples without adding too many extra bits.  
 
-Next let us remove any overlaps that exist in our raster data. For this particular configuration of the data, there are no overlaps to be seen. 
+Next let us remove any overlaps that exist in our raster data. For this particular configuration of the data, there are no overlaps to be seen. On this dataset, we start finding overlaps around the 75% density cutoff.
 
 ```{r rasteroverlaps}
 
@@ -456,9 +456,7 @@ for (rasterA_i in 2:length(validRasters)) {
   }
 }
 for (i in 1:length(validRasters)) {
-  #print("plotforloop")
   name = names(validRasters)[[i]]
-  png(paste("ValidRaster_", spp, " ", name, quant, ".png", sep = ""))
   raster::plot(
     bgLayer,
     col = "grey",
@@ -468,78 +466,23 @@ for (i in 1:length(validRasters)) {
   raster::plot(validRasters[[i]],
                add = T,
                col = viridis::viridis(99))
-  dev.off()
 }
 
 
 
 ```
-We must now check the polygons for overlaps. 
-
-```{r next}
-
-
-## check overlaps between polygons
-
-print("Checking Overlaps of Polygons and Removing Overlaps")
-
-densityPolygons_trim1 = subsppLabelR::polygonTrimmer(polygonList = densityPolygons, namesList = subsppNames)
-
-for (i in 1:length(densityPolygons_trim1)) {
-  name = names(densityPolygons_trim1)[[i]]
-  raster::plot(
-    bgLayer,
-    col = "grey",
-    colNA = "darkgrey",
-    main = paste("Polygon, subspp:", name)
-  )
-  raster::plot(densityPolygons_trim1[[i]],
-               add = T,
-               col = viridis::viridis(99))
-}
-
-raster::plot(
-  bgLayer,
-  col = "grey",
-  colNA = "darkgrey",
-  main = paste("Polygon, subspp:", name)
-)
-for (i in 1:length(densityPolygons_trim1)) {
-  name = names(densityPolygons_trim1)[[i]]
-  raster::plot(
-    densityPolygons_trim1[[i]],
-    add = T,
-    border = i,
-    lwd = ((3 * i) / 3)
-  )
-}
-legend(
-  "top",
-  legend = names(densityPolygons_trim1),
-  bty = "n",
-  fill = rgb(0, 0, 0, 0),
-  border = 1:length(densityPolygons_trim1)
-)
-
-
-```
-
-These polygons look good considering we are missing a lot of data from the center of the distribution. 
-Now lets locate the unknown points relative to those polygons and do some clean up. 
+These rasters look good considering we are missing a lot of data from the center of the distribution. 
+Now lets locate the unknown points relative to those rasters and do some clean up. 
 
 ```{r pointlocate}
 
-densityPolygons_trim = densityPolygons_trim1
-
-print("Locating points relative to polygons")
-
+print("Locating points relative to rasters")
 polyLocations = labeledLoc
-
 for (slotA in 1:length(subsppNames)) {
   if (subsppNames[[slotA]] != "unknown") {
-    polyLocations = subsppLabelR::locatePolygonPoints(
+    polyLocations = subsppLabelR::locateRasterPoints(
       test_points = polyLocations,
-      polygonA = densityPolygons_trim[[slotA]],
+      rasterA = validRasters[[slotA]],
       name=subsppNames[[slotA]]
     )
     
@@ -571,7 +514,7 @@ head(polyLocations)
 
 ```
 
-Now we will label the occurrences based on those polygons and flag anything that looks suspect. 
+Now we will label the occurrences based on those rasters and flag anything that looks suspect. 
 
 ```{r match}
 
