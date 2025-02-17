@@ -163,7 +163,6 @@ createAssignedSubspecies = function(spp, subsppList, pointLimit, dbToQuery, meth
   max_lat = max(labeledLoc$latitude, na.rm = T)
   min_lat = min(labeledLoc$latitude, na.rm = T)
   print("Cleaning bgLayer 2nd time")
-  print(paste(xmin2, xmax2, ymin2, ymax2))
   ext2 = raster::extent(c(min_long, max_long, min_lat, max_lat))
   bgLayer = raster::raster(ext = ext2, nrow = cells_per_bgLayer, ncol = cells_per_bgLayer, vals = 0)
   print("Building species kernel density maps")
