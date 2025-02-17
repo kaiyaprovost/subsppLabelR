@@ -409,15 +409,18 @@ createAssignedSubspecies = function(spp,
     if(method=="raster") {
       print("Removing overlapping raster sections from density map")
       ## move pairwise over densityRasters, but do not include unknown which is in position 1
+      ## also, don't run this if the length of densityRasters is 2 or less
       validRasters = densityRasters
-      for (rasterA_i in 2:length(validRasters)) {
-        for(rasterB_i in 2:length(validRasters)) {
-          if (rasterA_i > rasterB_i) {
-            densA = validRasters[[rasterA_i]]
-            densB = validRasters[[rasterB_i]]
-            validRasterList = densityRasterRemoveIntersection(densA=densA,densB=densB,verbose=F)
-            validRasters[[rasterA_i]] = validRasterList[[1]]
-            validRasters[[rasterB_i]] = validRasterList[[2]]
+      if(length(validRasters)>=3) {
+        for (rasterA_i in 2:length(validRasters)) {
+          for(rasterB_i in 2:length(validRasters)) {
+            if (rasterA_i > rasterB_i) {
+              densA = validRasters[[rasterA_i]]
+              densB = validRasters[[rasterB_i]]
+              validRasterList = densityRasterRemoveIntersection(densA=densA,densB=densB,verbose=F)
+              validRasters[[rasterA_i]] = validRasterList[[1]]
+              validRasters[[rasterB_i]] = validRasterList[[2]]
+            }
           }
         }
       }
