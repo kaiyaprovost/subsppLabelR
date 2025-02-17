@@ -39,6 +39,8 @@ createAssignedSubspecies(
 
 \item{dbToQuery}{List of databases to search through -- see spocc::occ}
 
+\item{method}{Whether to calculate overlaps with rasters or polygons}
+
 \item{quant}{quant for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.}
 
 \item{xmin}{Minimum longitude extent to clip rasters to}
@@ -58,6 +60,20 @@ createAssignedSubspecies(
 \item{datafile}{if already ran and saved output from spocc:occ, put file here -- default NULL}
 
 \item{epsilon}{Parameter for anomaly detection}
+
+\item{spp_epsilon}{Parameter for anomly detection specifically for species}
+
+\item{subspp_epsilon}{Parameter for anomaly detection specifically for subspecies}
+
+\item{restrictNominate}{Whether or not to restrict the nominate and remove extra points}
+
+\item{cleanup_nominate}{Whether or not to clean up the nominate}
+
+\item{num_digits_latlong}{The number of digits to round the coordinates to}
+
+\item{cells_per_bgLayer}{How many cells to include per background layer}
+
+\item{downloadOnly}{Whether to run as download occurrences only}
 }
 \description{
 This function is a wrapper for the package and takes a species with a list of subspecies, and then
