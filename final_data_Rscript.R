@@ -1,6 +1,6 @@
 ## TODO: unit testing
 
-#detach("package:subsppLabelR", unload = TRUE)
+detach("package:subsppLabelR", unload = TRUE)
 
 #pkgDirectory = "C:/Users/kaiya/Documents/Work/GitHub/subsppLabelR/" ## WINDOWS
 #pkgDirectory = "/Users/kprovost/Documents/GitHub/subsppLabelR/" ## MAC
