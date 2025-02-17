@@ -690,12 +690,15 @@ createAssignedSubspecies = function(spp,
     }
     
     print("Matching subspecies")
+    print(head(polyLocations))
     checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
                                        subsppNames)
     #print("c1")
     checked_suspect = checked$suspect
+    print(head(checked_suspect))
     #print("c2")
     checked_good = checked$good
+    print(head(checked_good))
     #print("done")
     ## return nice clean data
     print("Warning: no valid definition for subspecies given!") ## this is a joke
