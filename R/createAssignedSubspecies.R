@@ -430,7 +430,7 @@ createAssignedSubspecies = function(spp,
         
       }
       
-    } else {
+    } else if (method=="polygon") {
       # if(method=="polygon") {
       #print("endplot1")
       ## convert to polygons
