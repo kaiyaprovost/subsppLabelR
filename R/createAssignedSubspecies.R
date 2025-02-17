@@ -315,32 +315,6 @@ createAssignedSubspecies = function(spp,
       vals = 0
     )
     
-    #print(bgLayer)
-    ## to reduce error take only subspecies within main density
-    ## clean up the polygons so that if grouping way out in middle of nowhere, get rid of it
-    ## remove points that fall within the other subspecies' polygon
-    ## and account for data being poor
-    ## build the density of the points
-    ## remove all but 95% (or quant) most dense cells
-    ## TODO: some subspecies come back with the entire range as their range due to the way the distribution is
-    ## need to generate a raster file to crop the density maps to
-    # #print("x1")
-    # total_range = bgLayer
-    # #print("x2")
-    # raster::values(total_range)[!is.na(raster::values(bgLayer))] = NA
-    # #print("x3")
-    # cells <- raster::cellFromXY(total_range, as.matrix(labeledLoc[,c("longitude","latitude")]));
-    # #print("x4")
-    # celltable = table(cells)
-    # #print("x5")
-    # total_range[as.numeric(names(celltable))] = celltable
-    #print("x6")
-    # if (plotIt == T) {
-    #   png(paste("FullDistribution", spp,quant,".png", sep = ""))
-    #   raster::plot(total_range,colNA = "darkgrey",main = paste("Distribution"))
-    #   dev.off()
-    # }
-    
     # if(method %in% c("polygon","density")) {
     print("Building species kernel density maps")
     xmax = max_long
@@ -647,93 +621,96 @@ createAssignedSubspecies = function(spp,
         }
         
       }
-    }
-    
-    print ("Cleaning up duplicate columns")
-    ## this does not work with only one species
-    colsToDelete = c()
-    #print(polyLocations)
-    print(length(colnames(polyLocations)))
-    if (length(colnames(polyLocations)) > 6) {
-      for (colNumA in 5:length(colnames(polyLocations))) {
-        for (colNumB in 6:length(colnames(polyLocations))) {
-          if (colNumA < colNumB) {
-            #print(paste("compare",colNumA,colNumB,sep=" "))
-            if (identical(polyLocations[[colNumA]], polyLocations[[colNumB]])) {
-              #print("identical, deleting")
-              colsToDelete = c(colsToDelete, colNumB)
+      
+      
+      print ("Cleaning up duplicate columns")
+      ## this does not work with only one species
+      colsToDelete = c()
+      #print(polyLocations)
+      print(length(colnames(polyLocations)))
+      if (length(colnames(polyLocations)) > 6) {
+        for (colNumA in 5:length(colnames(polyLocations))) {
+          for (colNumB in 6:length(colnames(polyLocations))) {
+            if (colNumA < colNumB) {
+              #print(paste("compare",colNumA,colNumB,sep=" "))
+              if (identical(polyLocations[[colNumA]], polyLocations[[colNumB]])) {
+                #print("identical, deleting")
+                colsToDelete = c(colsToDelete, colNumB)
+              }
             }
           }
         }
-      }
-      if (!(is.null(colsToDelete))) {
-        #print("is null cols")
-        #print(colsToDelete)
-        #print(names(polyLocations))
-        #print(head(polyLocations))
-        polyLocations = polyLocations[, -colsToDelete]
-        #print("success")
-      }
-      # }
-      # }
-      
-      # if(method=="density") {
-      #
-      #   density_stack = stack(densityRasters[names(densityRasters)!="unknown"])
-      #   density_max = max(density_stack,na.rm=T)
-      #   density_sum = sum(density_stack,na.rm=T)
-      #   max_density_list = lapply(1:length(densityRasters),FUN=function(i){
-      #     ras = densityRasters[[i]]
-      #     #plot(ras,colNA="grey")
-      #     ras2 = density_max-ras
-      #     values(ras2)[values(ras2)!=0]=NA
-      #     values(ras2)[values(ras2)==0]=i
-      #     #plot(ras2,colNA="grey")
-      #     return(ras2)
-      #   })
-      #   names(max_density_list) = names(densityRasters)
-      #   max_density_stack = stack(max_density_list[names(max_density_list)!="unknown"])
-      #   #plot(max_density_stack)
-      #   max_density = sum(max_density_stack,na.rm=T)
-      #   plot(max_density)
-      #
-      # }
-      
-      
-      
-      ## TODO: see if you can label unlabeled points based on polygons or nearest neighbor
-      ## or nearest neighbor
-      ## output the new data
-      ## KNN algorithm, k nearest neighbors
-      ## plot (optional)
-      ## workflow
-      ## go through data and look for instances where:
-      ## something is assigned to multiple subspecies
-      ## or subspecies assignment a priori does not match final
-      ## TODO: consider putting this in the other script file
-      ## not working right now
-      
-      
-      print("Matching subspecies")
-      checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
-                                         subsppNames)
-      #print("c1")
-      checked_suspect = checked$suspect
-      #print("c2")
-      checked_good = checked$good
-      #print("done")
-      ## return nice clean data
-      print("Warning: no valid definition for subspecies given!") ## this is a joke
-      return(
-        list(
-          labeledLoc = labeledLoc,
-          loc_suspect = checked_suspect,
-          loc_good = checked_good
-          
-        )
-      )
+        if (!(is.null(colsToDelete))) {
+          #print("is null cols")
+          #print(colsToDelete)
+          #print(names(polyLocations))
+          #print(head(polyLocations))
+          polyLocations = polyLocations[, -colsToDelete]
+          #print("success")
+        }
+        # }
+        # }
+        
+        # if(method=="density") {
+        #
+        #   density_stack = stack(densityRasters[names(densityRasters)!="unknown"])
+        #   density_max = max(density_stack,na.rm=T)
+        #   density_sum = sum(density_stack,na.rm=T)
+        #   max_density_list = lapply(1:length(densityRasters),FUN=function(i){
+        #     ras = densityRasters[[i]]
+        #     #plot(ras,colNA="grey")
+        #     ras2 = density_max-ras
+        #     values(ras2)[values(ras2)!=0]=NA
+        #     values(ras2)[values(ras2)==0]=i
+        #     #plot(ras2,colNA="grey")
+        #     return(ras2)
+        #   })
+        #   names(max_density_list) = names(densityRasters)
+        #   max_density_stack = stack(max_density_list[names(max_density_list)!="unknown"])
+        #   #plot(max_density_stack)
+        #   max_density = sum(max_density_stack,na.rm=T)
+        #   plot(max_density)
+        #
+        # }
+        
+        
+        
+        ## TODO: see if you can label unlabeled points based on polygons or nearest neighbor
+        ## or nearest neighbor
+        ## output the new data
+        ## KNN algorithm, k nearest neighbors
+        ## plot (optional)
+        ## workflow
+        ## go through data and look for instances where:
+        ## something is assigned to multiple subspecies
+        ## or subspecies assignment a priori does not match final
+        ## TODO: consider putting this in the other script file
+        ## not working right now
+      } 
     }
+    
+    print("Matching subspecies")
+    checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
+                                       subsppNames)
+    #print("c1")
+    checked_suspect = checked$suspect
+    #print("c2")
+    checked_good = checked$good
+    #print("done")
+    ## return nice clean data
+    print("Warning: no valid definition for subspecies given!") ## this is a joke
+    return(
+      list(
+        labeledLoc = labeledLoc,
+        loc_suspect = checked_suspect,
+        loc_good = checked_good
+        
+      )
+    )
+    
+    
   } else {
+    ## download only is true
     return(
       list(
         labeledLoc = labeledLoc,
