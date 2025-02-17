@@ -622,71 +622,71 @@ createAssignedSubspecies = function(spp,
         
       }
       
-      
-      print ("Cleaning up duplicate columns")
-      ## this does not work with only one species
-      colsToDelete = c()
-      #print(polyLocations)
-      print(length(colnames(polyLocations)))
-      if (length(colnames(polyLocations)) > 6) {
-        for (colNumA in 5:length(colnames(polyLocations))) {
-          for (colNumB in 6:length(colnames(polyLocations))) {
-            if (colNumA < colNumB) {
-              #print(paste("compare",colNumA,colNumB,sep=" "))
-              if (identical(polyLocations[[colNumA]], polyLocations[[colNumB]])) {
-                #print("identical, deleting")
-                colsToDelete = c(colsToDelete, colNumB)
+      if(method=="polygon") {
+        print ("Cleaning up duplicate columns")
+        ## this does not work with only one species
+        colsToDelete = c()
+        #print(polyLocations)
+        print(length(colnames(polyLocations)))
+        if (length(colnames(polyLocations)) > 6) {
+          for (colNumA in 5:length(colnames(polyLocations))) {
+            for (colNumB in 6:length(colnames(polyLocations))) {
+              if (colNumA < colNumB) {
+                #print(paste("compare",colNumA,colNumB,sep=" "))
+                if (identical(polyLocations[[colNumA]], polyLocations[[colNumB]])) {
+                  #print("identical, deleting")
+                  colsToDelete = c(colsToDelete, colNumB)
+                }
               }
             }
           }
-        }
-        if (!(is.null(colsToDelete))) {
-          #print("is null cols")
-          #print(colsToDelete)
-          #print(names(polyLocations))
-          #print(head(polyLocations))
-          polyLocations = polyLocations[, -colsToDelete]
-          #print("success")
-        }
-        # }
-        # }
-        
-        # if(method=="density") {
-        #
-        #   density_stack = stack(densityRasters[names(densityRasters)!="unknown"])
-        #   density_max = max(density_stack,na.rm=T)
-        #   density_sum = sum(density_stack,na.rm=T)
-        #   max_density_list = lapply(1:length(densityRasters),FUN=function(i){
-        #     ras = densityRasters[[i]]
-        #     #plot(ras,colNA="grey")
-        #     ras2 = density_max-ras
-        #     values(ras2)[values(ras2)!=0]=NA
-        #     values(ras2)[values(ras2)==0]=i
-        #     #plot(ras2,colNA="grey")
-        #     return(ras2)
-        #   })
-        #   names(max_density_list) = names(densityRasters)
-        #   max_density_stack = stack(max_density_list[names(max_density_list)!="unknown"])
-        #   #plot(max_density_stack)
-        #   max_density = sum(max_density_stack,na.rm=T)
-        #   plot(max_density)
-        #
-        # }
-        
-        
-        
-        ## TODO: see if you can label unlabeled points based on polygons or nearest neighbor
-        ## or nearest neighbor
-        ## output the new data
-        ## KNN algorithm, k nearest neighbors
-        ## plot (optional)
-        ## workflow
-        ## go through data and look for instances where:
-        ## something is assigned to multiple subspecies
-        ## or subspecies assignment a priori does not match final
-        ## TODO: consider putting this in the other script file
-        ## not working right now
-      } 
+          if (!(is.null(colsToDelete))) {
+            #print("is null cols")
+            #print(colsToDelete)
+            #print(names(polyLocations))
+            #print(head(polyLocations))
+            polyLocations = polyLocations[, -colsToDelete]
+            #print("success")
+          }
+          # }
+          # }
+          
+          # if(method=="density") {
+          #
+          #   density_stack = stack(densityRasters[names(densityRasters)!="unknown"])
+          #   density_max = max(density_stack,na.rm=T)
+          #   density_sum = sum(density_stack,na.rm=T)
+          #   max_density_list = lapply(1:length(densityRasters),FUN=function(i){
+          #     ras = densityRasters[[i]]
+          #     #plot(ras,colNA="grey")
+          #     ras2 = density_max-ras
+          #     values(ras2)[values(ras2)!=0]=NA
+          #     values(ras2)[values(ras2)==0]=i
+          #     #plot(ras2,colNA="grey")
+          #     return(ras2)
+          #   })
+          #   names(max_density_list) = names(densityRasters)
+          #   max_density_stack = stack(max_density_list[names(max_density_list)!="unknown"])
+          #   #plot(max_density_stack)
+          #   max_density = sum(max_density_stack,na.rm=T)
+          #   plot(max_density)
+          #
+          # }
+          
+          
+          
+          ## TODO: see if you can label unlabeled points based on polygons or nearest neighbor
+          ## or nearest neighbor
+          ## output the new data
+          ## KNN algorithm, k nearest neighbors
+          ## plot (optional)
+          ## workflow
+          ## go through data and look for instances where:
+          ## something is assigned to multiple subspecies
+          ## or subspecies assignment a priori does not match final
+          ## TODO: consider putting this in the other script file
+          ## not working right now
+        } }
     }
     
     print("Matching subspecies")
