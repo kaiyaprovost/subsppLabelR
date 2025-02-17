@@ -31,8 +31,6 @@ NULL
 densityRasterRemoveIntersection = function(densA,densB,verbose=F) {
   ## this needs to take in two density rasters
   ## and then it needs to remove the overlaps of the density rasters
-  library(sf)
-  library(raster)
   
   if(verbose==T){ print("Calculate raster pres/abs and overlap") }
   dens_pres_abs_overlap = presAbs(densA,densB)
@@ -42,6 +40,14 @@ densityRasterRemoveIntersection = function(densA,densB,verbose=F) {
   ## can we take majority rule?
   dens_pres_abs_only_overlap = dens_pres_abs_overlap
   dens_pres_abs_only_overlap[dens_pres_abs_only_overlap!=0] = NA
+  
+  ## need a check here to see if there are any overlaps, because if there are no overlaps, we don't need to do anything below
+  numOverlapCells = sum(!is.na(values(dens_pres_abs_only_overlap)))
+  if(numOverlapCells <= 0) {
+    if(verbose==T){ print("No overlaps detected! Returning original rasters.") }
+    return(list(densA,densB))
+    
+  }
   
   ## calculate with relative densities, which range from 0 to 1
   dens_AB_rel_overlap = dens_relative_bool
@@ -55,6 +61,7 @@ densityRasterRemoveIntersection = function(densA,densB,verbose=F) {
   
   if(verbose==T){ print("Identify clusters recursively") }
   clusterList = loopFindClusters(ras=dens_AB_rel_overlap,allCells=myCells,targetCells=myCells,verbose=verbose)
+  ## if this cluster isn't populated?
   
   if(verbose==T){ print("Renumber identified clusters") }
   identified_overlap_clusters = dens_AB_rel_overlap
