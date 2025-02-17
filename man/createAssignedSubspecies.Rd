@@ -9,7 +9,7 @@ createAssignedSubspecies(
   subsppList,
   pointLimit,
   dbToQuery,
-  method = "polygon",
+  method = "raster",
   quant = 0.95,
   xmin = -180,
   xmax = 180,
