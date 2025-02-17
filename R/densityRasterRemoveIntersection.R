@@ -34,112 +34,80 @@ densityRasterRemoveIntersection = function(densA,densB,verbose=F) {
   library(sf)
   library(raster)
   
-  #myFolder = "C:/Users/kaiya/Documents/Work/GitHub/subsppLabelR/"
-  #myFolder = "~/Documents/GitHub/subsppLabelR/"
-  #setwd(myFolder)
-  
-  #densityStack = raster::stack("Phainopepla nitens/DensityRaster_Phainopepla nitens_0.75.tif")
-  #densA = densityStack[[2]]
-  #densB = densityStack[[3]]
-  #plot(densityStack[[2:3]])
-  
-  #densAR = raster("Phainopepla nitens/Phainopepla nitens lepida_raw_raster.tif")
-  #densBR = raster("Phainopepla nitens/Phainopepla nitens nitens_raw_raster.tif")
-  
+  if(verbose==T){ print("Calculate raster pres/abs and overlap") }
   dens_pres_abs_overlap = presAbs(densA,densB)
-  #plot(dens_pres_abs_overlap) ## if 0, overlap. if -1 or +1, only on one side.
-  ## note: presAbs doesn't work with the raw rasters, they are all complete
-  
   dens_relative_values = relOverlap(densA,densB)
-  #dens_relative_raw_values = relOverlap(densAR,densBR)
-  #par(mfrow=c(1,2))
-  #plot(dens_relative_values)
-  #plot(dens_relative_raw_values)
-  
   dens_relative_bool = convertRelToPresAbs(dens_relative_values)
-  #dens_relative_raw_bool = convertRelToPresAbs(dens_relative_raw_values)
-  #par(mfrow=c(1,2))
-  #plot(dens_relative_bool)
-  #plot(dens_relative_raw_bool)
   
   ## can we take majority rule?
   dens_pres_abs_only_overlap = dens_pres_abs_overlap
   dens_pres_abs_only_overlap[dens_pres_abs_only_overlap!=0] = NA
   
   ## calculate with relative densities, which range from 0 to 1
-  #plot(dens_pres_abs_only_overlap)
-  ## now get from the other one
   dens_AB_rel_overlap = dens_relative_bool
   dens_AB_rel_overlap[is.na(dens_pres_abs_only_overlap)] = NA
-  #plot(dens_AB_rel_overlap)
-  
+
   ## assign the overlapping raster area to individual clusters
   ## run the recursion for the non raw rasters
   ras = dens_AB_rel_overlap
   myCells = which(!is.na(values(ras)))
   targetCells = myCells
   
-  clusterList = loopFindClusters(ras=dens_AB_rel_overlap,allCells=myCells,targetCells=myCells,verbose=F)
+  if(verbose==T){ print("Identify clusters recursively") }
+  clusterList = loopFindClusters(ras=dens_AB_rel_overlap,allCells=myCells,targetCells=myCells,verbose=verbose)
   
+  if(verbose==T){ print("Renumber identified clusters") }
   identified_overlap_clusters = dens_AB_rel_overlap
   for(i in 1:length(clusterList)) {
     clusterCells = clusterList[[i]]
     identified_overlap_clusters[clusterCells] = i
   }
-  #plot(identified_overlap_clusters)
+
   
   ## find the cluster with the densest cell for each raster
   ## i can use this function to check if the highest density area is connected to the polygon tho which is nice
-  
+  if(verbose==T){ print("Find the densest cluster per polygon") }
   densCellsB = which(!is.na(values(densB)))
   ## get the max density cell
   targetB = which(values(densB)==max(values(densB),na.rm=T))
   densestClusterListB = loopFindClusters(ras=densB,
                                          allCells=densCellsB,
                                          targetCells=targetB,
-                                         verbose=F)
+                                         verbose=verbose)
   
-  #plot(densB)
   densest_B = densB
   densest_B[densCellsB] = 0
   densest_B[densestClusterListB[[1]]] = 1
-  #plot(densest_B)
-  
+
   densCellsA = which(!is.na(values(densA)))
   ## get the max density cell
   targetA = which(values(densA)==max(values(densA),na.rm=T))
   densestClusterListA = loopFindClusters(ras=densA,
                                          allCells=densCellsA,
                                          targetCells=targetA,
-                                         verbose=F)
+                                         verbose=verbose)
   
-  #plot(densA)
   densest_A = densA
   densest_A[densCellsA] = 0
   densest_A[densestClusterListA[[1]]] = 1
-  #plot(densest_A)
-  
-  #par(mfrow=c(1,3))
-  #plot(identified_overlap_clusters,col=c("red","blue"))
-  #plot(densest_A); plot(identified_overlap_clusters,add=T,col="red")
-  #plot(densest_B); plot(identified_overlap_clusters,add=T,col="red")
-  
+
   valid_polygon_A = densest_A
   valid_polygon_B = densest_B
   
   ## use the densest cluster to assign the thing
   ## for each polygon in the assigned raster, check if that polygon overlaps A and B most dense
   #identified_overlap_clusters
+  if(verbose==T){ print("Remove overlaps from rasters") }
   
   for(overlapCluster in clusterList) {
     ## overlapCluster = clusterList[[1]]
     ## find which polygon this cluster belongs to on both A and B
     ## get valid cells for A
     valid_A = intersect(densCellsA, overlapCluster)
-    a_cluster = loopFindClusters(ras=densest_A,allCells=densCellsA,targetCells=valid_A,verbose=F)
+    a_cluster = loopFindClusters(ras=densest_A,allCells=densCellsA,targetCells=valid_A,verbose=verbose)
     ## get valid cells for B
     valid_B = intersect(densCellsB, overlapCluster)
-    b_cluster = loopFindClusters(ras=densest_B,allCells=densCellsB,targetCells=valid_B,verbose=F)
+    b_cluster = loopFindClusters(ras=densest_B,allCells=densCellsB,targetCells=valid_B,verbose=verbose)
     ## check if these are the densest polygons for A and B
     is_A_densest = (1 %in% densest_A[overlapCluster])
     is_B_densest = (1 %in% densest_B[overlapCluster])
@@ -195,12 +163,7 @@ densityRasterRemoveIntersection = function(densA,densB,verbose=F) {
       
     }
   }
-  
-  #par(mfrow=c(2,2))
-  #plot(densest_A)
-  #plot(densest_B)
-  #plot(valid_polygon_A)
-  #plot(valid_polygon_B)
+  if(verbose==T){ print("Return valid polygons") }
   
   ## need to return valid_polygon_A and valid_polygon_B but as the original density
   valid_polygon_A[!(is.na(valid_polygon_A))] = densA[!(is.na(valid_polygon_A))]
@@ -285,7 +248,6 @@ presAbs = function(densA,densB) {
 #' @param densB The second raster
 #'
 #' @export
-#' @examples
 #'
 relOverlap = function(densA,densB) {
   densA_rel = densA
