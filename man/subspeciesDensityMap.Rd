@@ -22,7 +22,7 @@ subspeciesDensityMap(
 \arguments{
 \item{localities}{Labeled localities as generated from labelSubspecies() or subspeciesOccQuery()}
 
-\item{quant}{quant for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.}
+\item{quant}{quant for density, below which points are removed. E.g., if set to 0.95, removes 95 percent least dense squares.}
 
 \item{xmin}{Minimum longitude extent to clip to}
 
