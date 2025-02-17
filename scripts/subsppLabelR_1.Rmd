@@ -13,14 +13,9 @@ First we must install the R package before we can use it.
 
 ```{r install}
 ## before 15 jan 2025
-#library(devtools)
-#devtools::install_github('kaiyaprovost/subsppLabelR',force=F)
-#library(subsppLabelR)
-
-## after 15 jan 2025
-install.packages("C:/Users/kaiya/Documents/Work/GitHub/subsppLabelR",
-                 repos=NULL,
-                 type="source")
+library(devtools)
+devtools::install_github('kaiyaprovost/subsppLabelR',force=F)
+library(subsppLabelR)
 
 ```
 
