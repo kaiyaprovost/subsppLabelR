@@ -89,7 +89,7 @@ createAssignedSubspecies = function(spp,
   #library(raster)
   #library(sp)
   ## get the species and subspecies
-  #print(is.null(datafile))
+  print(is.null(datafile))
   if (is.null(datafile)) {
     print("Downloading species occurrences")
     ## TODO: add progress bar
@@ -107,7 +107,7 @@ createAssignedSubspecies = function(spp,
     ## EXPORT THE OCCURRENCE DATA!
     ## NOTE: you don't need to do this. it is identical to merging goodsubspp and suspectsubspp and only taking first four cols
     ## (name	longitude	latitude	subspecies)
-    #print("Exporting Occurrence Data")
+    print("Exporting Occurrence Data")
     #write.table(labeledLoc,paste(paste("OccurrenceDatabase",spp,paste(subspecies,collapse=" "),sep="_"),".occ",sep=""),
     #  quote=FALSE,sep="\t",row.names=FALSE)
   } else if (!(is.null(datafile))) {
@@ -186,7 +186,7 @@ createAssignedSubspecies = function(spp,
     subsppNames = unique(labeledLoc$subspecies)
     if (plotIt == T) {
       png(paste("Labeled occurences", spp, quant, ".png"))
-      #print("Plotting")
+      print("Plotting")
       ## TODO: make this work again it doesn't
       raster::plot(
         bgLayer,
@@ -290,7 +290,7 @@ createAssignedSubspecies = function(spp,
     ## removing single individual subspecies
     print("Removing single-individual subspecies")
     for (sub in unique(labeledLoc$subspecies)) {
-      #print(sub)
+      print(sub)
       rows = (nrow(labeledLoc[labeledLoc$subspecies == sub, ]))
       if (rows <= 1) {
         print(sub)
@@ -306,7 +306,7 @@ createAssignedSubspecies = function(spp,
     min_lat = min(labeledLoc$latitude,na.rm=T)
     
     print("Cleaning bgLayer 2nd time")
-    #print(paste(xmin2,xmax2,ymin2,ymax2))
+    print(paste(xmin2,xmax2,ymin2,ymax2))
     ext2 = raster::extent(c(min_long,max_long,min_lat,max_lat))
     bgLayer = raster::raster(
       ext = ext2,
@@ -346,15 +346,15 @@ createAssignedSubspecies = function(spp,
       names(dens) = subspp
       return(dens)
     })
-    #print("done density")
+    print("done density")
     names(densityRasters) = subsppNames
     ## remove failed ones
     densityRasters = densityRasters[!(is.na(densityRasters))]
     subsppNames = names(densityRasters)
-    #print("start plot1")
+    print("start plot1")
     if (plotIt == T) {
       for (i in 1:length(densityRasters)) {
-        #print("plotforloop")
+        print("plotforloop")
         name = names(densityRasters)[[i]]
         png(paste("DensityRaster_", spp, " ", name, quant, ".png", sep = ""))
         raster::plot(
@@ -400,7 +400,7 @@ createAssignedSubspecies = function(spp,
       }
       if (plotIt == T) {
         for (i in 1:length(validRasters)) {
-          #print("plotforloop")
+          print("plotforloop")
           name = names(validRasters)[[i]]
           png(paste("ValidRaster_", spp, " ", name, quant, ".png", sep = ""))
           raster::plot(
@@ -432,12 +432,12 @@ createAssignedSubspecies = function(spp,
       
     } else if (method=="polygon") {
       # if(method=="polygon") {
-      #print("endplot1")
+      print("endplot1")
       ## convert to polygons
       print("Converting density maps to polygons")
       ## can't handle if there's no data in previous step
       densityPolygons = lapply(densityRasters, function(dens) {
-        #print(names(dens))
+        print(names(dens))
         densPol = NULL
         try({
           densPol = densityMapToPolygons(densityMap = dens)
@@ -456,7 +456,7 @@ createAssignedSubspecies = function(spp,
         densityPolygons[[nominateSubspecies]] = sf::st_Difference(densityPolygons[[nominateSubspecies]], fullpoly)
       }
       
-      #print(densityPolygons)
+      print(densityPolygons)
       if (plotIt == T) {
         for (i in 1:length(densityPolygons)) {
           name = names(densityPolygons)[[i]]
@@ -608,8 +608,8 @@ createAssignedSubspecies = function(spp,
       ## this is taking a long time
       ## we are gonna try something else
       ## iterate through each polygon
-      #print(densityPolygons_trim)
-      #print(subsppNames)
+      print(densityPolygons_trim)
+      print(subsppNames)
       for (slotA in 1:length(subsppNames)) {
         if (subsppNames[[slotA]] != "unknown") {
           polyLocations = subsppLabelR::locatePolygonPoints(
@@ -626,27 +626,27 @@ createAssignedSubspecies = function(spp,
         print ("Cleaning up duplicate columns")
         ## this does not work with only one species
         colsToDelete = c()
-        #print(polyLocations)
+        print(polyLocations)
         print(length(colnames(polyLocations)))
         if (length(colnames(polyLocations)) > 6) {
           for (colNumA in 5:length(colnames(polyLocations))) {
             for (colNumB in 6:length(colnames(polyLocations))) {
               if (colNumA < colNumB) {
-                #print(paste("compare",colNumA,colNumB,sep=" "))
+                print(paste("compare",colNumA,colNumB,sep=" "))
                 if (identical(polyLocations[[colNumA]], polyLocations[[colNumB]])) {
-                  #print("identical, deleting")
+                  print("identical, deleting")
                   colsToDelete = c(colsToDelete, colNumB)
                 }
               }
             }
           }
           if (!(is.null(colsToDelete))) {
-            #print("is null cols")
-            #print(colsToDelete)
-            #print(names(polyLocations))
-            #print(head(polyLocations))
+            print("is null cols")
+            print(colsToDelete)
+            print(names(polyLocations))
+            print(head(polyLocations))
             polyLocations = polyLocations[, -colsToDelete]
-            #print("success")
+            print("success")
           }
           # }
           # }
@@ -693,13 +693,13 @@ createAssignedSubspecies = function(spp,
     print(head(polyLocations))
     checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
                                        subsppNames)
-    #print("c1")
+    print("c1")
     checked_suspect = checked$suspect
     print(head(checked_suspect))
-    #print("c2")
+    print("c2")
     checked_good = checked$good
     print(head(checked_good))
-    #print("done")
+    print("done")
     ## return nice clean data
     print("Warning: no valid definition for subspecies given!") ## this is a joke
     return(
