@@ -22,6 +22,7 @@ NULL
 #' @param subsppList Strings of subspecies to query
 #' @param pointLimit Maximum point limit to return for each database -- see spocc::occ
 #' @param dbToQuery List of databases to search through -- see spocc::occ
+#' @param method Whether to calculate overlaps with rasters or polygons
 #' @param quant quant for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.
 #' @param xmin Minimum longitude extent to clip rasters to
 #' @param xmax Maximum longitude extent to clip rasters to
@@ -32,7 +33,14 @@ NULL
 #' @param outputDir What directory to output to
 #' @param datafile if already ran and saved output from spocc:occ, put file here -- default NULL
 #' @param epsilon Parameter for anomaly detection
-#'
+#' @param spp_epsilon Parameter for anomly detection specifically for species
+#' @param subspp_epsilon Parameter for anomaly detection specifically for subspecies
+#' @param restrictNominate Whether or not to restrict the nominate and remove extra points
+#' @param cleanup_nominate Whether or not to clean up the nominate
+#' @param num_digits_latlong The number of digits to round the coordinates to
+#' @param cells_per_bgLayer How many cells to include per background layer
+#' @param downloadOnly Whether to run as download occurrences only
+#' 
 #' @export
 #' @examples
 #'
