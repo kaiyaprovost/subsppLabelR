@@ -109,6 +109,7 @@ legend(
 )
 
 ```
+
 It seems that an epsilon value of 10^-3.5 would suffice to get rid of those two west points, though it will also remove some of the others. We will not examine values for other subspecies or the full species distribution here, but I recommend you do so on your own data.
 
 Lets do anomaly detection now to remove the species-wide outliers and then update the dataset. In this case, for the full species an epsilon value of 10^-6 is more appropriate, so we will use two epsilons.  
@@ -151,6 +152,7 @@ rows_purged_sub = sort(unique(as.integer(list_of_anomalies_sub_names)))
 rows_purged = sort(unique(c(rows_purged,rows_purged_sub)))
 
 ```
+
 Let's visualize these anomalies.
 
 ```{r anomplotspp}
@@ -191,6 +193,7 @@ legend(
 
 
 ```
+
 These indeed look like outliers, though our subspecies cutoff might be too high for *lepida*. We shall leave the *lepida* as is for now, to be more conservative with our estimate.
 
 We also will do a quick clean up to make sure that none of the subspecies are now only represented by a single individual, and also to alter the raster file so that it is no longer so wide.
@@ -234,6 +237,7 @@ legend(
 )
 
 ```
+
 Now let us plot the density maps for the species. We will only retain the top 5% most dense points (the 95th percentile) for each subspecies. 
 
 ```{r density}
@@ -305,6 +309,7 @@ for (i in 1:length(densityRasters)) {
 }
 
 ```
+
 Hm. The *lepida* looks like it is a little gappy. Let's look at density cutoffs of 5%, 10%, and 15% (the 95th, 90th, and 85th percentile, respectively). 
 
 ```{r density2}
@@ -384,7 +389,7 @@ names(densityRasters_15) = subsppNames
 densityRasters_15 = densityRasters_15[!(is.na(densityRasters_15))]
 subsppNames = names(densityRasters_15)
 
-par(mfrow=c(3,3))
+par(mfrow=c(3,3),mar=c(4,4,4,4))
 for (i in 1:length(densityRasters)) {
   print(i)
   name = names(densityRasters)[[i]]
@@ -466,6 +471,7 @@ for (i in 1:length(validRasters)) {
 
 
 ```
+
 These rasters look good considering we are missing a lot of data from the center of the distribution. 
 Now lets locate the unknown points relative to those rasters and do some clean up. 
 
@@ -566,4 +572,4 @@ print(head(db$loc_good))
 
 ```
 
-Note that when you run this script, it will not generate any images.
+Note that when you run this final script, it will not generate any images because plotIt=F. 
