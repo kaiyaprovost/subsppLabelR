@@ -23,7 +23,7 @@ NULL
 #' @param pointLimit Maximum point limit to return for each database -- see spocc::occ
 #' @param dbToQuery List of databases to search through -- see spocc::occ
 #' @param method Whether to calculate overlaps with rasters or polygons
-#' @param quant quant for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.
+#' @param quant quant for density, below which points are removed. E.g., if set to 0.95, removes 95 percent least dense squares.
 #' @param xmin Minimum longitude extent to clip rasters to
 #' @param xmax Maximum longitude extent to clip rasters to
 #' @param ymin Minimum latitute extent to clip rasters to
