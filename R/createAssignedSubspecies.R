@@ -234,7 +234,8 @@ createAssignedSubspecies = function(spp, subsppList, pointLimit, dbToQuery, meth
     print("Converting density maps to polygons")
     densityPolygons = lapply(densityRasters, function(dens){
       print(names(dens))
-      densPol = NULL try({densPol = densityMapToPolygons(densityMap = dens)})
+      densPol = NULL 
+      try({densPol = densityMapToPolygons(densityMap = dens)})
       return(densPol)
     })
     if (restrictNominate == T){
