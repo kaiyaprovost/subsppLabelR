@@ -6,7 +6,7 @@ detach("package:subsppLabelR", unload = TRUE)
 #pkgDirectory = "/Users/kprovost/Documents/GitHub/subsppLabelR/" ## MAC
 pkgDirectory = "/Users/kprovost/Documents/Research/subsppLabelR/" ## MAC
 
-devtools::install_github('kaiyaprovost/subsppLabelR',force=F)
+devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
 #roxygen2::roxygenize(package.dir = pkgDirectory)
 #install.packages(pkgDirectory,
 #                 repos = NULL,
