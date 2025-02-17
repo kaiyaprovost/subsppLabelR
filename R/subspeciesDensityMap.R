@@ -15,7 +15,7 @@ NULL
 #' dense cells as definied by quant.
 #'
 #' @param localities Labeled localities as generated from labelSubspecies() or subspeciesOccQuery()
-#' @param quant quant for density, below which points are removed. E.g., if set to 0.95, removes 95% least dense squares.
+#' @param quant quant for density, below which points are removed. E.g., if set to 0.95, removes 95 percent least dense squares.
 #' @param xmin Minimum longitude extent to clip to
 #' @param xmax Maximum longitude extent to clip to
 #' @param ymin Minimum latitute extent to clip to
