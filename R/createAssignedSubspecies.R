@@ -7,6 +7,9 @@
 #' @import caret
 #' @import sf
 #' @import rebird
+#' @import AppliedPredictiveModeling
+#' @import doFuture
+#' @import h2o
 NULL
 #' Species Occurrences to Subspecies Occurrences
 #'
@@ -46,29 +49,29 @@ NULL
 #' good_occurrences = phainopeplaNitens$loc_good,
 #' subspecies_polygons = phainopeplaNitens$pol
 createAssignedSubspecies = function(spp,
-                                        subsppList,
-                                        pointLimit,
-                                        dbToQuery,
-                                        method = "polygon",
-                                        ## methods: polygon, density
-                                        quant = 0.95,
-                                        xmin = -180,
-                                        xmax = 180,
-                                        ymin = -90,
-                                        ymax = 90,
-                                        plotIt = F,
-                                        bgLayer = NULL,
-                                        outputDir,
-                                        datafile = NULL,
-                                        epsilon = 1e-6,
-                                        spp_epsilon = epsilon,
-                                        subspp_epsilon = epsilon,
-                                        restrictNominate = F,
-                                        cleanup_nominate = T,
-                                        num_digits_latlong = 2,
-                                        cells_per_bgLayer = 50,
-                                        downloadOnly=FALSE,
-                                        ...) {
+                                    subsppList,
+                                    pointLimit,
+                                    dbToQuery,
+                                    method = "raster",
+                                    ## methods: polygon, raster
+                                    quant = 0.95,
+                                    xmin = -180,
+                                    xmax = 180,
+                                    ymin = -90,
+                                    ymax = 90,
+                                    plotIt = F,
+                                    bgLayer = NULL,
+                                    outputDir,
+                                    datafile = NULL,
+                                    epsilon = 1e-6,
+                                    spp_epsilon = epsilon,
+                                    subspp_epsilon = epsilon,
+                                    restrictNominate = F,
+                                    cleanup_nominate = T,
+                                    num_digits_latlong = 2,
+                                    cells_per_bgLayer = 50,
+                                    downloadOnly=FALSE,
+                                    ...) {
   ## TODO: allow to begin from any step?
   setwd(outputDir)
   ##TODO: give option to supplement these data with data from other sources
@@ -110,9 +113,9 @@ createAssignedSubspecies = function(spp,
       labeledLoc = datafile[, c("name", "longitude", "latitude", "subspecies")]
     }
   }
-
+  
   nominateSubspecies = strsplit(spp, " ")[[1]][2]
-
+  
   print("Cleaning bad lat/longs")
   labeledLoc = labeledLoc[!(is.na(labeledLoc$longitude)), ] ## fine
   labeledLoc = labeledLoc[!(is.na(labeledLoc$latitude)), ]
@@ -128,17 +131,17 @@ createAssignedSubspecies = function(spp,
     "decimal places",
     sep = " "
   ))
-
+  
   labeledLoc$latitude = round(labeledLoc$latitude, num_digits_latlong)
   labeledLoc$longitude = round(labeledLoc$longitude, num_digits_latlong)
   labeledLoc = unique(labeledLoc)
-
+  
   print("Removing points outside of bounds")
   labeledLoc = labeledLoc[labeledLoc$latitude <= ymax, ]
   labeledLoc = labeledLoc[labeledLoc$latitude >= ymin, ]
   labeledLoc = labeledLoc[labeledLoc$longitude <= xmax, ]
   labeledLoc = labeledLoc[labeledLoc$longitude >= xmin, ]
-
+  
   if (cleanup_nominate == T) {
     print("RELABELING NOMINATE AFTER CLEANUP")
     good_nominate_rows = which(grepl(
@@ -151,18 +154,18 @@ createAssignedSubspecies = function(spp,
     labeledLoc$subspecies[to_relabel] = "unknown"
     labeledLoc = unique(labeledLoc)
   }
-
+  
   if(downloadOnly==FALSE) {
-
+    
     max_long = max(labeledLoc$longitude,na.rm=T)
     min_long = min(labeledLoc$longitude,na.rm=T)
     max_lat = max(labeledLoc$latitude,na.rm=T)
     min_lat = min(labeledLoc$latitude,na.rm=T)
-
+    
     print("Cleaning bgLayer")
     if (is.null(bgLayer)) {
       ext = raster::extent(c(min_long,max_long,min_lat,max_lat))
-
+      
       print(ext)
       bgLayer = raster::raster(
         ext = ext,
@@ -196,16 +199,16 @@ createAssignedSubspecies = function(spp,
       )
       dev.off()
     }
-
+    
     print("Starting anomaly detection for whole species")
-
+    
     list_of_anomalies = subsppLabelR::detectSpatialOutliers(localities = labeledLoc, epsilon = spp_epsilon)
     list_of_anomalies_names = names(list_of_anomalies)
     rows_purged = sort(unique(list_of_anomalies_names))
-
+    
     print("Starting anomaly detection for each subspecies")
     list_of_anomalies_sub = c()
-
+    
     for (i in 1:length(c(subsppNames))) {
       name = subsppNames[[i]]
       if (name != "unknown") {
@@ -215,14 +218,14 @@ createAssignedSubspecies = function(spp,
         anomalies = subsppLabelR::detectSpatialOutliers(localities = subset, epsilon = subspp_epsilon)
         print(length(anomalies))
         list_of_anomalies_sub = c(list_of_anomalies_sub, anomalies)
-
+        
       }
-
+      
     }
     list_of_anomalies_sub_names = names(list_of_anomalies_sub)
     rows_purged_sub = sort(unique(as.integer(list_of_anomalies_sub_names)))
     rows_purged = sort(unique(c(rows_purged, rows_purged_sub)))
-
+    
     print(paste(
       "Removing",
       length(rows_purged),
@@ -235,7 +238,7 @@ createAssignedSubspecies = function(spp,
     ## set up factors for removed
     removed$subspecies = as.factor(removed$subspecies)
     levels(removed$subspecies) = levels(as.factor(labeledLoc$subspecies))
-
+    
     if (plotIt == T) {
       png(
         paste(
@@ -250,7 +253,7 @@ createAssignedSubspecies = function(spp,
           sep = ""
         )
       )
-
+      
       raster::plot(
         bgLayer,
         col = "grey",
@@ -275,7 +278,7 @@ createAssignedSubspecies = function(spp,
       )
       dev.off()
     }
-
+    
     ## removing single individual subspecies
     print("Removing single-individual subspecies")
     for (sub in unique(labeledLoc$subspecies)) {
@@ -286,14 +289,14 @@ createAssignedSubspecies = function(spp,
         labeledLoc = labeledLoc[labeledLoc$subspecies != sub, ]
       }
     }
-
+    
     subsppNames = unique(labeledLoc$subspecies)
     ## clean up the bgLayer again in case it needs to be smaller
     max_long = max(labeledLoc$longitude,na.rm=T)
     min_long = min(labeledLoc$longitude,na.rm=T)
     max_lat = max(labeledLoc$latitude,na.rm=T)
     min_lat = min(labeledLoc$latitude,na.rm=T)
-
+    
     print("Cleaning bgLayer 2nd time")
     #print(paste(xmin2,xmax2,ymin2,ymax2))
     ext2 = raster::extent(c(min_long,max_long,min_lat,max_lat))
@@ -303,7 +306,7 @@ createAssignedSubspecies = function(spp,
       ncol = cells_per_bgLayer,
       vals = 0
     )
-
+    
     #print(bgLayer)
     ## to reduce error take only subspecies within main density
     ## clean up the polygons so that if grouping way out in middle of nowhere, get rid of it
@@ -329,7 +332,7 @@ createAssignedSubspecies = function(spp,
     #   raster::plot(total_range,colNA = "darkgrey",main = paste("Distribution"))
     #   dev.off()
     # }
-
+    
     # if(method %in% c("polygon","density")) {
     print("Building species kernel density maps")
     xmax = max_long
@@ -391,203 +394,250 @@ createAssignedSubspecies = function(spp,
     densityStackFile = paste("DensityRaster_", spp,"_",quant,".tif", sep = "")
     names(densityStack) = names(densityRasters)
     writeRaster(densityStack,densityStackFile,format="GTiff",overwrite=T,suffix="names")
-
+    
     ## it seems it is time to add a raster method instead
     ## check raster overlaps with the quantified data
-
-
-
-    # if(method=="polygon") {
-    #print("endplot1")
-    ## convert to polygons
-    print("Converting density maps to polygons")
-    ## can't handle if there's no data in previous step
-    densityPolygons = lapply(densityRasters, function(dens) {
-      #print(names(dens))
-      densPol = NULL
-      try({
-        densPol = densityMapToPolygons(densityMap = dens)
+    
+    if(method=="raster") {
+      print("Removing overlapping raster sections from density map")
+      ## move pairwise over densityRasters, but do not include unknown which is in position 1
+      validRasters = densityRasters
+      for (rasterA_i in 2:length(validRasters)) {
+        for(rasterB_i in 2:length(validRasters)) {
+          if (rasterA_i > rasterB_i) {
+            densA = validRasters[[rasterA_i]]
+            densB = validRasters[[rasterB_i]]
+            validRasterList = densityRasterRemoveIntersection(densA=densA,densB=densB,verbose=F)
+            validRasters[[rasterA_i]] = validRasterList[[1]]
+            validRasters[[rasterB_i]] = validRasterList[[2]]
+          }
+        }
+      }
+      if (plotIt == T) {
+        for (i in 1:length(validRasters)) {
+          #print("plotforloop")
+          name = names(validRasters)[[i]]
+          png(paste("ValidRaster_", spp, " ", name, quant, ".png", sep = ""))
+          raster::plot(
+            bgLayer,
+            col = "grey",
+            colNA = "darkgrey",
+            main = paste("Density, subspp:", name)
+          )
+          raster::plot(validRasters[[i]],
+                       add = T,
+                       col = viridis::viridis(99))
+          dev.off()
+        }
+      }
+      
+      print("Locating points relative to rasters")
+      polyLocations = labeledLoc
+      for (slotA in 1:length(subsppNames)) {
+        if (subsppNames[[slotA]] != "unknown") {
+          polyLocations = subsppLabelR::locateRasterPoints(
+            test_points = polyLocations,
+            rasterA = validRasters[[slotA]],
+            name=subsppNames[[slotA]]
+          )
+          
+        }
+        
+      }
+      
+    } else {
+      # if(method=="polygon") {
+      #print("endplot1")
+      ## convert to polygons
+      print("Converting density maps to polygons")
+      ## can't handle if there's no data in previous step
+      densityPolygons = lapply(densityRasters, function(dens) {
+        #print(names(dens))
+        densPol = NULL
+        try({
+          densPol = densityMapToPolygons(densityMap = dens)
+        })
+        return(densPol)
       })
-      return(densPol)
-    })
-
-    ## optionally restrict the nominate
-    if (restrictNominate == T) {
-      print("Restricting the nominate")
-      polygons_notnom = densityPolygons[!(names(densityPolygons) %in% c(nominateSubspecies, "unknown"))]
-      fullpoly = raster::bind(polygons_notnom)
-      if (length(fullpoly) == 1) {
-        fullpoly = fullpoly[[1]]
+      
+      ## optionally restrict the nominate
+      if (restrictNominate == T) {
+        print("Restricting the nominate")
+        polygons_notnom = densityPolygons[!(names(densityPolygons) %in% c(nominateSubspecies, "unknown"))]
+        fullpoly = raster::bind(polygons_notnom)
+        if (length(fullpoly) == 1) {
+          fullpoly = fullpoly[[1]]
+        }
+        densityPolygons[[nominateSubspecies]] = sf::st_Difference(densityPolygons[[nominateSubspecies]], fullpoly)
       }
-      densityPolygons[[nominateSubspecies]] = sf::st_Difference(densityPolygons[[nominateSubspecies]], fullpoly)
-    }
-
-    #print(densityPolygons)
-    if (plotIt == T) {
-      for (i in 1:length(densityPolygons)) {
-        name = names(densityPolygons)[[i]]
-        png(paste("RawDensityPolygon_", spp, " ", name, quant, ".png", sep = ""))
-        #pdf(paste("RawDensityPolygon_", spp, " ", name,quant, ".pdf", sep = ""))
+      
+      #print(densityPolygons)
+      if (plotIt == T) {
+        for (i in 1:length(densityPolygons)) {
+          name = names(densityPolygons)[[i]]
+          png(paste("RawDensityPolygon_", spp, " ", name, quant, ".png", sep = ""))
+          #pdf(paste("RawDensityPolygon_", spp, " ", name,quant, ".pdf", sep = ""))
+          raster::plot(
+            bgLayer,
+            col = "grey",
+            colNA = "darkgrey",
+            main = paste("Polygon, subspp:", name)
+          )
+          #sp::spplot(densityPolygons[[i]],add = T,col = "red")
+          plot(densityPolygons[[i]], add = T, col = "red")
+          dev.off()
+        }
+        png(paste("RawDensityPolygon_", spp, quant, " ALL.png", sep = ""))
+        #pdf(paste("RawDensityPolygon_", spp, quant," ALL.pdf", sep = ""))
+        raster::plot(
+          bgLayer,
+          col = "grey",
+          colNA = "darkgrey",
+          main = "Polygon, ALL"
+        )
+        cols = c(
+          "black",
+          "red",
+          "blue",
+          "green",
+          "cyan",
+          "magenta",
+          "pink",
+          "white",
+          "purple",
+          "orange",
+          "yellow",
+          "sienna",
+          "thistle",
+          "palegreen",
+          "powderblue",
+          "aquamarine",
+          "violet",
+          "mediumslateblue",
+          "lightsalmon",
+          "lightblue"
+        )
+        for (i in 1:length(densityPolygons)) {
+          name = names(densityPolygons)[[i]]
+          #sp::spplot(densityPolygons[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
+          plot(
+            densityPolygons[[i]],
+            add = T,
+            border = cols[i],
+            lwd = ((3 * i) / 3)
+          )
+        }
+        legend(
+          "top",
+          legend = names(densityPolygons),
+          bty = "n",
+          fill = rgb(0, 0, 0, 0),
+          border = cols
+        )
+        dev.off()
+      }
+      ## check overlaps between polygons
+      print("Checking Overlaps of Polygons and Removing Overlaps")
+      ## remove polygons that are completely within other polygon
+      ## TODO: what about things that are in neither polygon?
+      ## TODO: what about things that are in both?
+      ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
+      ## will delete that subspecies. no bueno
+      ## TODO: nominate subspecies special case
+      
+      densityPolygons_trim1 = polygonTrimmer(polygonList = densityPolygons, namesList = subsppNames)
+      if (plotIt == T) {
+        for (i in 1:length(densityPolygons_trim1)) {
+          name = names(densityPolygons_trim1)[[i]]
+          png(paste("TrimDensityPolygon_", spp, " ", name, quant, ".png", sep = ""))
+          raster::plot(
+            bgLayer,
+            col = "grey",
+            colNA = "darkgrey",
+            main = paste("Polygon, subspp:", name)
+          )
+          raster::plot(densityPolygons_trim1[[i]],
+                       add = T,
+                       col = viridis::viridis(99))
+          dev.off()
+        }
+        png(paste("TrimDensityPolygon_", spp, quant, " ALL.png", sep = ""))
         raster::plot(
           bgLayer,
           col = "grey",
           colNA = "darkgrey",
           main = paste("Polygon, subspp:", name)
         )
-        #sp::spplot(densityPolygons[[i]],add = T,col = "red")
-        plot(densityPolygons[[i]], add = T, col = "red")
+        cols = c(
+          "black",
+          "red",
+          "blue",
+          "green",
+          "cyan",
+          "magenta",
+          "pink",
+          "white",
+          "purple",
+          "orange",
+          "yellow",
+          "sienna",
+          "thistle",
+          "palegreen",
+          "powderblue",
+          "aquamarine",
+          "violet",
+          "mediumslateblue",
+          "lightsalmon",
+          "lightblue"
+        )
+        for (i in 1:length(densityPolygons_trim1)) {
+          print(i)
+          name = names(densityPolygons_trim1)[[i]]
+          raster::plot(
+            densityPolygons_trim1[[i]],
+            add = T,
+            border = cols[i],
+            lwd = ((3 * i) / 3)
+          )
+        }
+        legend(
+          "top",
+          legend = names(densityPolygons_trim1),
+          bty = "n",
+          fill = rgb(0, 0, 0, 0),
+          border = cols
+        )
         dev.off()
       }
-      png(paste("RawDensityPolygon_", spp, quant, " ALL.png", sep = ""))
-      #pdf(paste("RawDensityPolygon_", spp, quant," ALL.pdf", sep = ""))
-      raster::plot(
-        bgLayer,
-        col = "grey",
-        colNA = "darkgrey",
-        main = "Polygon, ALL"
-      )
-      cols = c(
-        "black",
-        "red",
-        "blue",
-        "green",
-        "cyan",
-        "magenta",
-        "pink",
-        "white",
-        "purple",
-        "orange",
-        "yellow",
-        "sienna",
-        "thistle",
-        "palegreen",
-        "powderblue",
-        "aquamarine",
-        "violet",
-        "mediumslateblue",
-        "lightsalmon",
-        "lightblue"
-      )
-      for (i in 1:length(densityPolygons)) {
-        name = names(densityPolygons)[[i]]
-        #sp::spplot(densityPolygons[[i]],add = T,border = cols[i],lwd = ((3 * i) / 3))
-        plot(
-          densityPolygons[[i]],
-          add = T,
-          border = cols[i],
-          lwd = ((3 * i) / 3)
-        )
+      #densityPolygons_trim = findClosestPolygon(listOfPolygons=densityPolygons_trim1)
+      ##TODO: get the findClosestPolygon working
+      densityPolygons_trim = densityPolygons_trim1
+      ## this isn't working!!!!!!
+      ##TODO: figure out how to remove small polygons that are closer to other subspp than their own
+      ## remove points that are in wrong polygon
+      ## if labeled and in wrong polygon, unlabel
+      ## label unlabeled points based on polygons
+      print("Locating points relative to polygons")
+      ## TODO: this is hanging
+      polyLocations = labeledLoc
+      ## this is taking a long time
+      ## we are gonna try something else
+      ## iterate through each polygon
+      #print(densityPolygons_trim)
+      #print(subsppNames)
+      for (slotA in 1:length(subsppNames)) {
+        if (subsppNames[[slotA]] != "unknown") {
+          polyLocations = subsppLabelR::locatePolygonPoints(
+            test_points = polyLocations,
+            polygonA = densityPolygons_trim[[slotA]],
+            name=subsppNames[[slotA]]
+          )
+          
+        }
+        
       }
-      legend(
-        "top",
-        legend = names(densityPolygons),
-        bty = "n",
-        fill = rgb(0, 0, 0, 0),
-        border = cols
-      )
-      dev.off()
     }
-    ## check overlaps between polygons
-    print("Checking Overlaps of Polygons and Removing Overlaps")
-    ## remove polygons that are completely within other polygon
-    ## TODO: what about things that are in neither polygon?
-    ## TODO: what about things that are in both?
-    ## there is a bug -- if one subspp range is entirely subsumed within another polygon,
-    ## will delete that subspecies. no bueno
-    ## TODO: nominate subspecies special case
-
-    densityPolygons_trim1 = polygonTrimmer(polygonList = densityPolygons, namesList = subsppNames)
-    if (plotIt == T) {
-      for (i in 1:length(densityPolygons_trim1)) {
-        name = names(densityPolygons_trim1)[[i]]
-        png(paste("TrimDensityPolygon_", spp, " ", name, quant, ".png", sep = ""))
-        raster::plot(
-          bgLayer,
-          col = "grey",
-          colNA = "darkgrey",
-          main = paste("Polygon, subspp:", name)
-        )
-        raster::plot(densityPolygons_trim1[[i]],
-                     add = T,
-                     col = viridis::viridis(99))
-        dev.off()
-      }
-      png(paste("TrimDensityPolygon_", spp, quant, " ALL.png", sep = ""))
-      raster::plot(
-        bgLayer,
-        col = "grey",
-        colNA = "darkgrey",
-        main = paste("Polygon, subspp:", name)
-      )
-      cols = c(
-        "black",
-        "red",
-        "blue",
-        "green",
-        "cyan",
-        "magenta",
-        "pink",
-        "white",
-        "purple",
-        "orange",
-        "yellow",
-        "sienna",
-        "thistle",
-        "palegreen",
-        "powderblue",
-        "aquamarine",
-        "violet",
-        "mediumslateblue",
-        "lightsalmon",
-        "lightblue"
-      )
-      for (i in 1:length(densityPolygons_trim1)) {
-        print(i)
-        name = names(densityPolygons_trim1)[[i]]
-        raster::plot(
-          densityPolygons_trim1[[i]],
-          add = T,
-          border = cols[i],
-          lwd = ((3 * i) / 3)
-        )
-      }
-      legend(
-        "top",
-        legend = names(densityPolygons_trim1),
-        bty = "n",
-        fill = rgb(0, 0, 0, 0),
-        border = cols
-      )
-      dev.off()
-    }
-    #densityPolygons_trim = findClosestPolygon(listOfPolygons=densityPolygons_trim1)
-    ##TODO: get the findClosestPolygon working
-    densityPolygons_trim = densityPolygons_trim1
-    ## this isn't working!!!!!!
-    ##TODO: figure out how to remove small polygons that are closer to other subspp than their own
-    ## remove points that are in wrong polygon
-    ## if labeled and in wrong polygon, unlabel
-    ## label unlabeled points based on polygons
-    print("Locating points relative to polygons")
-    ## TODO: this is hanging
-    polyLocations = labeledLoc
-    ## this is taking a long time
-    ## we are gonna try something else
-    ## iterate through each polygon
-    #print(densityPolygons_trim)
-    #print(subsppNames)
-    for (slotA in 1:length(subsppNames)) {
-      if (subsppNames[[slotA]] != "unknown") {
-        polyLocations = subsppLabelR::locatePolygonPoints(
-          test_points = polyLocations,
-          polygonA = densityPolygons_trim[[slotA]],
-          name=subsppNames[[slotA]]
-        )
-
-      }
-
-    }
-
+    
     print ("Cleaning up duplicate columns")
     ## this does not work with only one species
     colsToDelete = c()
@@ -615,7 +665,7 @@ createAssignedSubspecies = function(spp,
       }
       # }
       # }
-
+      
       # if(method=="density") {
       #
       #   density_stack = stack(densityRasters[names(densityRasters)!="unknown"])
@@ -637,9 +687,9 @@ createAssignedSubspecies = function(spp,
       #   plot(max_density)
       #
       # }
-
-
-
+      
+      
+      
       ## TODO: see if you can label unlabeled points based on polygons or nearest neighbor
       ## or nearest neighbor
       ## output the new data
@@ -651,8 +701,8 @@ createAssignedSubspecies = function(spp,
       ## or subspecies assignment a priori does not match final
       ## TODO: consider putting this in the other script file
       ## not working right now
-
-
+      
+      
       print("Matching subspecies")
       checked = subspeciesMatchChecker(locfile = polyLocations, subsppNames =
                                          subsppNames)
@@ -668,7 +718,6 @@ createAssignedSubspecies = function(spp,
           labeledLoc = labeledLoc,
           loc_suspect = checked_suspect,
           loc_good = checked_good,
-          pol = densityPolygons_trim
 
         )
       )
@@ -679,7 +728,6 @@ createAssignedSubspecies = function(spp,
         labeledLoc = labeledLoc,
         loc_suspect = NULL,
         loc_good = NULL,
-        pol = NULL
       )
     )
   }
