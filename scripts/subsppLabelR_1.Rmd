@@ -98,7 +98,7 @@ For example, we know that there are some *nitens* points that are very far west.
 
 ```{r mgdad}
 
-p_x = mgdad_px(labeledLoc[labeledLoc$subspecies=="nitens",c("latitude","longitude")])
+p_x = subsppLabelR::mgdad_px(labeledLoc[labeledLoc$subspecies=="nitens",c("latitude","longitude")])
 log_p_x = log10(p_x)
 hist(log_p_x)
 log_p_x_cutoffs = ceiling(log_p_x*2)/2
@@ -437,45 +437,44 @@ for (i in 1:length(densityRasters_15)) {
 
 Now we can see where the bulk of the data are found for these ranges. Most of the unknown samples we downloaded appear to be in subspecies *lepida*. Comparing the plots shows us how choosing cutoffs can impact our downstream analyses. We will continue for now with the top 10%, as it seems to connect the bulk of the *lepida* samples without adding too many extra bits.  
 
-Next let us convert these maps to polygons. 
+Next let us remove any overlaps that exist in our raster data. For this particular configuration of the data, there are no overlaps to be seen. 
 
-```{r polygons}
+```{r rasteroverlaps}
 
-## convert to polygons
-print("Converting density maps to polygons")
-## can't handle if there's no data in previous step
-
-densityPolygons = lapply(densityRasters_10, function(dens) {
-  print(names(dens))
-  densPol = subsppLabelR::densityMapToPolygons(densityMap = dens)
-  return(densPol)
-})
-
-palette(c("black", "red", "blue"))
-raster::plot(
-  bgLayer,
-  col = "grey",
-  colNA = "darkgrey",
-  main = paste("Polygons, untrimmed", spp)
-)
-for (i in 1:length(densityPolygons)) {
-  raster::plot(
-    densityPolygons[[i]],
-    add = T,
-    border = i,
-    lwd = ((3 * i) / 3)
-  )
+print("Removing overlapping raster sections from density map")
+## move pairwise over densityRasters, but do not include unknown which is in position 1
+validRasters = densityRasters_10
+for (rasterA_i in 2:length(validRasters)) {
+  for(rasterB_i in 2:length(validRasters)) {
+    if (rasterA_i > rasterB_i) {
+      densA = validRasters[[rasterA_i]]
+      densB = validRasters[[rasterB_i]]
+      validRasterList = densityRasterRemoveIntersection(densA=densA,densB=densB,verbose=T)
+      validRasters[[rasterA_i]] = validRasterList[[1]]
+      validRasters[[rasterB_i]] = validRasterList[[2]]
+    }
+  }
 }
-legend(
-  "top",
-  legend = names(densityPolygons),
-  bty = "n",
-  fill = rgb(0, 0, 0, 0),
-  border = 1:length(densityPolygons)
-)
+for (i in 1:length(validRasters)) {
+  #print("plotforloop")
+  name = names(validRasters)[[i]]
+  png(paste("ValidRaster_", spp, " ", name, quant, ".png", sep = ""))
+  raster::plot(
+    bgLayer,
+    col = "grey",
+    colNA = "darkgrey",
+    main = paste("Density, subspp:", name)
+  )
+  raster::plot(validRasters[[i]],
+               add = T,
+               col = viridis::viridis(99))
+  dev.off()
+}
+
+
 
 ```
-We must now check the polygons for overlaps. For this particular configuration of the data, there are no overlaps to be seen. 
+We must now check the polygons for overlaps. 
 
 ```{r next}
 
