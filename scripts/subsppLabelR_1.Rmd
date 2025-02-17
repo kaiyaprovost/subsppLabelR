@@ -523,7 +523,6 @@ checked = subsppLabelR::subspeciesMatchChecker(locfile = polyLocations, subsppNa
                                                  subsppNames)
 loc_suspect = checked$suspect
 loc_good = checked$good
-pol = densityPolygons_trim
 
 ```
 
@@ -547,30 +546,13 @@ raster::plot(
   main = "Good Points by Subspecies"
 )
 points(loc_good$longitude,loc_good$latitude,col=as.numeric(as.factor(loc_good$assigned)))
-
-raster::plot(
-  bgLayer,
-  col = "grey",
-  colNA = "darkgrey",
-  main = "Final Polygons by Subspecies"
-)
-lapply(1:length(pol),FUN=function(i){
-  raster::plot(pol[[i]],add=T,border=i)
-})
-legend(
-  "top",
-  legend = names(pol),
-  bty = "n",
-  fill = rgb(0, 0, 0, 0),
-  border = 1:length(pol)
-)
 ```
 
 Putting this all together in one function looks like this:
 
 ```{r database}
 
-db = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
+db = subsppLabelR::createAssignedSubspecies(spp="Phainopepla nitens",
                                                 subsppList = c("lepida","nitens"),
                                                 pointLimit=2000,
                                                 dbToQuery=c("gbif"),
@@ -579,15 +561,14 @@ db = subsppLabelR::databaseToAssignedSubspecies(spp="Phainopepla nitens",
                                                 xmax=-60,
                                                 ymin=10,
                                                 ymax=50,
-                                                plotIt=T, bgLayer=raster::raster(ext=raster::extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
+                                                plotIt=F, bgLayer=raster::raster(ext=raster::extent(c(xmin,xmax,ymin,ymax)),nrow=100,ncol=100,vals=0),
                                                 outputDir="~/",
                                                 spp_epsilon=1e-6,
                                                 subspp_epsilon=10^-3.5,
                                                 cells_per_bgLayer = 100)
 print(head(db$loc_suspect))
 print(head(db$loc_good))
-print(head(db$pol))
 
 ```
 
-Note that when you run this script, it will automatically generate the images as PNG files in the directory specified in the function. Here that is the home directory ("~/"). 
+Note that when you run this script, it will not generate any images.
