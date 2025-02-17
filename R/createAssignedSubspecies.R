@@ -725,8 +725,8 @@ createAssignedSubspecies = function(spp,
         list(
           labeledLoc = labeledLoc,
           loc_suspect = checked_suspect,
-          loc_good = checked_good,
-
+          loc_good = checked_good
+          
         )
       )
     }
@@ -735,7 +735,7 @@ createAssignedSubspecies = function(spp,
       list(
         labeledLoc = labeledLoc,
         loc_suspect = NULL,
-        loc_good = NULL,
+        loc_good = NULL
       )
     )
   }
