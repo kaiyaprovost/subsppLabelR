@@ -18,7 +18,7 @@ redo = T
 overwrite = T
 pointLimit = 2000
 #quant_list=c(seq(0.50,0.95,0.05),0.99,0.33,0.67)
-quant_list=c(0.5,0.9,0.67)
+quant_list=c(0.9)
 dbToQuery = c("gbif", "inat", "bison", "vertnet") #EBIRD_KEY = "f49839r87f7g"
 xmin = -180
 xmax = 180
@@ -27,7 +27,7 @@ ymax = 90
 
 if (redo == T) {
   species_list = c(
-    #"Phainopepla nitens",
+    "Phainopepla nitens",
     #"Cardinalis sinuatus",
     #"Campylorhynchus brunneicapillus",
     #"Amphispiza bilineata",
@@ -35,26 +35,26 @@ if (redo == T) {
     #"Toxostoma crissale",
     #"Toxostoma curvirostre",
     #"Polioptila melanura",
-    "Melospiza melodia",
+    #"Melospiza melodia",
     #"Zonotrichia leucophrys",
     #"Geococcyx californianus",
-    "Geococcyx",
+    #"Geococcyx",
     #"Melozone fusca",
-    "Auriparus flaviceps",
+    #"Auriparus flaviceps",
     #"Chondestes grammacus",
     #"Calidris pusilla",
-    "Calidris mauri",
-    "Calidris alpina",
-    "Calidris alba",
+    #"Calidris mauri",
+    #"Calidris alpina",
+    #"Calidris alba",
     #"Myiarchus crinitus",
     #"Sayornis phoebe",
-    "Contopus cooperi",
-    "Contopus virens",
+    #"Contopus cooperi",
+    #"Contopus virens",
     #"Contopus sordidulus",
     NULL
   )
   
-  subspp_list = list(#c("lepida", "nitens"), 
+  subspp_list = list(c("lepida", "nitens"), 
                      #c("fulvescens","peninsulae","sinuatus"),
                      #c("affinis","brunneicapillus","anthonyi","bryanti","guttatus","sandiegensis","seri"),
                      #c("bangsi","bilineata","belvederei","cana","deserticola","carmenae","grisea","opuntia","pacifica","tortugae"),
@@ -62,25 +62,25 @@ if (redo == T) {
                      #c("coloradense","crissale","dumosum","trinitatis"),
                      #c("celsum","curvirostre","insularum","maculatum","oberholseri","occidentale","palmeri"),
                      #c("curtata","melanura","lucida"),
-                     c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia","fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis","mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis","pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
+                     #c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia","fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis","mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis","pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
                      #c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
                      #NULL,
-                     c("californianus","velox"),
+                     #c("californianus","velox"),
                      #c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
-                     c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
+                     #c("acaciarum","flaviceps","hidalgensis","lamprocephalus","ornatus","sinaloae"),
                      #c("grammacus","strigatus"),
                      #NULL,
-                     NULL,
-                     c("articola","pacifica","hudsonia","arctica","schinzii","alpina","centralis","sakhalina","actites","kistchinski"),
-                     c("alba","rubida"),
+                     #NULL,
+                     #c("articola","pacifica","hudsonia","arctica","schinzii","alpina","centralis","sakhalina","actites","kistchinski"),
+                     #c("alba","rubida"),
                      #NULL,
                      #NULL,
-                     c("cooperi","marjorinus"),
-                     NULL,
+                     #c("cooperi","marjorinus"),
+                     #NULL,
                      #c("saturatus","veliei","peninsulae","sordidulus"),
                      NULL)
   
-  for (i in sample(1:length(species_list))) {
+  for (i in sort(1:length(species_list))) {
     print(i)
     spp = species_list[i]
     subspp = subspp_list[[i]]
@@ -166,7 +166,6 @@ if (redo == T) {
         )
         final$loc_suspect
         final$loc_good
-        final$pol
         write.table(
           final$loc_suspect,
           paste(
