@@ -13,7 +13,7 @@ library(subsppLabelR)
 redo = T
 overwrite = T
 pointLimit = 2000
-quant_list=c(0.5)
+quant_list=c(0.8)
 dbToQuery = c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
 xmin = -180
 xmax = 180
