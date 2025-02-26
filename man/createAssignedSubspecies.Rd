@@ -83,16 +83,10 @@ assignments.
 }
 \examples{
 
-Env = raster::stack(list.files(path='~/wc2-5/',pattern="\\\\.bil$",full.names=T))
-ext = raster::extent(c(-125,-60,10,50))
+Env = raster::stack(list.files(path = '~/wc2-5/',pattern = "\\\\.bil$",full.names = T))
+ext = raster::extent(c(-125, -60, 10, 50))
 Env = raster::crop(Env, ext)
 bg = Env[[1]]
-phainopeplaNitens = createAssignedSubspecies(spp="Phainopepla nitens",
-   subsppList=c("nitens","lepida"),
-   pointLimit=500,dbToQuery=c("gbif","bison","inat","ebird","ecoengine","vertnet"),
-   quant=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,
-   outputDir="~/project/")
-suspect_occurrences = phainopeplaNitens$loc_suspect,
-good_occurrences = phainopeplaNitens$loc_good,
-subspecies_polygons = phainopeplaNitens$pol
+phainopeplaNitens = createAssignedSubspecies(spp = "Phainopepla nitens",#' subsppList=c("nitens", "lepida"),#' pointLimit=500,dbToQuery=c("gbif", "bison", "inat", "ebird", "ecoengine", "vertnet"),#' quant=0.95,xmin=-125,xmax=-60,ymin=10,ymax=50,plotIt=T,bgLayer=bg,#' outputDir="~/project/")
+suspect_occurrences = phainopeplaNitens$loc_suspect,#' good_occurrences = phainopeplaNitens$loc_good,#' subspecies_polygons = phainopeplaNitens$pol
 }
