@@ -4,7 +4,7 @@ Version: 0.0.0.9000
 Authors@R: person("Kaiya", "Provost", email = "kprovost@adelphi.edu", role = c("aut", "cre"))
 Description: #' This package takes a species with a list of subspecies, and then assigns occurrence records to subspecies.
 Depends: R (>= 3.3.3)
-Imports: raster, MASS, spocc, dplyr, sp, viridis
+Imports: ade4, adehabitatHR, adehabitatMA, AppliedPredictiveModeling, caret, doFuture, dplyr, ecospat, ENMeval, ENMTools, ggplot2, grid, gridExtra, gtools, h2o, MASS, plyr, raster, RColorBrewer, rebird, sf, sp, spocc, viridis
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
