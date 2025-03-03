@@ -60,6 +60,10 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
     print("Importing bg_dat and bg_bg")
     bg_dat = read.table(bg_dat_filename)
     bg_bg = read.table(bg_bg_filename)
+    loc_thin_bgstuff = list()
+    loc_thin_bgstuff$bgenv = bg_dat
+    loc_thin_bgstuff$bgpoints = bg_bg
+    
   }
 
   perspecies_bgstuff = generateBackgroundPerSpecies(localities = loc_thin,e=Env)
