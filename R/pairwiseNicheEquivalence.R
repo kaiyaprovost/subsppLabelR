@@ -29,6 +29,8 @@ NULL
 #' calculate pairwise niche equivalences for the species. This uses
 #' randomization to pairwise equivalence so you must set the parameters for
 #' randomizing.
+#' 
+#' The default alternative settings will test for niche conservatism.
 #'
 #' @param pca_grid_clim The grid for the climate PCA
 #' @param rep1 The number of repetitions for niche equivalency
@@ -38,7 +40,11 @@ NULL
 #' @examples
 #'
 #' printPointsPdfSuspect(species,subspecies,bg,loc_suspect)
-pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verbose=T){
+pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verbose=T,
+                                    overlap.alternative = "higher",
+                                    expansion.alternative = "lower",
+                                    stability.alternative = "higher",
+                                    unfilling.alternative = "lower"){
   if(verbose==T){print("starting pairwiseNicheEquivalence")}
   for(i in 1:length(pca_grid_clim)){
     for(j in 1:length(pca_grid_clim)){
@@ -49,14 +55,11 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verb
         spp2_name = names(pca_grid_clim)[[j]]
         spp2 = pca_grid_clim[[j]]
 
-        #eq.test <- ecospat.niche.equivalency.test_custom(z1=spp1, z2=spp2,
-        #                                                 rep=rep1, alternative = "higher"
-        #                                                 )
         eq.test = ecospat::ecospat.niche.equivalency.test(z1=spp1, z2=spp2,rep=rep1,
-                                                          overlap.alternative = "higher", ## testing for niche conservatism
-                                                          expansion.alternative = "lower",
-                                                          stability.alternative = "higher",
-                                                          unfilling.alternative = "lower"
+                                                          overlap.alternative = overlap.alternative, 
+                                                          expansion.alternative = expansion.alternative,
+                                                          stability.alternative =  stability.alternative,
+                                                          unfilling.alternative = unfilling.alternative
         )
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
         par(mfrow=c(2,1))
@@ -65,10 +68,10 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verb
         dev.off()
         print(paste("Running niche similarity test for",spp1_name,"-",spp2_name))
         sim.test <- ecospat::ecospat.niche.similarity.test(z1=spp1, z2=spp2,
-                                                           rep=rep2, overlap.alternative = "higher", ## testing for niche conservatism
-                                                           expansion.alternative = "lower",
-                                                           stability.alternative = "higher",
-                                                           unfilling.alternative = "lower",
+                                                           rep=rep2, overlap.alternative = overlap.alternative,
+                                                           expansion.alternative = expansion.alternative,
+                                                           stability.alternative = stability.alternative,
+                                                           unfilling.alternative = unfilling.alternative,
                                                            rand.type=2)
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
         par(mfrow=c(2,2))
@@ -79,10 +82,10 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verb
         dev.off()
         print(paste("Running niche similarity test for",spp2_name,"-",spp1_name))
         sim.test2 <- ecospat::ecospat.niche.similarity.test(z1=spp2, z2=spp1,
-                                                            rep=rep2, overlap.alternative = "higher", ## testing for niche conservatism
-                                                            expansion.alternative = "lower",
-                                                            stability.alternative = "higher",
-                                                            unfilling.alternative = "lower",
+                                                            rep=rep2, overlap.alternative = overlap.alternative,
+                                                            expansion.alternative = expansion.alternative,
+                                                            stability.alternative = stability.alternative,
+                                                            unfilling.alternative = unfilling.alternative,
                                                             rand.type=2)
 
         pdf(paste("EquivalencyOverlapTests_",species,"_",spp1_name,"_",spp2_name,".pdf",sep=""))
