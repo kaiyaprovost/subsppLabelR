@@ -50,12 +50,14 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
   bgenv_by_subspecies = perspecies_bgstuff$bgenv_by_subspecies
 
   ## pca bg points
+  if(verbose==T){print("doing pca.env")}
   pca.env <- ade4::dudi.pca(bg_dat[,3:(ncol(bg_dat)-1)],scannf=F,nf=2)
   png(paste("PCAcorrelationCircle_",species,".png",sep=""))
   ecospat::ecospat.plot.contrib(contrib=pca.env$co, eigen=pca.env$eig)
   dev.off()
 
   ## pca scores whole study area, all points, all subspecies
+  if(verbose==T){print("doing scores_globclim")}
   scores_globclim<-pca.env$li # PCA scores for the whole study area (all points)
 
   ## now get pca scores per species instead
@@ -64,6 +66,7 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
   scores_clim = list()
   grid_clim = list()
 
+  if(verbose==T){print("looping over bgext_by_subspecies")}
   for(i in 1:length(names(bgext_by_subspecies))){
     singleSubspp_bgext = bgext_by_subspecies[[i]]
     singleSubspp_bgenv = bgenv_by_subspecies[[i]]
@@ -89,19 +92,19 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
     ## sp = occurrences of species
     ## R = resolution
     ## th.sp = a threshhold to elimite low density values of species occurrences
-    # grid_clim_subspp <- ecospat.grid.clim.dyn_custom(glob = scores_globclim,
-    #                                                  glob1 = scores_clim_subspp,
-    #                                                  sp = scores_subspp,
-    #                                                  R = 100,
-    #                                                  th.sp = 0,
-    #                                                  th.env = 0,
-    #                                                  removeNA=T)
-    grid_clim_subspp <- ecospat::ecospat.grid.clim.dyn(glob = scores_globclim,
-                                                       glob1 = scores_clim_subspp,
-                                                       sp = scores_subspp,
-                                                       R = 100,
-                                                       th.sp = 0,
-                                                       th.env = 0)
+    grid_clim_subspp <- ecospat.grid.clim.dyn_custom(glob = scores_globclim,
+                                                      glob1 = scores_clim_subspp,
+                                                      sp = scores_subspp,
+                                                     R = 100,
+                                                     th.sp = 0,
+                                                      th.env = 0,
+                                                      removeNA=T)
+    #grid_clim_subspp <- ecospat::ecospat.grid.clim.dyn(glob = scores_globclim,
+    #                                                   glob1 = scores_clim_subspp,
+    #                                                   sp = scores_subspp,
+    #                                                   R = 100,
+    #                                                   th.sp = 0,
+     #                                                  th.env = 0)
 
 
     grid_clim[[i]] = grid_clim_subspp
@@ -112,6 +115,7 @@ createPcaToCompare = function(loc_thin_bgstuff,perspecies_bgstuff,species,verbos
   names(scores_clim) = names(bgext_by_subspecies)
   names(grid_clim) = names(bgext_by_subspecies)
 
+  if(verbose==T){print("giving NicheSpaceComparison")}
   pdf(paste("NicheSpaceComparison_",species,".pdf",sep=""))
   par(mfrow=n2mfrow(length(grid_clim)),
       ask=F)
