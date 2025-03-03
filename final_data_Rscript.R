@@ -2,7 +2,7 @@ detach("package:subsppLabelR",unload = TRUE)
 #pkgDirectory = "C:/Users/kaiya/Documents/Work/GitHub/subsppLabelR/" ## WINDOWS
 #pkgDirectory = "/Users/kprovost/Documents/GitHub/subsppLabelR/" ## MAC
 pkgDirectory = "/Users/kprovost/Documents/Research/subsppLabelR/" ## MAC
-devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
+devtools::install_github('kaiyaprovost/subsppLabelR',force=F)
 #roxygen2::roxygenize(package.dir = pkgDirectory)
 #install.packages(pkgDirectory,
 # repos = NULL,
@@ -10,10 +10,10 @@ devtools::install_github('kaiyaprovost/subsppLabelR',force=T)
 # force = T)
 library(subsppLabelR)
 ## parameters
-redo = T
-overwrite = T
+redo = F
+overwrite = F
 pointLimit = 2000
-quant_list=c(0.8)
+quant_list=rev(c(seq(0.5,0.9,0.1),0.95))
 dbToQuery = c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
 xmin = -180
 xmax = 180
@@ -112,7 +112,7 @@ wcdata = geodata::worldclim_global("bio",res = 10,path = "~/",download = F)
 wcdata = raster::stack(wcdata)
 x = file.info(occfiles)
 occfiles = occfiles[order(x$size)]
-for (i in sample(1:length(occfiles))) {
+for (i in c(1:length(occfiles))) {
   occ_name = basename(occfiles[i])
   occ_dir = dirname(occfiles[i])
   setwd(occ_dir)
@@ -134,7 +134,7 @@ for (i in sample(1:length(occfiles))) {
   } else { print("NO LOCALITIES!") }
 }
 occ_suspect_files = list.files(path = pkgDirectory,pattern = "_subspplabelR_loc_suspect.txt$",recursive = T,full.names = T)
-for (j in sample(1:length(occ_suspect_files))) {
+for (j in c(1:length(occ_suspect_files))) {
   sus_name = basename(occ_suspect_files[j])
   sus_dir = dirname(occ_suspect_files[j])
   setwd(sus_dir)
