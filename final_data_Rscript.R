@@ -103,7 +103,7 @@ setwd(pkgDirectory)
 occfiles = list.files(path = pkgDirectory,pattern = "_subspplabelR_loc_good.txt$",recursive = T,full.names = T)
 wcdata = raster::stack(geodata::worldclim_global("bio",res = 10,path = "~/",download = F)) 
 x = file.info(occfiles)
-occfiles = occfiles[-order(x$size)]
+#occfiles = occfiles[order(x$size)]
 for (i in c(1:length(occfiles))) {
   occ_name = basename(occfiles[i])
   occ_dir = dirname(occfiles[i])
@@ -119,7 +119,7 @@ for (i in c(1:length(occfiles))) {
         Env = wcdata
         loc = occ
         species = occ_name
-        runNicheModels = T
+        runNicheModels = F
         occ_clean = subsppLabelR::localitiesToNicheMath(Env = Env,loc = loc,species = species,runNicheModels = runNicheModels)
       })
     } else { print("ONLY ONE SUBSPECIES!") }
