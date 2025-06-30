@@ -113,7 +113,11 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
   if(verbose==T){print("finished createPcaToCompare")}
   overlap_filename = paste(species,"_overlap.txt",sep="")
   if(!file.exists(overlap_filename) | overwrite==T) {
-    pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2,species=species)
+    pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2,species=species,
+                             overlap.alternative = "lower",
+                             expansion.alternative = "different",
+                             stability.alternative = "different",
+                             unfilling.alternative = "different")
     if(verbose==T){print("finished pairwiseNicheEquivalence")}
     overlap_df = pairwiseNicheOverlap(pca_grid_clim)
     write.table(overlap_df,overlap_filename)
