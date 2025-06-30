@@ -13,7 +13,8 @@ library(subsppLabelR)
 redo = F
 overwrite = F
 pointLimit = 2000
-quant_list=rev(c(seq(0.5,0.9,0.1),0.95))
+#quant_list=rev(c(seq(0.5,0.9,0.1),0.95))
+quant_list=rev(0.6)
 dbToQuery = c("gbif","inat","bison","vertnet") #EBIRD_KEY = "f49839r87f7g"
 xmin = -180
 xmax = 180
@@ -23,16 +24,16 @@ spp_epsilon = 10^-6
 subspp_epsilon = 10^-3.5
 if (redo == T) {
   species_list = c(
-    "Phainopepla nitens",
-    "Cardinalis sinuatus",
+    #"Phainopepla nitens",
+    #"Cardinalis sinuatus",
     #"Campylorhynchus brunneicapillus",
     #"Amphispiza bilineata",
     #"Vireo bellii",
     #"Toxostoma crissale",
-    "Toxostoma curvirostre",
+    #"Toxostoma curvirostre",
     #"Polioptila melanura",
     #"Melospiza melodia",
-    "Zonotrichia leucophrys",
+    #"Zonotrichia leucophrys",
     #"Geococcyx californianus",
     "Geococcyx",
     #"Melozone fusca",
@@ -50,16 +51,16 @@ if (redo == T) {
     NULL
   )
   
-  subspp_list = list(c("lepida","nitens"),
-                     c("fulvescens","peninsulae","sinuatus"),
+  subspp_list = list(#c("lepida","nitens"),
+                     #c("fulvescens","peninsulae","sinuatus"),
                      #c("affinis","brunneicapillus","anthonyi","bryanti","guttatus","sandiegensis","seri"),
                      #c("bangsi","bilineata","belvederei","cana","deserticola","carmenae","grisea","opuntia","pacifica","tortugae"),
                      #c("arizonae","bellii","medius","pusillus"),
                      #c("coloradense","crissale","dumosum","trinitatis"),
-                     c("celsum","curvirostre","insularum","maculatum","oberholseri","occidentale","palmeri"),
+                     #c("celsum","curvirostre","insularum","maculatum","oberholseri","occidentale","palmeri"),
                      #c("curtata","melanura","lucida"),
                      #c("adusta","amaka","atlantica","beata","caurina","clementae","cleonensis","cooperi","coronatorum","euphonia","fallax","fisherella","goldmani","gouldii","graminea","heermanni","inexspectata","insignis","juddi","kenaiensis","mailliardi","maxillaris","maxima","melodia","merrilli","mexicana","micronyx","montana","morphna","pectoralis","pusillula","rivularis","rufina","saltonis","samuelis","samuelsis","sanaka","santaecrucis","villai","yuriria"),
-                     c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
+                     #c("leucophrys","gambelii","nuttalli","pugetensis","oriantha"),
                      #NULL,
                      c("californianus","velox"),
                      #c("campoi","fusca","intermedia","jamesi","mesata","mesoleuca","perpallida","potosina","texana","toroi"),
