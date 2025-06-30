@@ -108,13 +108,14 @@ localitiesToNicheMath = function(Env,loc,species,rep1=10,rep2=1000,
     write.table(df,bgextbg_sub_filename,row.names = F)
   })
 
-  pcaOutput = createPcaToCompare(loc_thin_bgstuff,perspecies_bgstuff,species) ## apparently not fixed yet
+  pcaOutput = createPcaToCompare(loc_thin_bgstuff=loc_thin_bgstuff,
+                                 perspecies_bgstuff=perspecies_bgstuff,species=species) ## apparently not fixed yet
   pca_grid_clim = pcaOutput$grid_clim
   if(verbose==T){print("finished createPcaToCompare")}
   overlap_filename = paste(species,"_overlap.txt",sep="")
   if(!file.exists(overlap_filename) | overwrite==T) {
     pairwiseNicheEquivalence(pca_grid_clim,rep1=rep1,rep2=rep2,species=species,
-                             overlap.alternative = "lower",
+                             overlap.alternative = "different",
                              expansion.alternative = "different",
                              stability.alternative = "different",
                              unfilling.alternative = "different")
