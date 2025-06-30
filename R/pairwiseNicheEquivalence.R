@@ -55,7 +55,8 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verb
         spp1 = pca_grid_clim[[i]]
         spp2_name = names(pca_grid_clim)[[j]] ## list
         spp2 = pca_grid_clim[[j]]
-
+        if(verbose==T){print("starting ecospat.niche.equivalency.test_custom")}
+        
         eq.test = ecospat.niche.equivalency.test_custom(z1=spp1, z2=spp2,rep=rep1,
                                                           overlap.alternative = overlap.alternative, 
                                                           expansion.alternative = expansion.alternative,
@@ -68,7 +69,7 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verb
         ecospat.plot.overlap.test(eq.test, "I", "Equivalency")
         dev.off()
         print(paste("Running niche similarity test for",spp1_name,"-",spp2_name))
-        sim.test <- ecospat::ecospat.niche.similarity.test(z1=spp1, z2=spp2,
+        sim.test <- ecospat.niche.similarity.test_custom(z1=spp1, z2=spp2,
                                                            rep=rep2, overlap.alternative = overlap.alternative,
                                                            expansion.alternative = expansion.alternative,
                                                            stability.alternative = stability.alternative,
@@ -82,7 +83,7 @@ pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verb
         ecospat.plot.overlap.test(sim.test, "I", paste("Similarity ",spp1_name,"->",spp2_name,sep=""))
         dev.off()
         print(paste("Running niche similarity test for",spp2_name,"-",spp1_name))
-        sim.test2 <- ecospat::ecospat.niche.similarity.test(z1=spp2, z2=spp1,
+        sim.test2 <- ecospat.niche.similarity.test_custom(z1=spp2, z2=spp1,
                                                             rep=rep2, overlap.alternative = overlap.alternative,
                                                             expansion.alternative = expansion.alternative,
                                                             stability.alternative = stability.alternative,
