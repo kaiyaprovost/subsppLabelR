@@ -41,21 +41,22 @@ NULL
 #'
 #' printPointsPdfSuspect(species,subspecies,bg,loc_suspect)
 pairwiseNicheEquivalence = function(pca_grid_clim,rep1=10,rep2=1000,species,verbose=T,
-                                    overlap.alternative = "higher",
-                                    expansion.alternative = "lower",
-                                    stability.alternative = "higher",
-                                    unfilling.alternative = "lower"){
+                                    overlap.alternative = "different",
+                                    expansion.alternative = "different",
+                                    stability.alternative = "different",
+                                    unfilling.alternative = "different"){
+  
   if(verbose==T){print("starting pairwiseNicheEquivalence")}
   for(i in 1:length(pca_grid_clim)){
     for(j in 1:length(pca_grid_clim)){
       if(i<j){
         print(paste(i,j))
-        spp1_name = names(pca_grid_clim)[[i]]
+        spp1_name = names(pca_grid_clim)[[i]] ## list?
         spp1 = pca_grid_clim[[i]]
-        spp2_name = names(pca_grid_clim)[[j]]
+        spp2_name = names(pca_grid_clim)[[j]] ## list
         spp2 = pca_grid_clim[[j]]
 
-        eq.test = ecospat::ecospat.niche.equivalency.test(z1=spp1, z2=spp2,rep=rep1,
+        eq.test = ecospat.niche.equivalency.test_custom(z1=spp1, z2=spp2,rep=rep1,
                                                           overlap.alternative = overlap.alternative, 
                                                           expansion.alternative = expansion.alternative,
                                                           stability.alternative =  stability.alternative,
