@@ -6,7 +6,7 @@
 \usage{
 pairwiseNicheEquivalence(
   pca_grid_clim,
-  rep1 = 10,
+  rep1 = 1000,
   rep2 = 1000,
   species,
   verbose = T,
