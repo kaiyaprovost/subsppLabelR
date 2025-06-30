@@ -9,7 +9,11 @@ pairwiseNicheEquivalence(
   rep1 = 10,
   rep2 = 1000,
   species,
-  verbose = T
+  verbose = T,
+  overlap.alternative = "different",
+  expansion.alternative = "different",
+  stability.alternative = "different",
+  unfilling.alternative = "different"
 )
 }
 \arguments{
@@ -24,6 +28,9 @@ This function uses the background PCA grid for climate that was generated to
 calculate pairwise niche equivalences for the species. This uses
 randomization to pairwise equivalence so you must set the parameters for
 randomizing.
+}
+\details{
+The default alternative settings will test for niche conservatism.
 }
 \examples{
 
