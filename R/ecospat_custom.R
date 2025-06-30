@@ -152,7 +152,7 @@ ecospat.niche.equivalency.test_custom <-
     step1 <- ecospat.niche.overlap(z1, z2, cor = TRUE)
     step2 <- ecospat.niche.dyn.index_custom(z1, z2, intersection=0)
     obs.o <- c(step1, step2$dynamic.index.w)
-    print("starting overlap.eq.gen_custom")
+    #print("starting overlap.eq.gen_custom")
     
     if (ncores == 1) {
       sim.o <- as.data.frame(matrix(unlist(lapply(1:rep, overlap.eq.gen_custom, 
