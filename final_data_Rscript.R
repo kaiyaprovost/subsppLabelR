@@ -7,7 +7,7 @@ install.packages(pkgDirectory,repos = NULL,type = "source",force = T)
 pkgDirectory = "/Users/kprovost/Documents/Research/subsppLabelR/" ## MAC
 library(subsppLabelR)
 ## parameters
-redo = F; overwrite = F
+redo = F; overwrite = T
 pointLimit = 2000
 #quant_list=rev(c(seq(0.5,0.9,0.1),0.95))
 quant_list=rev(0.6)
@@ -120,7 +120,8 @@ for (i in c(1:length(occfiles))) {
         loc = occ
         species = occ_name
         runNicheModels = F
-        occ_clean = subsppLabelR::localitiesToNicheMath(Env = Env,loc = loc,species = species,runNicheModels = runNicheModels)
+        occ_clean = subsppLabelR::localitiesToNicheMath(Env = Env,loc = loc,species = species,runNicheModels = runNicheModels,
+                                                        overwrite=F)
       })
     } else { print("ONLY ONE SUBSPECIES!") }
   } else { print("NO LOCALITIES!") }
