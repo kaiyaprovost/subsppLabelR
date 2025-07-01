@@ -56,6 +56,7 @@ pairwiseNicheOverlap = function(pca_grid_clim,verbose=T){
         spp2_name = names(pca_grid_clim)[[j]]
         spp2 = pca_grid_clim[[j]]
         overlap <- ecospat::ecospat.niche.overlap(spp1, spp2, cor=T)
+        print(overlap)
         rowToAdd = cbind(as.character(spp1_name),
                          as.character(spp2_name),
                          as.numeric(overlap$D),
