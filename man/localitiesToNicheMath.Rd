@@ -8,7 +8,7 @@ localitiesToNicheMath(
   Env,
   loc,
   species,
-  rep1 = 10,
+  rep1 = 1000,
   rep2 = 1000,
   RMvalues = seq(0.5, 4, 0.5),
   fc = c("L", "LQ", "H"),
